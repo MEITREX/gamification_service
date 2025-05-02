@@ -13,11 +13,11 @@ import java.util.Arrays;
  */
 @SpringBootApplication
 @Slf4j
-public class TemplateForMicroservicesApplication {
+public class GamificationServiceApplication {
 
     public static void main(String[] args) {
         Arrays.stream(args).map(arg -> "Received argument: " + arg).forEach(log::info);
-        SpringApplication.run(TemplateForMicroservicesApplication.class, args);
+        SpringApplication.run(GamificationServiceApplication.class, args);
     }
 
 }
