@@ -30,7 +30,7 @@ services:
     depends_on:
       - database
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/course_service
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/gamification_service
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
   dapr-gamification:
