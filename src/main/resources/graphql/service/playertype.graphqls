@@ -1,0 +1,37 @@
+enum PlayerType {
+  PHILANTHROPIST
+  SOCIALISER
+  FREE_SPIRIT
+  ACHIEVER
+  PLAYER
+  DISRUPTOR
+}
+
+input AnswerInput {
+  text: String!
+  playerTypes: [PlayerType!]!
+}
+
+input QuestionInput {
+  text: String!
+  selectedAnswer: AnswerInput!
+  possibleAnswers: [AnswerInput!]!
+}
+
+input PlayerAnswerInput {
+  questions: [QuestionInput!]!
+}
+
+type PlayerTypeScore {
+  type: PlayerType!
+  value: Float!
+}
+
+type PlayerHexadScore {
+  scores: [PlayerTypeScore!]!
+}
+
+type Mutation {
+  evaluatePlayerType(input: PlayerAnswerInput!): PlayerHexadScore!
+}
+
