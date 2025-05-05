@@ -4,25 +4,46 @@ import java.util.Arrays;
 import java.util.EnumMap;
 
 import org.springframework.stereotype.Service;
+
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerHexadScoreEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper.PlayerHexadScoreMapper;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.PlayerHexadScoreRepository;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
+import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
+import lombok.*;
+
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-public class PlayertypeService {
+@Slf4j
+@RequiredArgsConstructor
+@Transactional 
+public class PlayerHexadScoreService {
 
+    private final PlayerHexadScoreRepository playerHexadScoreRepository;
+    private final PlayerHexadScoreMapper playerHexadScoreMapper;
      /**
      * Returns Player Hexad Types (%) according to quiz answers
      * @param input the players quiz answer
+     * @param userId
      * @return the calculated player hexad score 
      */
-    public PlayerHexadScore evaluate(PlayerAnswerInput input) {
-        if(input.getQuestions().isEmpty()) {
-            return calculateDefaultPlayerHexadScore();
+    public PlayerHexadScore evaluate(UUID userId, PlayerAnswerInput input) {
+        PlayerHexadScore playerHexadScore = input.getQuestions().isEmpty() ? calculateDefault(): calculateFromInput(input);
+
+        Optional<PlayerHexadScoreEntity> existingScore = playerHexadScoreRepository.findByUserId(userId);
+        if(existingScore.isPresent()){
+            // Do we need to update?
         } else {
-            return calculatePlayerHexadScore(input);
+            PlayerHexadScoreEntity newEntity = playerHexadScoreMapper.dtoToEntity(playerHexadScore.getScores(), userId);
+            playerHexadScoreRepository.save(newEntity);
         }
+        return playerHexadScore;
     }
 
     /**
@@ -30,7 +51,7 @@ public class PlayertypeService {
      * Default Hexad Score (%) = 100 / number of types
      * @return the calculated default player hexad score
      */
-    private PlayerHexadScore calculateDefaultPlayerHexadScore(){
+    private PlayerHexadScore calculateDefault(){
         float defaultValue = 100f / PlayerType.values().length;
 
         List<PlayerTypeScore> scores = Arrays.stream(PlayerType.values())
@@ -51,7 +72,7 @@ public class PlayertypeService {
      * @param input of the quiz answers
      * @return the calculated player hexad score
      */
-    private PlayerHexadScore calculatePlayerHexadScore(PlayerAnswerInput input) {
+    private PlayerHexadScore calculateFromInput(PlayerAnswerInput input) {
         Map<PlayerType, Integer> rawScores = new EnumMap<>(PlayerType.class);
         Map<PlayerType, Integer> maxPossibleScores = new EnumMap<>(PlayerType.class);
 

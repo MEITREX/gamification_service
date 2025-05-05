@@ -32,6 +32,6 @@ type PlayerHexadScore {
 }
 
 type Mutation {
-  evaluatePlayerType(input: PlayerAnswerInput!): PlayerHexadScore!
+  evaluatePlayerHexadScore(userId: UUID!, input: PlayerAnswerInput!): PlayerHexadScore!
 }
 
