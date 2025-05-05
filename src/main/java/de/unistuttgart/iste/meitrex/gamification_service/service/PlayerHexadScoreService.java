@@ -3,12 +3,14 @@ package de.unistuttgart.iste.meitrex.gamification_service.service;
 import java.util.Arrays;
 import java.util.EnumMap;
 
+import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.stereotype.Service;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerHexadScoreEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper.PlayerHexadScoreMapper;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.PlayerHexadScoreRepository;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.*;
@@ -108,5 +110,16 @@ public class PlayerHexadScoreService {
             }).collect(Collectors.toList());
         
         return new PlayerHexadScore(scores);
+    }
+
+     /**
+     * Return users player hexad score 
+     * @param userId
+     * @return users player hexad score 
+     */
+    public PlayerHexadScore getById(UUID userId) {
+        PlayerHexadScoreEntity entity = playerHexadScoreRepository.findByUserId(userId)
+            .orElseThrow(() -> new EntityNotFoundException("No score found for user " + userId));
+        return playerHexadScoreMapper.entityToDto(entity);
     }
 }

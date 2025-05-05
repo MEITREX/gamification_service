@@ -10,7 +10,3 @@ type Template {
   id: ID!
   name: String!
 }
-
-type Query {
-  templates: [Template]
-}
