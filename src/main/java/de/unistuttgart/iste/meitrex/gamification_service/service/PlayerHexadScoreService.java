@@ -3,7 +3,6 @@ package de.unistuttgart.iste.meitrex.gamification_service.service;
 import java.util.Arrays;
 import java.util.EnumMap;
 
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.stereotype.Service;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerHexadScoreEntity;
@@ -36,14 +35,15 @@ public class PlayerHexadScoreService {
      * @return the calculated player hexad score 
      */
     public PlayerHexadScore evaluate(UUID userId, PlayerAnswerInput input) {
-        PlayerHexadScore playerHexadScore = input.getQuestions().isEmpty() ? calculateDefault(): calculateFromInput(input);
 
         Optional<PlayerHexadScoreEntity> existingScore = playerHexadScoreRepository.findByUserId(userId);
-        if(existingScore.isPresent()){
-            // Do we need to update?
-        } else {
+        PlayerHexadScore playerHexadScore; 
+        if(!existingScore.isPresent()){
+            playerHexadScore = input.getQuestions().isEmpty() ? calculateDefault(): calculateFromInput(input);
             PlayerHexadScoreEntity newEntity = playerHexadScoreMapper.dtoToEntity(playerHexadScore.getScores(), userId);
             playerHexadScoreRepository.save(newEntity);
+        } else {
+            playerHexadScore = playerHexadScoreMapper.entityToDto(existingScore.get());
         }
         return playerHexadScore;
     }
