@@ -43,7 +43,7 @@ public class PlayerHexadScoreService {
             PlayerHexadScoreEntity newEntity = playerHexadScoreMapper.dtoToEntity(playerHexadScore.getScores(), userId);
             playerHexadScoreRepository.save(newEntity);
         } else {
-            playerHexadScore = playerHexadScoreMapper.entityToDto(existingScore.get());
+            throw new IllegalStateException("Player Hexad Score was already evaluated");
         }
         return playerHexadScore;
     }
@@ -53,7 +53,7 @@ public class PlayerHexadScoreService {
      * Default Hexad Score (%) = 100 / number of types
      * @return the calculated default player hexad score
      */
-    private PlayerHexadScore calculateDefault(){
+    public PlayerHexadScore calculateDefault(){
         float defaultValue = 100f / PlayerType.values().length;
 
         List<PlayerTypeScore> scores = Arrays.stream(PlayerType.values())
@@ -74,7 +74,7 @@ public class PlayerHexadScoreService {
      * @param input of the quiz answers
      * @return the calculated player hexad score
      */
-    private PlayerHexadScore calculateFromInput(PlayerAnswerInput input) {
+    public PlayerHexadScore calculateFromInput(PlayerAnswerInput input) {
         Map<PlayerType, Integer> rawScores = new EnumMap<>(PlayerType.class);
         Map<PlayerType, Integer> maxPossibleScores = new EnumMap<>(PlayerType.class);
 
