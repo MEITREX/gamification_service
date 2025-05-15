@@ -37,5 +37,7 @@ type Mutation {
 
 type Query {
   getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
+  PlayerHexadScoreExists(userId: UUID!): Boolean!
 }
+
 

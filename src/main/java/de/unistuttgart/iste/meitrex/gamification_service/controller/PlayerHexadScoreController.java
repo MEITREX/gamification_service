@@ -32,5 +32,8 @@ public class PlayerHexadScoreController {
         return playerHexadScoreService.getById(userId);
     }
 
-
+    @QueryMapping
+    public Boolean PlayerHexadScoreExists(@Argument UUID userId) {
+        return playerHexadScoreService.hasHexadScore(userId);
+    }
 }

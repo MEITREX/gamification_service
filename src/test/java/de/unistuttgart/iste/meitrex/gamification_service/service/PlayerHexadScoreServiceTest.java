@@ -1,10 +1,13 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.Optional;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -68,8 +71,8 @@ public class PlayerHexadScoreServiceTest {
 
     @Test
     public void testEvaluateWithInput(){
-    // Arrange
-    PlayerHexadScoreService spyService = spy(playerHexadScoreService);
+        // Arrange
+        PlayerHexadScoreService spyService = spy(playerHexadScoreService);
   
 
         AnswerInput answer1 = new AnswerInput(
@@ -131,5 +134,20 @@ public class PlayerHexadScoreServiceTest {
 
     verify(spyService, times(0)).calculateDefault();
     verify(spyService, times(0)).calculateFromInput(input);  
+    }
+
+    @Test
+    public void testPlayerHexadScoreNotExists() {
+        PlayerHexadScoreService spyService = spy(playerHexadScoreService);
+        assertFalse(spyService.hasHexadScore(UUID.randomUUID()));
+    }
+
+    @Test
+    public void testPlayerHexadScoreExists() {
+        PlayerHexadScoreService spyService = spy(playerHexadScoreService);
+        Optional<PlayerHexadScoreEntity> existingScore = Optional.of(new PlayerHexadScoreEntity());
+        when(playerHexadScoreRepository.findByUserId(any(UUID.class)))
+                .thenReturn(existingScore);
+        assertTrue(spyService.hasHexadScore(UUID.randomUUID()));
     }
 }

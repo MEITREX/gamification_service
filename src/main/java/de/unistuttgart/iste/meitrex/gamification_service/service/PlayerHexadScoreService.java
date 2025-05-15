@@ -122,4 +122,17 @@ public class PlayerHexadScoreService {
             .orElseThrow(() -> new EntityNotFoundException("No score found for user " + userId));
         return playerHexadScoreMapper.entityToDto(entity);
     }
+
+    /**
+     * Return wether the user has a player hexad score
+     * @param userId
+     * @return true if a hexad score exists otherwise false
+     */
+    public Boolean hasHexadScore(UUID userId) {
+        Optional<PlayerHexadScoreEntity> entity = playerHexadScoreRepository.findByUserId(userId);
+        if (entity.isPresent()) {
+            return true;
+        }
+        return false;
+    }
 }
