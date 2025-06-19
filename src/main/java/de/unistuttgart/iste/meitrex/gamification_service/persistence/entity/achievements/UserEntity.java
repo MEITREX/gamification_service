@@ -1,0 +1,28 @@
+package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.Cascade;
+
+import java.util.List;
+import java.util.UUID;
+
+@Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class UserEntity {
+    @Id
+    UUID id;
+
+    @OneToMany
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
+    List<UserGoalProgressEntity> userGoalProgressEntities;
+}

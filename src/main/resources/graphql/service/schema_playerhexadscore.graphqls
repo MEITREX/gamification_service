@@ -31,13 +31,4 @@ type PlayerHexadScore {
   scores: [PlayerTypeScore!]!
 }
 
-type Mutation {
-  evaluatePlayerHexadScore(userId: UUID!, input: PlayerAnswerInput!): PlayerHexadScore!
-}
-
-type Query {
-  getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
-  PlayerHexadScoreExists(userId: UUID!): Boolean!
-}
-
 

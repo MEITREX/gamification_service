@@ -1,0 +1,4 @@
+type Mutation {
+    evaluatePlayerHexadScore(userId: UUID!, input: PlayerAnswerInput!): PlayerHexadScore!
+    createAchievement(input: inputAchievement): Achievement
+}
