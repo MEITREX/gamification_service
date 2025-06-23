@@ -23,9 +23,14 @@ public class AchievementEntity {
     @Column
     String imageUrl;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     GoalEntity goal;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     CourseEntity course;
+
+    public void setGoal(GoalEntity goal) {
+        this.goal = goal;
+        goal.setAchievement(this);
+    }
 }

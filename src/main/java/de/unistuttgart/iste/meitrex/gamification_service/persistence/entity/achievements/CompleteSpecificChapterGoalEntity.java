@@ -8,9 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@EqualsAndHashCode(callSuper = true)
 @Entity(name = "CompleteSpecificChapterGoal")
 @Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,12 +34,7 @@ public class CompleteSpecificChapterGoalEntity extends GoalEntity{
 
 
     @Override
-    public List<UserGoalProgressEntity> generateUserGoalProgress() {
-        UserGoalProgressEntity userGoalProgress = new UserGoalProgressEntity();
-        userGoalProgress.setGoal(this);
-        userGoalProgress.setCompleted(false);
-        List<UserGoalProgressEntity> userGoalProgressEntities = new ArrayList<>();
-        userGoalProgressEntities.add(userGoalProgress);
-        return userGoalProgressEntities;
+    public UserGoalProgressEntity generateUserGoalProgress(UserEntity user, GoalEntity goalEntity) {
+        return new UserGoalProgressEntity(user, goalEntity);
     }
 }

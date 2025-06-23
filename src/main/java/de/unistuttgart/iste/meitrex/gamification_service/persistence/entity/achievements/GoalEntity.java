@@ -25,11 +25,20 @@ public abstract class GoalEntity {
     @Column
     OffsetDateTime trackingEndTime;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     AchievementEntity achievement;
 
-    @OneToMany
-    List<UserGoalProgressEntity> userGoalProgress;
+    public abstract void updateProgress(UserGoalProgressEntity userGoalProgress);
 
-    public abstract List<UserGoalProgressEntity> generateUserGoalProgress();
+    public abstract UserGoalProgressEntity generateUserGoalProgress(UserEntity user, GoalEntity goalEntity);
+
+    @Override
+    public String toString() {
+        return "GoalEntity{" +
+                "id=" + id +
+                ", trackingStartTime=" + trackingStartTime +
+                ", trackingEndTime=" + trackingEndTime +
+                ", achievement=" + achievement.getId() +
+                '}';
+    }
 }

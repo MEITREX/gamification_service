@@ -3,18 +3,19 @@ package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.ach
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
-@EqualsAndHashCode(callSuper = true)
 @Entity(name = "CompletedQuizzesGoal")
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Slf4j
 public class CompletedQuizzesGoalEntity extends CountableGoalEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -22,6 +23,15 @@ public class CompletedQuizzesGoalEntity extends CountableGoalEntity{
 
     @Column
     float minimumScore;
+
+    @Column
+    OffsetDateTime trackingStartTime;
+
+    @Column
+    OffsetDateTime trackingEndTime;
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    AchievementEntity achievement;
 
     public String generateDescription(){
         return "";
@@ -35,13 +45,24 @@ public class CompletedQuizzesGoalEntity extends CountableGoalEntity{
         }
     }
 
-    public void updateProgress(UserGoalProgressEntity userGoalProgressEntity, float score, UUID contentId){
-        if (userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity){
-            if (score >= minimumScore && !countableUserGoalProgressEntity.getContentIds().contains(contentId)) {
-                countableUserGoalProgressEntity.setCompletedCount(countableUserGoalProgressEntity.getCompletedCount() + 1);
-                countableUserGoalProgressEntity.getContentIds().add(contentId);
-            }
+    public void updateProgress(CountableUserGoalProgressEntity userGoalProgressEntity, float score, UUID contentId){
+        log.info("Updating progress for user goal progress with minimum Score {} with score {} and contentId {}",
+                minimumScore, score, contentId);
+        if (score >= minimumScore && !userGoalProgressEntity.getContentIds().contains(contentId)) {
+            userGoalProgressEntity.setCompletedCount(userGoalProgressEntity.getCompletedCount() + 1);
+            userGoalProgressEntity.getContentIds().add(contentId);
         }
         updateProgress(userGoalProgressEntity);
+    }
+
+    @Override
+    public String toString() {
+        return "CompletedQuizzesGoalEntity{" +
+                "id=" + id +
+                ", minimumScore=" + minimumScore +
+                ", trackingStartTime=" + trackingStartTime +
+                ", trackingEndTime=" + trackingEndTime +
+                ", achievement=" + achievement.getId() +
+                '}';
     }
 }

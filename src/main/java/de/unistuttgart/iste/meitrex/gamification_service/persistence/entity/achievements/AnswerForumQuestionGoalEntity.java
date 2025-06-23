@@ -11,9 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@EqualsAndHashCode(callSuper = true)
 @Entity(name = "AnswerForumQuestionGoal")
-@Data
+@Data@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -30,4 +30,6 @@ public class AnswerForumQuestionGoalEntity extends CountableGoalEntity{
     public void updateProgress(UserGoalProgressEntity userGoalProgressEntity){
 
     }
+
+
 }

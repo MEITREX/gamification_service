@@ -1,14 +1,11 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
 
 import de.unistuttgart.iste.meitrex.common.event.ContentProgressedEvent;
-import de.unistuttgart.iste.meitrex.common.event.ItemResponse;
 import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
 import de.unistuttgart.iste.meitrex.content_service.exception.ContentServiceConnectionException;
-import de.unistuttgart.iste.meitrex.content_service.persistence.entity.ContentEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.achievements.Achievements;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.*;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.*;
-import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
 import de.unistuttgart.iste.meitrex.generated.dto.Content;
 import de.unistuttgart.iste.meitrex.generated.dto.UserGoalProgress;
 import jakarta.persistence.EntityNotFoundException;
@@ -16,14 +13,10 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,31 +31,45 @@ public class AchievementService {
     private final UserRepository userRepository;
     private final UserGoalProgressRepository userGoalProgressRepository;
     private final ModelMapper modelMapper;
+    private final GoalRepository goalRepository;
 
     /**
-     * Logs user progress according to the given event.
-     * The learning interval of the user progress data entity will be updated.
-     * A new progress log item will be added to the progress log.
-     * The event will be forwarded to the topic "user-progress-updated".
+     * Gets user progress according to the given event.
+     * Updates the effected achievements
      *
      * @param contentProgressedEvent the event to log
      */
-    public void logUserProgress(final ContentProgressedEvent contentProgressedEvent)
+    public void progessUserProgress(final ContentProgressedEvent contentProgressedEvent)
             throws ContentServiceConnectionException {
         Content content = contentServiceClient.queryContentsByIds(contentProgressedEvent.getUserId(),
                 List.of(contentProgressedEvent.getContentId())).getFirst();
-        log.info(content.toString());
         UUID courseId = content.getMetadata().getCourseId();
         CourseEntity courseEntity = courseRepository.findById(courseId).orElseGet(() -> createCourse(courseId));
         UUID userId = content.getUserProgressData().getUserId();
         UserEntity user = userRepository.findById(userId).orElse(generateUser(userId, courseEntity.getAchievements()));
-        user.getUserGoalProgressEntities().stream().filter(userGoalProgressEntity ->
-                userGoalProgressEntity instanceof CountableUserGoalProgressEntity)
-                .filter(countableUserGoalEntity -> countableUserGoalEntity.getGoal() instanceof CompletedQuizzesGoalEntity)
-                .forEach(countableUserGoalEntity -> {
-                    ((CompletedQuizzesGoalEntity) countableUserGoalEntity.getGoal()).updateProgress(countableUserGoalEntity,
-                            (float) contentProgressedEvent.getCorrectness(), contentProgressedEvent.getContentId());
-                });
+        switch (content.getMetadata().getType()) {
+            case QUIZ -> quizProgress(contentProgressedEvent, user);
+            case MEDIA -> mediaProgress(contentProgressedEvent, user);
+        }
+    }
+
+    private void quizProgress(final ContentProgressedEvent contentProgressedEvent, UserEntity user) {
+        log.info("Quiz progress");
+        List<CountableUserGoalProgressEntity> userGoalProgressEntities = user.getUserGoalProgressEntities().stream()
+                .filter(userGoalProgressEntity -> userGoalProgressEntity.getGoal() instanceof CompletedQuizzesGoalEntity)
+                .filter(userGoalProgressEntity -> userGoalProgressEntity instanceof CountableUserGoalProgressEntity)
+                .map(userGoalProgressEntity -> (CountableUserGoalProgressEntity) userGoalProgressEntity).toList();
+        userGoalProgressEntities.forEach(userGoalProgressEntity ->{
+            CompletedQuizzesGoalEntity goalEntity = (CompletedQuizzesGoalEntity) userGoalProgressEntity.getGoal();
+            goalEntity.updateProgress(userGoalProgressEntity, (float) contentProgressedEvent.getCorrectness(),
+                    contentProgressedEvent.getContentId());
+            userGoalProgressRepository.save(userGoalProgressEntity);
+        });
+        userRepository.save(user);
+    }
+
+    private void mediaProgress(final ContentProgressedEvent contentProgressedEvent, UserEntity user) {
+
     }
 
     public List<UserGoalProgress> getAchievementsForUser(UUID userId, UUID courseId) {
@@ -81,18 +88,23 @@ public class AchievementService {
         CourseEntity courseEntity = new CourseEntity();
         courseEntity.setId(courseId);
         courseEntity.setNumberOfChapters(12); //TODO get number of Chapters from CourseService
-        achievements.generateAchievements(courseEntity);
         courseRepository.save(courseEntity);
+        achievements.generateAchievements(courseEntity, achievementRepository, goalRepository);
+        courseRepository.save(courseEntity);
+        log.info("Created course with id {}", courseId);
         return courseEntity;
     }
 
     private UserEntity generateUser(final UUID userId, List<AchievementEntity> achievements) {
         UserEntity userEntity = new UserEntity();
         userEntity.setId(userId);
+        userRepository.save(userEntity);
         List<UserGoalProgressEntity> userGoalProgress = achievements.stream().map(achievement ->
-                achievement.getGoal().generateUserGoalProgress()).flatMap(List::stream).toList();
+                achievement.getGoal().generateUserGoalProgress(userEntity, achievement.getGoal())).toList();
+        userGoalProgressRepository.saveAll(userGoalProgress);
         userEntity.setUserGoalProgressEntities(userGoalProgress);
         userRepository.save(userEntity);
+        log.info("Created user with id {}", userId);
         return userEntity;
     }
 }

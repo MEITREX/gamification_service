@@ -8,22 +8,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@EqualsAndHashCode(callSuper = true)
+
 @Entity(name = "AndCombinatorGoal")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AndCombinatorGoalEntity extends GoalEntity{
+public class AndCombinatorGoalEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     GoalEntity goal1;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     GoalEntity goal2;
 
     public String generateDescription() {
@@ -34,10 +34,9 @@ public class AndCombinatorGoalEntity extends GoalEntity{
 
     }
 
-    @Override
-    public List<UserGoalProgressEntity> generateUserGoalProgress() {
-        List<UserGoalProgressEntity> userGoalProgress = new ArrayList<>(goal1.generateUserGoalProgress());
-        userGoalProgress.addAll(goal2.generateUserGoalProgress());
-        return userGoalProgress;
-    }
+    /*@Override
+    public UserGoalProgressEntity generateUserGoalProgress(UserEntity user) {
+        return new CombineUserGoalProgressEntity(user, this,
+                goal1.generateUserGoalProgress(user), goal2.generateUserGoalProgress(user));
+    }*/
 }

@@ -10,9 +10,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-@EqualsAndHashCode(callSuper = true)
+
 @Entity(name = "CountableUserGoalProgress")
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -24,14 +25,17 @@ public class CountableUserGoalProgressEntity extends UserGoalProgressEntity{
     @Column
     int completedCount;
 
-    @OneToOne
-    @NotNull
-    CountableGoalEntity goal;
-
     @ElementCollection
     List<UUID> contentIds;
 
+    public CountableUserGoalProgressEntity(UserEntity user, @NotNull CountableGoalEntity goal) {
+        super(user, goal);
+        contentIds = new ArrayList<>();
+        completedCount = 0;
+    }
+
     public void updateProgress() {
+        CountableGoalEntity goal = (CountableGoalEntity) super.getGoal();
         goal.updateProgress(this);
     }
 
@@ -39,10 +43,20 @@ public class CountableUserGoalProgressEntity extends UserGoalProgressEntity{
         if(contentIds == null) {
             contentIds = new ArrayList<>();
         }
-        if (goal instanceof CompletedQuizzesGoalEntity completedQuizzesGoalEntity) {
+        if (super.getGoal() instanceof CompletedQuizzesGoalEntity completedQuizzesGoalEntity) {
             completedQuizzesGoalEntity.updateProgress(this, score, contentId);
         } else {
-            goal.updateProgress(this);
+            super.getGoal().updateProgress(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "CountableUserGoalProgressEntity{" +
+                "id=" + id +
+                ", completedCount=" + completedCount +
+                ", contentIds=" + contentIds +
+                ", super=" + super.toString() +
+                '}';
     }
 }
