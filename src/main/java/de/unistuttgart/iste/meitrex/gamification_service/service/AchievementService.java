@@ -15,8 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
+
+import static graphql.scalars.ExtendedScalars.DateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -82,6 +85,20 @@ public class AchievementService {
                 .flatMap(List::stream).toList();
         return userGoalProgressEntities.stream().map(userGoalProgressEntity
                 -> modelMapper.map(userGoalProgressEntity, UserGoalProgress.class)).toList();
+    }
+
+    public UUID loginUser(UUID userId, UUID courseId) {
+        CourseEntity course = courseRepository.findById(courseId).orElseGet(() -> createCourse(courseId));
+        UserEntity user = userRepository.findById(userId).orElseGet(() -> generateUser(userId, course.getAchievements()));
+        user.getUserGoalProgressEntities().stream()
+                .filter(userGoalProgressEntity -> userGoalProgressEntity.getGoal() instanceof LoginStreakGoalEntity)
+                .filter(userGoalProgressEntity -> userGoalProgressEntity instanceof CountableUserGoalProgressEntity)
+                .map(userGoalProgressEntity -> (CountableUserGoalProgressEntity) userGoalProgressEntity)
+                .forEach(userGoalProgressEntity -> {
+                    LoginStreakGoalEntity goalEntity = (LoginStreakGoalEntity) userGoalProgressEntity.getGoal();
+                    goalEntity.updateProgress(userGoalProgressEntity, OffsetDateTime.now());
+                });
+        return userId;
     }
 
     private CourseEntity createCourse(final UUID courseId) {

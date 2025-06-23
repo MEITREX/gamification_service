@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -31,5 +32,11 @@ public class LoginStreakGoalEntity extends CountableGoalEntity{
 
     public void updateProgress(UserGoalProgressEntity userGoalProgressEntity){
 
+    }
+
+    public void updateProgress(UserGoalProgressEntity userGoalProgressEntity, OffsetDateTime loginTime){
+        if (userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity) {
+            countableUserGoalProgressEntity.updateProgress(loginTime);
+        }
     }
 }
