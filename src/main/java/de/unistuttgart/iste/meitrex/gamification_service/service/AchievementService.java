@@ -1,11 +1,15 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
 
 import de.unistuttgart.iste.meitrex.common.event.ContentProgressedEvent;
+import de.unistuttgart.iste.meitrex.common.event.ForumActivityEvent;
+import de.unistuttgart.iste.meitrex.common.event.UserProgressUpdatedEvent;
 import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
 import de.unistuttgart.iste.meitrex.content_service.exception.ContentServiceConnectionException;
+import de.unistuttgart.iste.meitrex.course_service.client.CourseServiceClient;
 import de.unistuttgart.iste.meitrex.gamification_service.achievements.Achievements;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.*;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.*;
+import de.unistuttgart.iste.meitrex.generated.dto.Chapter;
 import de.unistuttgart.iste.meitrex.generated.dto.Content;
 import de.unistuttgart.iste.meitrex.generated.dto.UserGoalProgress;
 import jakarta.persistence.EntityNotFoundException;
@@ -28,6 +32,7 @@ import static graphql.scalars.ExtendedScalars.DateTime;
 public class AchievementService {
     private final AchievementRepository achievementRepository;
     private final ContentServiceClient contentServiceClient;
+    private final CourseServiceClient courseServiceClient;
     private final CourseRepository courseRepository;
     private final CompletedQuizzesGoalRepository completedQuizzesGoalRepository;
     private final Achievements achievements = new Achievements();
@@ -75,6 +80,47 @@ public class AchievementService {
 
     }
 
+    public void chapterProgress(final UserProgressUpdatedEvent userProgressUpdatedEvent) {
+        UUID courseId = userProgressUpdatedEvent.getCourseId();
+        CourseEntity courseEntity = courseRepository.findById(courseId).orElseGet(() -> createCourse(courseId));
+        UUID userId = userProgressUpdatedEvent.getUserId();
+        UserEntity user = userRepository.findById(userId).orElse(generateUser(userId, courseEntity.getAchievements()));
+        List<UserGoalProgressEntity> userGoalProgressEntities = user.getUserGoalProgressEntities().stream()
+                .filter(userGoalProgressEntity ->
+                        userGoalProgressEntity.getGoal() instanceof CompleteSpecificChapterGoalEntity).toList();
+        userGoalProgressEntities.forEach(userGoalProgressEntity -> {
+            CompleteSpecificChapterGoalEntity goalEntity = (CompleteSpecificChapterGoalEntity) userGoalProgressEntity.getGoal();
+            goalEntity.updateProgress(userGoalProgressEntity);
+            userGoalProgressRepository.save(userGoalProgressEntity);
+        });
+        userRepository.save(user);
+    }
+
+    public void forumProgress(final ForumActivityEvent forumActivityEvent) {
+        UUID courseId = forumActivityEvent.getCourseId();
+        CourseEntity courseEntity = courseRepository.findById(courseId).orElseGet(() -> createCourse(courseId));
+        UUID userId = forumActivityEvent.getUserId();
+        UserEntity user = userRepository.findById(userId).orElse(generateUser(userId, courseEntity.getAchievements()));
+        switch (forumActivityEvent.getActivity()) {
+            case ANSWER -> forumAnswerProgress(user);
+            case INFO -> forumInfoProgress(user);
+        }
+    }
+
+    private void forumAnswerProgress(UserEntity user) {
+        List<CountableUserGoalProgressEntity> userGoalProgressEntities = user.getUserGoalProgressEntities().stream()
+                .filter(userGoalProgressEntity -> userGoalProgressEntity.getGoal() instanceof AnswerForumQuestionGoalEntity)
+                .map(userGoalProgressEntity -> (CountableUserGoalProgressEntity) userGoalProgressEntity).toList();
+        userGoalProgressEntities.forEach(userGoalProgressEntity -> {
+            AnswerForumQuestionGoalEntity goalEntity = (AnswerForumQuestionGoalEntity) userGoalProgressEntity.getGoal();
+            goalEntity.updateProgress(userGoalProgressEntity);
+            userGoalProgressRepository.save(userGoalProgressEntity);
+        });
+        userRepository.save(user);
+    }
+
+    private void forumInfoProgress(UserEntity user) {}
+
     public List<UserGoalProgress> getAchievementsForUser(UUID userId, UUID courseId) {
         CourseEntity courseEntity = courseRepository.findById(courseId).orElseThrow(()
                 -> new EntityNotFoundException("Course with the id " + courseId + " not found"));
@@ -104,7 +150,7 @@ public class AchievementService {
     private CourseEntity createCourse(final UUID courseId) {
         CourseEntity courseEntity = new CourseEntity();
         courseEntity.setId(courseId);
-        courseEntity.setNumberOfChapters(12); //TODO get number of Chapters from CourseService
+        courseEntity.setChapters(courseServiceClient.queryChapterByCourseId(courseId));
         courseRepository.save(courseEntity);
         achievements.generateAchievements(courseEntity, achievementRepository, goalRepository);
         courseRepository.save(courseEntity);

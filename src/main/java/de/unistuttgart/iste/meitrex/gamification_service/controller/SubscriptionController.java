@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.controller;
 
 import de.unistuttgart.iste.meitrex.common.event.ContentProgressedEvent;
+import de.unistuttgart.iste.meitrex.common.event.ForumActivityEvent;
 import de.unistuttgart.iste.meitrex.common.event.UserProgressUpdatedEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.service.AchievementService;
 import io.dapr.Topic;
@@ -47,12 +48,32 @@ public class SubscriptionController {
         return Mono.fromRunnable(() -> {
             try {
                 log.info("Received user-progress event: {}", cloudEvent.getData());
+                achievementService.chapterProgress(cloudEvent.getData());
             } catch (Exception e) {
                 // we need to catch all exceptions because otherwise if some invalid data is in the message queue
                 // it will never get processed and instead the service will just crash forever
                 log.error("Error while processing user progress event", e);
             }
-        });
+        })
+        .subscribeOn(Schedulers.boundedElastic()).then();
     }
 
+    /**
+     * Dapr topic subscription to get the forum activity of a user.
+     */
+    @Topic(name = "forum-activity", pubsubName = "meitrex")
+    @PostMapping(path = "/forum-activity-pubsub")
+    public Mono<Void> onForumActivity(@RequestBody final CloudEvent<ForumActivityEvent> cloudEvent) {
+        return Mono.fromRunnable(() -> {
+            try {
+                log.info("Received forum-activity event: {}", cloudEvent.getData());
+                achievementService.forumProgress(cloudEvent.getData());
+            } catch (Exception e) {
+                // we need to catch all exceptions because otherwise if some invalid data is in the message queue
+                // it will never get processed and instead the service will just crash forever
+                log.error("Error while processing user progress event", e);
+            }
+        })
+        .subscribeOn(Schedulers.boundedElastic()).then();
+    }
 }

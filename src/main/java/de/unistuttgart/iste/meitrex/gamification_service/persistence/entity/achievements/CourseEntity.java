@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements;
 
+import de.unistuttgart.iste.meitrex.generated.dto.Chapter;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -19,8 +20,8 @@ public class CourseEntity {
     @Id
     UUID id;
 
-    @Column(nullable = false)
-    int numberOfChapters;
+    @ElementCollection
+    List<Chapter> chapters;
 
     @OneToMany(cascade = CascadeType.ALL)
     List<AchievementEntity> achievements;

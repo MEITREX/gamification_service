@@ -32,6 +32,11 @@ public class CompleteSpecificChapterGoalEntity extends GoalEntity{
 
     }
 
+    public void updateProgress(UserGoalProgressEntity userGoalProgress, UUID chapterId) {
+        if (chapterId.equals(this.chapterId)) {
+            userGoalProgress.setCompleted(true);
+        }
+    }
 
     @Override
     public UserGoalProgressEntity generateUserGoalProgress(UserEntity user, GoalEntity goalEntity) {
