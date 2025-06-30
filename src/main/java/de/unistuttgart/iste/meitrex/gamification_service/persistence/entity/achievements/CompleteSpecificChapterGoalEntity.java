@@ -17,10 +17,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CompleteSpecificChapterGoalEntity extends GoalEntity{
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    UUID id;
-
     @Column
     UUID chapterId;
 

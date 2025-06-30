@@ -14,15 +14,9 @@ import java.util.UUID;
 @Entity(name = "AnswerForumQuestionGoal")
 @Data@EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@Builder
 @NoArgsConstructor
-@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AnswerForumQuestionGoalEntity extends CountableGoalEntity{
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    UUID id;
-
     public String generateDescription(){
         return "";
     }
@@ -35,6 +29,4 @@ public class AnswerForumQuestionGoalEntity extends CountableGoalEntity{
             }
         }
     }
-
-
 }

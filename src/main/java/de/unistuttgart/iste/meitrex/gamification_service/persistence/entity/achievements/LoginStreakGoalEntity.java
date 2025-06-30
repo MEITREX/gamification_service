@@ -18,14 +18,9 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class LoginStreakGoalEntity extends CountableGoalEntity{
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    UUID id;
-
     public String generateDescription(){
         return "";
     }

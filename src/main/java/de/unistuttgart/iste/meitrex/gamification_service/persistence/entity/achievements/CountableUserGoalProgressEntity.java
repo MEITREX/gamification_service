@@ -21,10 +21,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CountableUserGoalProgressEntity extends UserGoalProgressEntity{
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    UUID id;
-
     @Column
     int completedCount;
 
@@ -77,10 +73,9 @@ public class CountableUserGoalProgressEntity extends UserGoalProgressEntity{
     @Override
     public String toString() {
         return "CountableUserGoalProgressEntity{" +
-                "id=" + id +
+                " super=" + super.toString() +
                 ", completedCount=" + completedCount +
                 ", contentIds=" + contentIds +
-                ", super=" + super.toString() +
                 '}';
     }
 }

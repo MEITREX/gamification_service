@@ -17,10 +17,6 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Slf4j
 public class CompletedQuizzesGoalEntity extends CountableGoalEntity{
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    UUID id;
-
     @Column
     float minimumScore;
 
@@ -58,7 +54,7 @@ public class CompletedQuizzesGoalEntity extends CountableGoalEntity{
     @Override
     public String toString() {
         return "CompletedQuizzesGoalEntity{" +
-                "id=" + id +
+                "super=" + super.toString() +
                 ", minimumScore=" + minimumScore +
                 ", trackingStartTime=" + trackingStartTime +
                 ", trackingEndTime=" + trackingEndTime +

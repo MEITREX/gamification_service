@@ -19,10 +19,6 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Slf4j
 public abstract class CountableGoalEntity extends GoalEntity{
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    UUID id;
-
     @Column
     int requiredCount;
 
@@ -38,9 +34,8 @@ public abstract class CountableGoalEntity extends GoalEntity{
     @Override
     public String toString() {
         return "CountableGoalEntity{" +
-                "id=" + id +
+                "super=" + super.toString() +
                 ", requiredCount=" + requiredCount +
-                ", super=" + super.toString() +
                 '}';
     }
 }
