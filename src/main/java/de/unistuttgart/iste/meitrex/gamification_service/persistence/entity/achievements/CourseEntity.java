@@ -2,10 +2,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.ach
 
 import de.unistuttgart.iste.meitrex.generated.dto.Chapter;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.List;
@@ -15,6 +12,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CourseEntity {
     @Id

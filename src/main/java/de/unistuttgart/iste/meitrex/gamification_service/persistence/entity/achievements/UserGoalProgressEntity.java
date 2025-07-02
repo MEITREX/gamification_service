@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity(name = "UserGoalProgress")
@@ -46,5 +47,23 @@ public class UserGoalProgressEntity {
                 ", user=" + user.getId() +
                 ", goal=" + goal.getId() +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        UserGoalProgressEntity that = (UserGoalProgressEntity) o;
+        if (user == null && that.user == null) {
+            return completed == that.completed && Objects.equals(id, that.id) && Objects.equals(goal, that.goal);
+        }
+        if (user == null || that.user == null) {
+            return false;
+        }
+        return completed == that.completed && Objects.equals(id, that.id) && Objects.equals(user.getId(), that.user.getId()) && Objects.equals(goal, that.goal);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, completed, user, goal);
     }
 }

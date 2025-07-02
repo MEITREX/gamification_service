@@ -2,18 +2,23 @@ type Achievement {
     id: UUID
     name : String!
     imageUrl: String!
-    goal: Goal!
+    description: String!
     courseId: UUID!
+    userId: UUID
+    trackingStartTime: DateTime!
+    trackingEndTime: DateTime
 }
 
 interface Goal {
     id: UUID!
+    achievement: Achievement!
     trackingStartTime: DateTime!
     trackingEndTime: DateTime
 }
 
 type OrCombinatorGoal implements Goal{
     id: UUID!
+    achievement: Achievement!
     trackingStartTime: DateTime!
     trackingEndTime: DateTime
     goal1: Goal
@@ -22,6 +27,7 @@ type OrCombinatorGoal implements Goal{
 
 type AndCombinatorGoal implements Goal{
     id: UUID!
+    achievement: Achievement!
     trackingStartTime: DateTime!
     trackingEndTime: DateTime
     goal1: Goal
@@ -30,6 +36,7 @@ type AndCombinatorGoal implements Goal{
 
 type CompleteSpecificChapterGoal implements Goal{
     id: UUID!
+    achievement: Achievement!
     trackingStartTime: DateTime!
     trackingEndTime: DateTime
     chapterId: UUID!
@@ -37,6 +44,7 @@ type CompleteSpecificChapterGoal implements Goal{
 
 interface CountableGoal implements Goal{
     id: UUID!
+    achievement: Achievement!
     trackingStartTime: DateTime!
     trackingEndTime: DateTime
     requiredCount: Int!
@@ -44,6 +52,7 @@ interface CountableGoal implements Goal{
 
 type CompleteQuizzesGoal implements CountableGoal & Goal{
     id: UUID!
+    achievement: Achievement!
     trackingStartTime: DateTime!
     trackingEndTime: DateTime
     requiredCount: Int!
@@ -52,6 +61,7 @@ type CompleteQuizzesGoal implements CountableGoal & Goal{
 
 type AnswerForumQuestionGoal implements CountableGoal & Goal {
     id: UUID!
+    achievement: Achievement!
     trackingStartTime: DateTime!
     trackingEndTime: DateTime
     requiredCount: Int!
@@ -59,6 +69,7 @@ type AnswerForumQuestionGoal implements CountableGoal & Goal {
 
 type LoginStreakGoal implements CountableGoal & Goal {
     id: UUID!
+    achievement: Achievement!
     trackingStartTime: DateTime!
     trackingEndTime: DateTime
     requiredCount: Int!

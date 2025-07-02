@@ -1,9 +1,9 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements;
 
-import com.google.type.DateTime;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.OffsetDateTime;
@@ -16,10 +16,10 @@ import java.util.UUID;
 
 @Entity(name = "CountableUserGoalProgress")
 @Data
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Slf4j
 public class CountableUserGoalProgressEntity extends UserGoalProgressEntity{
     @Column
     int completedCount;
@@ -33,6 +33,7 @@ public class CountableUserGoalProgressEntity extends UserGoalProgressEntity{
     public CountableUserGoalProgressEntity(UserEntity user, @NotNull CountableGoalEntity goal) {
         super(user, goal);
         contentIds = new ArrayList<>();
+        loginTimes = new ArrayList<>();
         completedCount = 0;
     }
 
@@ -43,7 +44,10 @@ public class CountableUserGoalProgressEntity extends UserGoalProgressEntity{
 
     public void updateProgress(OffsetDateTime loginTime) {
         if (super.getGoal() instanceof LoginStreakGoalEntity) {
-            if (getDifferenceInDays(loginTimes.getLast(), loginTime) > 1) {
+            if (loginTimes.isEmpty()) {
+                completedCount = 1;
+                loginTimes.add(loginTime);
+            }else if (getDifferenceInDays(loginTimes.getLast(), loginTime) > 1) {
                 completedCount = 0;
             } else if (getDifferenceInDays(loginTimes.getLast(), loginTime) == 1) {
                 completedCount++;
@@ -77,5 +81,18 @@ public class CountableUserGoalProgressEntity extends UserGoalProgressEntity{
                 ", completedCount=" + completedCount +
                 ", contentIds=" + contentIds +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        CountableUserGoalProgressEntity that = (CountableUserGoalProgressEntity) o;
+        return completedCount == that.completedCount && Objects.equals(contentIds, that.contentIds) && Objects.equals(loginTimes, that.loginTimes);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), completedCount, contentIds, loginTimes);
     }
 }
