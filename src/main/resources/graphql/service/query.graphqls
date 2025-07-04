@@ -1,6 +1,5 @@
 type Query {
     getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
     PlayerHexadScoreExists(userId: UUID!): Boolean!
-    achievementByAchievement(achievements: inputAchievement!): Achievement!
-    progressByCourseId(courseId: UUID!): [UserGoalProgress!]!
+    progressByCourseId(courseId: UUID!): [Achievement!]!
 }

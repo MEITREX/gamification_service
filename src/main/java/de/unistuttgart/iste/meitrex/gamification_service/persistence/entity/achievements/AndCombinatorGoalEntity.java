@@ -25,7 +25,7 @@ public class AndCombinatorGoalEntity extends GoalEntity{
     GoalEntity goal2;
 
     public String generateDescription() {
-        return "";
+        return goal1.generateDescription() + " " + goal2.generateDescription();
     }
 
     public void updateProgress(UserGoalProgressEntity userGoalProgress) {

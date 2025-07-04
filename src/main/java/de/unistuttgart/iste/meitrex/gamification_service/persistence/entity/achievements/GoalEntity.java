@@ -32,6 +32,8 @@ public abstract class GoalEntity {
 
     public abstract UserGoalProgressEntity generateUserGoalProgress(UserEntity user, GoalEntity goalEntity);
 
+    public abstract String generateDescription();
+
     @Override
     public String toString() {
         return "GoalEntity{" +

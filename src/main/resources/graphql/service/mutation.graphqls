@@ -1,5 +1,4 @@
 type Mutation {
     evaluatePlayerHexadScore(userId: UUID!, input: PlayerAnswerInput!): PlayerHexadScore!
-    createAchievement(input: inputAchievement): Achievement
-    loginPlayer(courseId: UUID): UUID
+    loginUser(courseId: UUID): UUID
 }

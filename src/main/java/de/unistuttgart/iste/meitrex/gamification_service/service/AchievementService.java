@@ -9,9 +9,8 @@ import de.unistuttgart.iste.meitrex.course_service.client.CourseServiceClient;
 import de.unistuttgart.iste.meitrex.gamification_service.achievements.Achievements;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.*;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.*;
-import de.unistuttgart.iste.meitrex.generated.dto.Chapter;
+import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
 import de.unistuttgart.iste.meitrex.generated.dto.Content;
-import de.unistuttgart.iste.meitrex.generated.dto.UserGoalProgress;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +19,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -119,7 +119,7 @@ public class AchievementService {
 
     private void forumInfoProgress(UserEntity user) {}
 
-    public List<UserGoalProgress> getAchievementsForUser(UUID userId, UUID courseId) {
+    public List<Achievement> getAchievementsForUser(UUID userId, UUID courseId) {
         CourseEntity courseEntity = courseRepository.findById(courseId).orElseThrow(()
                 -> new EntityNotFoundException("Course with the id " + courseId + " not found"));
         UserEntity user = userRepository.findById(userId).orElseThrow(()
@@ -127,8 +127,29 @@ public class AchievementService {
         List<UserGoalProgressEntity> userGoalProgressEntities = courseEntity.getAchievements().stream()
                 .map(achievement -> userGoalProgressRepository.findAllByUserAndGoal(user, achievement.getGoal()))
                 .flatMap(List::stream).toList();
-        return userGoalProgressEntities.stream().map(userGoalProgressEntity
-                -> modelMapper.map(userGoalProgressEntity, UserGoalProgress.class)).toList();
+        List<Achievement> userAchievements = new ArrayList<>();
+        userGoalProgressEntities.forEach(userGoalProgressEntity -> {
+            Achievement achievement = new Achievement();
+            achievement.setId(userGoalProgressEntity.getGoal().getAchievement().getId());
+            achievement.setName(userGoalProgressEntity.getGoal().getAchievement().getName());
+            achievement.setDescription(userGoalProgressEntity.getGoal().generateDescription());
+            achievement.setCourseId(courseId);
+            achievement.setImageUrl(userGoalProgressEntity.getGoal().getAchievement().getImageUrl());
+            achievement.setTrackingEndTime(userGoalProgressEntity.getGoal().getTrackingEndTime());
+            achievement.setTrackingStartTime(userGoalProgressEntity.getGoal().getTrackingStartTime());
+            achievement.setCompleted(userGoalProgressEntity.isCompleted());
+            if (userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity) {
+                if (countableUserGoalProgressEntity.getGoal() instanceof CountableGoalEntity countableGoalEntity) {
+                    achievement.setRequiredCount(countableGoalEntity.getRequiredCount());
+                    achievement.setCompletedCount(countableUserGoalProgressEntity.getCompletedCount());
+                }
+            }
+            userAchievements.add(achievement);
+        });
+
+
+        return userAchievements;
+
     }
 
     public UUID loginUser(UUID userId, UUID courseId) {
