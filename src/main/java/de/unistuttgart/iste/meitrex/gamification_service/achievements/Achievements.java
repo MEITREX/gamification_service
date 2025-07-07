@@ -1,14 +1,9 @@
 package de.unistuttgart.iste.meitrex.gamification_service.achievements;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.*;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.AchievementRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.GoalRepository;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.*;
 import de.unistuttgart.iste.meitrex.generated.dto.Chapter;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.ArrayList;
 import java.util.Comparator;

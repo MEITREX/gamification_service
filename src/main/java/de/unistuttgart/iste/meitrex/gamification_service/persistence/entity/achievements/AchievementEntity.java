@@ -1,9 +1,12 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements;
 
+import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.GoalEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity(name = "Achievement")
@@ -12,7 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AchievementEntity {
+public class AchievementEntity implements IWithId<UUID> {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
@@ -34,6 +37,8 @@ public class AchievementEntity {
         goal.setAchievement(this);
     }
 
+
+
     @Override
     public String toString() {
         if (course == null) {
@@ -52,5 +57,27 @@ public class AchievementEntity {
                 ", goal=" + goal +
                 ", course=" + course.getId() +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AchievementEntity that = (AchievementEntity) o;
+        if (course == null && that.course == null) {
+            return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(imageUrl, that.imageUrl) && Objects.equals(goal, that.goal);
+        }
+        if (course == null || that.course == null) {
+            return false;
+        }
+        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(imageUrl, that.imageUrl) && Objects.equals(goal, that.goal) && Objects.equals(course.getId(), that.course.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        if (course == null) {
+            return Objects.hash(id, name, imageUrl, goal, null);
+        }
+        return Objects.hash(id, name, imageUrl, goal, course.getId());
     }
 }

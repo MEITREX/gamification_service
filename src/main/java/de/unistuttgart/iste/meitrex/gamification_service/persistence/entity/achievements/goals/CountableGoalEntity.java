@@ -1,5 +1,8 @@
-package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements;
+package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals;
 
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.CountableUserGoalProgressEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.UserEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -18,8 +21,6 @@ public abstract class CountableGoalEntity extends GoalEntity{
     int requiredCount;
 
     public abstract String generateDescription();
-
-    public abstract void updateProgress(UserGoalProgressEntity userGoalProgress);
 
     @Override
     public UserGoalProgressEntity generateUserGoalProgress(UserEntity user) {

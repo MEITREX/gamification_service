@@ -1,5 +1,10 @@
-package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements;
+package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress;
 
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.UserEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.CompletedQuizzesGoalEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.CountableGoalEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.GoalEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.LoginStreakGoalEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -37,11 +42,6 @@ public class CountableUserGoalProgressEntity extends UserGoalProgressEntity{
         completedCount = 0;
     }
 
-    public void updateProgress() {
-        CountableGoalEntity goal = (CountableGoalEntity) super.getGoal();
-        goal.updateProgress(this);
-    }
-
     public void updateProgress(OffsetDateTime loginTime) {
         if (super.getGoal() instanceof LoginStreakGoalEntity) {
             if (loginTimes.isEmpty()) {
@@ -63,16 +63,6 @@ public class CountableUserGoalProgressEntity extends UserGoalProgressEntity{
         return ChronoUnit.DAYS.between(firstTime, secondTime);
     }
 
-    public void updateProgress(float score, UUID contentId) {
-        if(contentIds == null) {
-            contentIds = new ArrayList<>();
-        }
-        if (super.getGoal() instanceof CompletedQuizzesGoalEntity completedQuizzesGoalEntity) {
-            completedQuizzesGoalEntity.updateProgress(this, score, contentId);
-        } else {
-            super.getGoal().updateProgress(this);
-        }
-    }
 
     @Override
     public String toString() {

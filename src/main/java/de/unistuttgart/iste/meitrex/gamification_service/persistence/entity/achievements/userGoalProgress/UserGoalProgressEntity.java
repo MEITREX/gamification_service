@@ -1,5 +1,9 @@
-package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements;
+package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress;
 
+import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.UserEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.GoalProgressEvent;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.GoalEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -15,7 +19,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserGoalProgressEntity {
+public class UserGoalProgressEntity implements IWithId<UUID> {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
@@ -35,8 +39,8 @@ public class UserGoalProgressEntity {
         completed = false;
     }
 
-    public void updateProgress() {
-
+    public void updateProgress(GoalProgressEvent progressEvent) {
+        goal.updateProgress(progressEvent, this);
     }
 
     @Override

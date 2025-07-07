@@ -1,5 +1,7 @@
-package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements;
+package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress;
 
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.UserEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.GoalEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;

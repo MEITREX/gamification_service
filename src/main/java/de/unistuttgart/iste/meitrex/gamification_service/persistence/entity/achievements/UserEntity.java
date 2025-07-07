@@ -1,5 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements;
 
+import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -15,7 +17,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserEntity {
+public class UserEntity implements IWithId<UUID> {
     @Id
     UUID id;
 

@@ -1,12 +1,15 @@
-package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements;
+package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals;
 
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.AchievementRepository;
+import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.AchievementEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.UserEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.GoalProgressEvent;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -15,7 +18,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public abstract class GoalEntity {
+public abstract class GoalEntity implements IWithId<UUID> {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
@@ -29,7 +32,7 @@ public abstract class GoalEntity {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     AchievementEntity achievement;
 
-    public abstract void updateProgress(UserGoalProgressEntity userGoalProgress);
+    public abstract void updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgress);
 
     public abstract UserGoalProgressEntity generateUserGoalProgress(UserEntity user);
 
@@ -58,7 +61,9 @@ public abstract class GoalEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GoalEntity that = (GoalEntity) o;
-        if (achievement == null && that.achievement == null) return true;
+        if (achievement == null && that.achievement == null) {
+            return Objects.equals(id, that.id) && Objects.equals(trackingStartTime, that.trackingStartTime) && Objects.equals(trackingEndTime, that.trackingEndTime);
+        }
         if ((achievement == null) || (that.achievement == null)) return false;
         return Objects.equals(id, that.id) && Objects.equals(trackingStartTime, that.trackingStartTime) && Objects.equals(trackingEndTime, that.trackingEndTime) && Objects.equals(achievement.getId(), that.achievement.getId());
     }
