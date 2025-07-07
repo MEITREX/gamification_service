@@ -5,7 +5,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity(name = "CompletedQuizzesGoal")
@@ -20,17 +19,8 @@ public class CompletedQuizzesGoalEntity extends CountableGoalEntity{
     @Column
     float minimumScore;
 
-    @Column
-    OffsetDateTime trackingStartTime;
-
-    @Column
-    OffsetDateTime trackingEndTime;
-
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    AchievementEntity achievement;
-
     public String generateDescription(){
-        return "";
+        return "Complete " + super.getRequiredCount() + " quizzes.";
     }
 
     public void updateProgress(UserGoalProgressEntity userGoalProgressEntity){
@@ -56,9 +46,6 @@ public class CompletedQuizzesGoalEntity extends CountableGoalEntity{
         return "CompletedQuizzesGoalEntity{" +
                 "super=" + super.toString() +
                 ", minimumScore=" + minimumScore +
-                ", trackingStartTime=" + trackingStartTime +
-                ", trackingEndTime=" + trackingEndTime +
-                ", achievement=" + achievement.getId() +
                 '}';
     }
 }

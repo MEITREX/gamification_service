@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.config;
 
 import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +10,7 @@ import org.springframework.graphql.client.HttpGraphQlClient;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
+@Slf4j
 public class ContentServiceConfiguration {
 
     @Value("${content_service.url}")
@@ -17,6 +19,7 @@ public class ContentServiceConfiguration {
     @Bean
     public ContentServiceClient contentServiceClient() {
         final WebClient webClient = WebClient.builder().baseUrl(contentServiceUrl).build();
+        log.info("{};{}", webClient, contentServiceUrl);
 
         final GraphQlClient graphQlClient = HttpGraphQlClient.builder(webClient).build();
         return new ContentServiceClient(graphQlClient);

@@ -20,8 +20,11 @@ public class CompleteSpecificChapterGoalEntity extends GoalEntity{
     @Column
     UUID chapterId;
 
+    @Column
+    String chapterName;
+
     public String generateDescription() {
-        return "";
+        return "Complete the chapter " + chapterName + ".";
     }
 
     public void updateProgress(UserGoalProgressEntity userGoalProgress) {
@@ -35,7 +38,7 @@ public class CompleteSpecificChapterGoalEntity extends GoalEntity{
     }
 
     @Override
-    public UserGoalProgressEntity generateUserGoalProgress(UserEntity user, GoalEntity goalEntity) {
-        return new UserGoalProgressEntity(user, goalEntity);
+    public UserGoalProgressEntity generateUserGoalProgress(UserEntity user) {
+        return new UserGoalProgressEntity(user, this);
     }
 }

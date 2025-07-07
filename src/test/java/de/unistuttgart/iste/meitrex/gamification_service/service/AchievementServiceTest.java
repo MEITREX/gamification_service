@@ -45,7 +45,7 @@ public class AchievementServiceTest {
     void setUp() {
         openMocks(this);
         achievementService = new AchievementService(achievementRepository, contentServiceClient, courseServiceClient,
-                courseRepository, completedQuizzesGoalRepository, userRepository, userGoalProgressRepository,
+                courseRepository, completedQuizzesGoalRepository ,userRepository, userGoalProgressRepository,
                 modelMapper, goalRepository);
     }
 
@@ -110,18 +110,9 @@ public class AchievementServiceTest {
         verify(courseRepository).findById(courseId);
         List<AchievementEntity> achievementEntities = courseEntity.getAchievements();
         List<UserGoalProgressEntity> userGoalProgress = achievementEntities.stream().map(achievement ->
-                achievement.getGoal().generateUserGoalProgress(userEntity, achievement.getGoal())).toList();
+                achievement.getGoal().generateUserGoalProgress(userEntity)).toList();
         userEntity.setUserGoalProgressEntities(userGoalProgress);
-        List<CountableUserGoalProgressEntity> userGoalProgressEntities = userEntity.getUserGoalProgressEntities().stream()
-                .filter(userGoalProgressEntity -> userGoalProgressEntity.getGoal() instanceof CompletedQuizzesGoalEntity)
-                .filter(userGoalProgressEntity -> userGoalProgressEntity instanceof CountableUserGoalProgressEntity)
-                .map(userGoalProgressEntity -> (CountableUserGoalProgressEntity) userGoalProgressEntity).toList();
-        userGoalProgressEntities.forEach(userGoalProgressEntity ->{
-            CompletedQuizzesGoalEntity goalEntity = (CompletedQuizzesGoalEntity) userGoalProgressEntity.getGoal();
-            goalEntity.updateProgress(userGoalProgressEntity, (float) contentProgressedEvent.getCorrectness(),
-                    contentProgressedEvent.getContentId());
-        });
-        verify(userRepository, times(2)).save(userEntity);
+        verify(userRepository).saveAndFlush(userEntity);
     }
 
     @Test
@@ -155,7 +146,7 @@ public class AchievementServiceTest {
                 .setMetadata(contentMetadata).build();
         List<AchievementEntity> achievementEntities = courseEntity.getAchievements();
         List<UserGoalProgressEntity> userGoalProgress = achievementEntities.stream().map(achievement ->
-                achievement.getGoal().generateUserGoalProgress(userEntity, achievement.getGoal())).toList();
+                achievement.getGoal().generateUserGoalProgress(userEntity)).toList();
         userEntity.setUserGoalProgressEntities(userGoalProgress);
         when(contentServiceClient.queryContentsByIds(userId, List.of(contentId))).thenReturn(List.of(content));
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(courseEntity));
@@ -163,16 +154,7 @@ public class AchievementServiceTest {
         achievementService.progessUserProgress(contentProgressedEvent);
         verify(userRepository).findById(userId);
         verify(courseRepository).findById(courseId);
-        List<CountableUserGoalProgressEntity> userGoalProgressEntities = userEntity.getUserGoalProgressEntities().stream()
-                .filter(userGoalProgressEntity -> userGoalProgressEntity.getGoal() instanceof CompletedQuizzesGoalEntity)
-                .filter(userGoalProgressEntity -> userGoalProgressEntity instanceof CountableUserGoalProgressEntity)
-                .map(userGoalProgressEntity -> (CountableUserGoalProgressEntity) userGoalProgressEntity).toList();
-        userGoalProgressEntities.forEach(userGoalProgressEntity ->{
-            CompletedQuizzesGoalEntity goalEntity = (CompletedQuizzesGoalEntity) userGoalProgressEntity.getGoal();
-            goalEntity.updateProgress(userGoalProgressEntity, (float) contentProgressedEvent.getCorrectness(),
-                    contentProgressedEvent.getContentId());
-        });
-        verify(userRepository).save(userEntity);
+        verify(userRepository).saveAndFlush(userEntity);
     }
 
     @Test
@@ -188,6 +170,12 @@ public class AchievementServiceTest {
                 .build();
         UserEntity userEntity = new UserEntity();
         userEntity.setId(userId);
+        Chapter chapter = new Chapter();
+        chapter.setId(UUID.randomUUID());
+        chapter.setTitle("Chapter Title");
+        chapter.setDescription("Chapter Description");
+        List<Chapter> chapters = new ArrayList<>(List.of(chapter));
+        when(courseServiceClient.queryChapterByCourseId(courseId)).thenReturn(chapters);
         achievementService.forumProgress(forumActivityEvent);
         verify(userRepository).findById(userId);
         verify(courseRepository).findById(courseId);
@@ -222,17 +210,9 @@ public class AchievementServiceTest {
         verify(courseRepository).findById(courseId);
         List<AchievementEntity> achievementEntities = courseEntity.getAchievements();
         List<UserGoalProgressEntity> userGoalProgress = achievementEntities.stream().map(achievement ->
-                achievement.getGoal().generateUserGoalProgress(userEntity, achievement.getGoal())).toList();
+                achievement.getGoal().generateUserGoalProgress(userEntity)).toList();
         userEntity.setUserGoalProgressEntities(userGoalProgress);
-        List<CountableUserGoalProgressEntity> userGoalProgressEntities = userEntity.getUserGoalProgressEntities().stream()
-                .filter(userGoalProgressEntity -> userGoalProgressEntity.getGoal() instanceof AnswerForumQuestionGoalEntity)
-                .map(userGoalProgressEntity -> (CountableUserGoalProgressEntity) userGoalProgressEntity).toList();
-        userGoalProgressEntities.forEach(userGoalProgressEntity -> {
-            AnswerForumQuestionGoalEntity goalEntity = (AnswerForumQuestionGoalEntity) userGoalProgressEntity.getGoal();
-            goalEntity.updateProgress(userGoalProgressEntity);
-            userGoalProgressRepository.save(userGoalProgressEntity);
-        });
-        verify(userRepository, times(2)).save(userEntity);
+        verify(userRepository, times(1)).saveAndFlush(userEntity);
     }
 
     @Test
@@ -260,7 +240,7 @@ public class AchievementServiceTest {
         userEntity.setId(userId);
         List<AchievementEntity> achievementEntities = courseEntity.getAchievements();
         List<UserGoalProgressEntity> userGoalProgress = achievementEntities.stream().map(achievement ->
-                achievement.getGoal().generateUserGoalProgress(userEntity, achievement.getGoal())).toList();
+                achievement.getGoal().generateUserGoalProgress(userEntity)).toList();
         userEntity.setUserGoalProgressEntities(userGoalProgress);
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(courseEntity));
         when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
@@ -273,9 +253,9 @@ public class AchievementServiceTest {
         userGoalProgressEntities.forEach(userGoalProgressEntity -> {
             AnswerForumQuestionGoalEntity goalEntity = (AnswerForumQuestionGoalEntity) userGoalProgressEntity.getGoal();
             goalEntity.updateProgress(userGoalProgressEntity);
-            userGoalProgressRepository.save(userGoalProgressEntity);
+            userGoalProgressRepository.saveAndFlush(userGoalProgressEntity);
         });
-        verify(userRepository).save(userEntity);
+        verify(userRepository).saveAndFlush(userEntity);
     }
 
     @Test
@@ -331,7 +311,7 @@ public class AchievementServiceTest {
         userEntity.setId(userId);
         List<AchievementEntity> achievementEntities = courseEntity.getAchievements();
         List<UserGoalProgressEntity> userGoalProgress = achievementEntities.stream().map(achievement ->
-                achievement.getGoal().generateUserGoalProgress(userEntity, achievement.getGoal())).toList();
+                achievement.getGoal().generateUserGoalProgress(userEntity)).toList();
         userEntity.setUserGoalProgressEntities(userGoalProgress);
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(courseEntity));
         when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));

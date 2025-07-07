@@ -30,7 +30,7 @@ public class CountableUserGoalProgressEntity extends UserGoalProgressEntity{
     @ElementCollection
     List<OffsetDateTime> loginTimes;
 
-    public CountableUserGoalProgressEntity(UserEntity user, @NotNull CountableGoalEntity goal) {
+    public CountableUserGoalProgressEntity(UserEntity user, @NotNull GoalEntity goal) {
         super(user, goal);
         contentIds = new ArrayList<>();
         loginTimes = new ArrayList<>();

@@ -1,9 +1,17 @@
 package de.unistuttgart.iste.meitrex.gamification_service.achievements;
 
-import de.unistuttgart.iste.meitrex.common.event.ForumActivityEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.*;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.AchievementRepository;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.GoalRepository;
+import de.unistuttgart.iste.meitrex.generated.dto.Chapter;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class Achievements {
@@ -13,9 +21,13 @@ public class Achievements {
         AchievementEntity quizMaster = generateQuizMaster(course);
         AchievementEntity forumAnswer = generateForumAnswerer(course);
         AchievementEntity loginAchievement = generateLoginAchievement(course);
+        AchievementEntity quizzer = generateQuizzerAchievement(course);
+        AchievementEntity activeUser = generateActiveAchievement(course);
         achievements.add(quizMaster);
         achievements.add(forumAnswer);
         achievements.add(loginAchievement);
+        achievements.add(quizzer);
+        achievements.add(activeUser);
         course.setAchievements(achievements);
     }
 
@@ -25,7 +37,6 @@ public class Achievements {
         CompletedQuizzesGoalEntity quizMasterGoal = new CompletedQuizzesGoalEntity();
         quizMasterGoal.setMinimumScore(1.0F);
         quizMasterGoal.setRequiredCount(1);
-        quizMasterGoal.setAchievement(quizMaster);
         quizMaster.setGoal(quizMasterGoal);
         quizMaster.setCourse(course);
         return quizMaster;
@@ -36,7 +47,6 @@ public class Achievements {
         forumAnswerer.setName("Forum Answer");
         AnswerForumQuestionGoalEntity forumAnswerGoal = new AnswerForumQuestionGoalEntity();
         forumAnswerGoal.setRequiredCount(1);
-        forumAnswerGoal.setAchievement(forumAnswerer);
         forumAnswerer.setGoal(forumAnswerGoal);
         forumAnswerer.setCourse(course);
         return forumAnswerer;
@@ -47,9 +57,44 @@ public class Achievements {
         loginAchievement.setName("Login Achievement");
         LoginStreakGoalEntity loginStreakGoal = new LoginStreakGoalEntity();
         loginStreakGoal.setRequiredCount(2);
-        loginStreakGoal.setAchievement(loginAchievement);
         loginAchievement.setGoal(loginStreakGoal);
         loginAchievement.setCourse(course);
         return loginAchievement;
+    }
+
+    public AchievementEntity generateQuizzerAchievement(CourseEntity course) {
+        AchievementEntity quizzer = new AchievementEntity();
+        quizzer.setName("Quizzer");
+        CompletedQuizzesGoalEntity quizzerGoal1 = new CompletedQuizzesGoalEntity();
+        quizzerGoal1.setMinimumScore(1.0F);
+        quizzerGoal1.setRequiredCount(2);
+        CompletedQuizzesGoalEntity quizzerGoal2 = new CompletedQuizzesGoalEntity();
+        quizzerGoal1.setMinimumScore(0.5F);
+        quizzerGoal1.setRequiredCount(4);
+        OrCombinatorGoalEntity orCombinatorGoalEntity = new OrCombinatorGoalEntity();
+        orCombinatorGoalEntity.setGoal1(quizzerGoal1);
+        orCombinatorGoalEntity.setGoal2(quizzerGoal2);
+        quizzer.setGoal(orCombinatorGoalEntity);
+        quizzer.setCourse(course);
+        return quizzer;
+    }
+
+    public AchievementEntity generateActiveAchievement(CourseEntity course) {
+        AchievementEntity activeUser = new AchievementEntity();
+        activeUser.setName("Active User");
+        LoginStreakGoalEntity loginStreakGoal = new LoginStreakGoalEntity();
+        loginStreakGoal.setRequiredCount(7);
+        CompleteSpecificChapterGoalEntity completeSpecificChapterGoalEntity = new CompleteSpecificChapterGoalEntity();
+        Chapter firstChapter = course.getChapters().stream()
+                .min(Comparator.comparingInt(Chapter::getNumber))
+                .orElseThrow(() -> new EntityNotFoundException("Chapter List empty"));
+        completeSpecificChapterGoalEntity.setChapterId(firstChapter.getId());
+        completeSpecificChapterGoalEntity.setChapterName(firstChapter.getTitle());
+        AndCombinatorGoalEntity andCombinatorGoalEntity = new AndCombinatorGoalEntity();
+        andCombinatorGoalEntity.setGoal1(loginStreakGoal);
+        andCombinatorGoalEntity.setGoal2(loginStreakGoal);
+        activeUser.setGoal(andCombinatorGoalEntity);
+        activeUser.setCourse(course);
+        return activeUser;
     }
 }

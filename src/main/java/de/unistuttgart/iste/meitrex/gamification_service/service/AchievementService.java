@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static graphql.scalars.ExtendedScalars.DateTime;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -47,30 +45,51 @@ public class AchievementService {
      *
      * @param contentProgressedEvent the event to log
      */
-    public void progessUserProgress(final ContentProgressedEvent contentProgressedEvent)
-            throws ContentServiceConnectionException {
+    public void progessUserProgress(final ContentProgressedEvent contentProgressedEvent) {
         UUID userId = contentProgressedEvent.getUserId();
-        Content content = contentServiceClient.queryContentsByIds(userId,
-                List.of(contentProgressedEvent.getContentId())).getFirst();
+        Content content;
+        try {
+            content = contentServiceClient.queryContentsByIds(userId,
+                    List.of(contentProgressedEvent.getContentId())).getFirst();
+        } catch (ContentServiceConnectionException e) {
+            throw new RuntimeException(e);
+        }
         UUID courseId = content.getMetadata().getCourseId();
         CourseEntity courseEntity = courseRepository.findById(courseId).orElseGet(() -> createCourse(courseId));
         UserEntity user = userRepository.findById(userId).orElse(generateUser(userId, courseEntity.getAchievements()));
-        switch (content.getMetadata().getType()) {
-            case QUIZ -> quizProgress(contentProgressedEvent, user);
-            case MEDIA -> mediaProgress(contentProgressedEvent, user);
-        }
+        //switch (content.getMetadata().getType()) {
+        //    case QUIZ -> quizProgress(contentProgressedEvent, user);
+        //    case MEDIA -> mediaProgress(contentProgressedEvent, user);
+        //}
     }
 
     private void quizProgress(final ContentProgressedEvent contentProgressedEvent, UserEntity user) {
         log.info("Quiz progress");
-        List<CountableUserGoalProgressEntity> userGoalProgressEntities = user.getUserGoalProgressEntities().stream()
+        UUID contendId = contentProgressedEvent.getContentId();
+        float correctness = (float)contentProgressedEvent.getCorrectness();
+        user.getUserGoalProgressEntities().stream()
                 .filter(userGoalProgressEntity -> userGoalProgressEntity.getGoal() instanceof CompletedQuizzesGoalEntity)
                 .filter(userGoalProgressEntity -> userGoalProgressEntity instanceof CountableUserGoalProgressEntity)
-                .map(userGoalProgressEntity -> (CountableUserGoalProgressEntity) userGoalProgressEntity).toList();
-        userGoalProgressEntities.forEach(userGoalProgressEntity ->{
+                .map(userGoalProgressEntity -> (CountableUserGoalProgressEntity) userGoalProgressEntity)
+                .forEach(userGoalProgressEntity ->{
             CompletedQuizzesGoalEntity goalEntity = (CompletedQuizzesGoalEntity) userGoalProgressEntity.getGoal();
-            goalEntity.updateProgress(userGoalProgressEntity, (float) contentProgressedEvent.getCorrectness(),
-                    contentProgressedEvent.getContentId());
+            goalEntity.updateProgress(userGoalProgressEntity, correctness, contendId);
+        });
+        user.getUserGoalProgressEntities().stream()
+                .filter(userGoalProgressEntity -> userGoalProgressEntity.getGoal() instanceof AndCombinatorGoalEntity)
+                .filter(userGoalProgressEntity -> userGoalProgressEntity instanceof CombineUserGoalProgressEntity)
+                .map(userGoalProgressEntity -> (CombineUserGoalProgressEntity) userGoalProgressEntity)
+                .forEach(userGoalProgressEntity -> {
+                    AndCombinatorGoalEntity goalEntity = (AndCombinatorGoalEntity) userGoalProgressEntity.getGoal();
+                    goalEntity.updateQuizProgress(userGoalProgressEntity, correctness, contendId);
+        });
+        user.getUserGoalProgressEntities().stream()
+                .filter(userGoalProgressEntity -> userGoalProgressEntity.getGoal() instanceof OrCombinatorGoalEntity)
+                .filter(userGoalProgressEntity -> userGoalProgressEntity instanceof CombineUserGoalProgressEntity)
+                .map(userGoalProgressEntity -> (CombineUserGoalProgressEntity) userGoalProgressEntity)
+                .forEach(userGoalProgressEntity -> {
+                    OrCombinatorGoalEntity goalEntity = (OrCombinatorGoalEntity) userGoalProgressEntity.getGoal();
+                    goalEntity.updateQuizProgress(userGoalProgressEntity, correctness, contendId);
         });
         userRepository.save(user);
     }
@@ -81,22 +100,40 @@ public class AchievementService {
 
     public void chapterProgress(final UserProgressUpdatedEvent userProgressUpdatedEvent) {
         UUID courseId = userProgressUpdatedEvent.getCourseId();
-        CourseEntity courseEntity = courseRepository.findById(courseId).orElseGet(() -> createCourse(courseId));
-        UUID userId = userProgressUpdatedEvent.getUserId();
-        UserEntity user = userRepository.findById(userId).orElse(generateUser(userId, courseEntity.getAchievements()));
-        List<UserGoalProgressEntity> userGoalProgressEntities = user.getUserGoalProgressEntities().stream()
-                .filter(userGoalProgressEntity ->
-                        userGoalProgressEntity.getGoal() instanceof CompleteSpecificChapterGoalEntity).toList();
-        userGoalProgressEntities.forEach(userGoalProgressEntity -> {
-            CompleteSpecificChapterGoalEntity goalEntity = (CompleteSpecificChapterGoalEntity) userGoalProgressEntity.getGoal();
-            goalEntity.updateProgress(userGoalProgressEntity);
-        });
-        userRepository.save(user);
+        //CourseEntity courseEntity = courseRepository.findById(courseId).orElseGet(() -> createCourse(courseId));
+        //UUID userId = userProgressUpdatedEvent.getUserId();
+        //UUID chapterId = userProgressUpdatedEvent.getChapterId();
+        //UserEntity user = userRepository.findById(userId).orElse(generateUser(userId, courseEntity.getAchievements()));
+        //user.getUserGoalProgressEntities().stream().filter(userGoalProgressEntity ->
+        //                userGoalProgressEntity.getGoal() instanceof CompleteSpecificChapterGoalEntity)
+        //        .forEach(userGoalProgressEntity -> {
+        //            CompleteSpecificChapterGoalEntity goalEntity =
+        //                    (CompleteSpecificChapterGoalEntity) userGoalProgressEntity.getGoal();
+        //            goalEntity.updateProgress(userGoalProgressEntity, chapterId);
+        //});
+        //user.getUserGoalProgressEntities().stream()
+        //       .filter(userGoalProgressEntity -> userGoalProgressEntity.getGoal() instanceof AndCombinatorGoalEntity)
+        //        .filter(userGoalProgressEntity -> userGoalProgressEntity instanceof CombineUserGoalProgressEntity)
+        //        .map(userGoalProgressEntity -> (CombineUserGoalProgressEntity) userGoalProgressEntity)
+        //        .forEach(userGoalProgressEntity -> {
+        //            AndCombinatorGoalEntity goalEntity = (AndCombinatorGoalEntity) userGoalProgressEntity.getGoal();
+        //            goalEntity.updateSpecificChapter(userGoalProgressEntity, chapterId);
+        //        });
+        //user.getUserGoalProgressEntities().stream()
+        //        .filter(userGoalProgressEntity -> userGoalProgressEntity.getGoal() instanceof OrCombinatorGoalEntity)
+        //        .filter(userGoalProgressEntity -> userGoalProgressEntity instanceof CombineUserGoalProgressEntity)
+        //        .map(userGoalProgressEntity -> (CombineUserGoalProgressEntity) userGoalProgressEntity)
+        //        .forEach(userGoalProgressEntity -> {
+        //            OrCombinatorGoalEntity goalEntity = (OrCombinatorGoalEntity) userGoalProgressEntity.getGoal();
+        //            goalEntity.updateSpecificChapter(userGoalProgressEntity, chapterId);
+        //        });
+        //userRepository.save(user);
     }
 
     public void forumProgress(final ForumActivityEvent forumActivityEvent) {
         UUID courseId = forumActivityEvent.getCourseId();
         CourseEntity courseEntity = courseRepository.findById(courseId).orElseGet(() -> createCourse(courseId));
+        log.info(courseEntity.toString());
         UUID userId = forumActivityEvent.getUserId();
         UserEntity user = userRepository.findById(userId).orElse(generateUser(userId, courseEntity.getAchievements()));
         switch (forumActivityEvent.getActivity()) {
@@ -106,14 +143,30 @@ public class AchievementService {
     }
 
     private void forumAnswerProgress(UserEntity user) {
-        List<CountableUserGoalProgressEntity> userGoalProgressEntities = user.getUserGoalProgressEntities().stream()
+        user.getUserGoalProgressEntities().stream()
                 .filter(userGoalProgressEntity -> userGoalProgressEntity.getGoal() instanceof AnswerForumQuestionGoalEntity)
-                .map(userGoalProgressEntity -> (CountableUserGoalProgressEntity) userGoalProgressEntity).toList();
-        userGoalProgressEntities.forEach(userGoalProgressEntity -> {
-            AnswerForumQuestionGoalEntity goalEntity = (AnswerForumQuestionGoalEntity) userGoalProgressEntity.getGoal();
-            goalEntity.updateProgress(userGoalProgressEntity);
-            userGoalProgressRepository.save(userGoalProgressEntity);
-        });
+                .map(userGoalProgressEntity -> (CountableUserGoalProgressEntity) userGoalProgressEntity)
+                .forEach(userGoalProgressEntity -> {
+                    AnswerForumQuestionGoalEntity goalEntity = (AnswerForumQuestionGoalEntity) userGoalProgressEntity.getGoal();
+                    goalEntity.updateProgress(userGoalProgressEntity);
+                    userGoalProgressRepository.save(userGoalProgressEntity);
+                });
+        user.getUserGoalProgressEntities().stream()
+                .filter(userGoalProgressEntity -> userGoalProgressEntity.getGoal() instanceof AndCombinatorGoalEntity)
+                .filter(userGoalProgressEntity -> userGoalProgressEntity instanceof CombineUserGoalProgressEntity)
+                .map(userGoalProgressEntity -> (CombineUserGoalProgressEntity) userGoalProgressEntity)
+                .forEach(userGoalProgressEntity -> {
+                    AndCombinatorGoalEntity goalEntity = (AndCombinatorGoalEntity) userGoalProgressEntity.getGoal();
+                    goalEntity.updateForumProgress(userGoalProgressEntity);
+                });
+        user.getUserGoalProgressEntities().stream()
+                .filter(userGoalProgressEntity -> userGoalProgressEntity.getGoal() instanceof OrCombinatorGoalEntity)
+                .filter(userGoalProgressEntity -> userGoalProgressEntity instanceof CombineUserGoalProgressEntity)
+                .map(userGoalProgressEntity -> (CombineUserGoalProgressEntity) userGoalProgressEntity)
+                .forEach(userGoalProgressEntity -> {
+                    OrCombinatorGoalEntity goalEntity = (OrCombinatorGoalEntity) userGoalProgressEntity.getGoal();
+                    goalEntity.updateForumProgress(userGoalProgressEntity);
+                });
         userRepository.save(user);
     }
 
@@ -163,6 +216,22 @@ public class AchievementService {
                     LoginStreakGoalEntity goalEntity = (LoginStreakGoalEntity) userGoalProgressEntity.getGoal();
                     goalEntity.updateProgress(userGoalProgressEntity, OffsetDateTime.now());
                 });
+        user.getUserGoalProgressEntities().stream()
+                .filter(userGoalProgressEntity -> userGoalProgressEntity.getGoal() instanceof AndCombinatorGoalEntity)
+                .filter(userGoalProgressEntity -> userGoalProgressEntity instanceof CombineUserGoalProgressEntity)
+                .map(userGoalProgressEntity -> (CombineUserGoalProgressEntity) userGoalProgressEntity)
+                .forEach(userGoalProgressEntity -> {
+                    AndCombinatorGoalEntity goalEntity = (AndCombinatorGoalEntity) userGoalProgressEntity.getGoal();
+                    goalEntity.updateLoginStreak(userGoalProgressEntity, OffsetDateTime.now());
+                });
+        user.getUserGoalProgressEntities().stream()
+                .filter(userGoalProgressEntity -> userGoalProgressEntity.getGoal() instanceof OrCombinatorGoalEntity)
+                .filter(userGoalProgressEntity -> userGoalProgressEntity instanceof CombineUserGoalProgressEntity)
+                .map(userGoalProgressEntity -> (CombineUserGoalProgressEntity) userGoalProgressEntity)
+                .forEach(userGoalProgressEntity -> {
+                    OrCombinatorGoalEntity goalEntity = (OrCombinatorGoalEntity) userGoalProgressEntity.getGoal();
+                    goalEntity.updateLoginStreak(userGoalProgressEntity, OffsetDateTime.now());
+                });
         userRepository.save(user);
         return userId;
     }
@@ -172,7 +241,7 @@ public class AchievementService {
         courseEntity.setId(courseId);
         courseEntity.setChapters(courseServiceClient.queryChapterByCourseId(courseId));
         achievements.generateAchievements(courseEntity);
-        courseRepository.save(courseEntity);
+        courseRepository.saveAndFlush(courseEntity);
         log.info("Created course with id {}", courseId);
         return courseEntity;
     }
@@ -181,9 +250,9 @@ public class AchievementService {
         UserEntity userEntity = new UserEntity();
         userEntity.setId(userId);
         List<UserGoalProgressEntity> userGoalProgress = achievementEntities.stream().map(achievement ->
-                achievement.getGoal().generateUserGoalProgress(userEntity, achievement.getGoal())).toList();
+                achievement.getGoal().generateUserGoalProgress(userEntity)).toList();
         userEntity.setUserGoalProgressEntities(userGoalProgress);
-        userRepository.save(userEntity);
+        userRepository.saveAndFlush(userEntity);
         log.info("Created user with id {}", userId);
         return userEntity;
     }

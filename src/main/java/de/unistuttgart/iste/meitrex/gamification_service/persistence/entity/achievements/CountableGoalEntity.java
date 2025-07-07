@@ -5,11 +5,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
 
 @Entity(name = "CountableGoal")
 @Data
@@ -27,8 +22,8 @@ public abstract class CountableGoalEntity extends GoalEntity{
     public abstract void updateProgress(UserGoalProgressEntity userGoalProgress);
 
     @Override
-    public UserGoalProgressEntity generateUserGoalProgress(UserEntity user, GoalEntity goalEntity) {
-        return new CountableUserGoalProgressEntity(user, (CountableGoalEntity) goalEntity);
+    public UserGoalProgressEntity generateUserGoalProgress(UserEntity user) {
+        return new CountableUserGoalProgressEntity(user, this);
     }
 
     @Override

@@ -33,4 +33,24 @@ public class AchievementEntity {
         this.goal = goal;
         goal.setAchievement(this);
     }
+
+    @Override
+    public String toString() {
+        if (course == null) {
+            return "AchievementEntity{" +
+                    "id=" + id +
+                    ", name='" + name + '\'' +
+                    ", imageUrl='" + imageUrl + '\'' +
+                    ", goal=" + goal +
+                    ", course=null" +
+                    '}';
+        }
+        return "AchievementEntity{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", imageUrl='" + imageUrl + '\'' +
+                ", goal=" + goal +
+                ", course=" + course.getId() +
+                '}';
+    }
 }

@@ -28,12 +28,8 @@ public class SubscriptionController {
     @PostMapping(path = "/content-progressed-pubsub")
     public Mono<Void> logUserProgress(@RequestBody final CloudEvent<ContentProgressedEvent> cloudEvent) {
         return Mono.fromRunnable(() -> {
-            try {
-                log.info("Received content-progressed event: {}", cloudEvent.getData());
-                achievementService.progessUserProgress(cloudEvent.getData());
-            } catch (final Exception e) {
-                log.error("Error while processing logUserProgress event. {}", e.getMessage());
-            }
+            log.info("Received content-progressed event: {}", cloudEvent.getData());
+            achievementService.progessUserProgress(cloudEvent.getData());
         })
         .subscribeOn(Schedulers.boundedElastic()).then();
     }
@@ -46,14 +42,8 @@ public class SubscriptionController {
     @PostMapping(path = "/user-progress-pubsub")
     public Mono<Void> onUserProgress(@RequestBody final CloudEvent<UserProgressUpdatedEvent> cloudEvent) {
         return Mono.fromRunnable(() -> {
-            try {
-                log.info("Received user-progress event: {}", cloudEvent.getData());
-                achievementService.chapterProgress(cloudEvent.getData());
-            } catch (Exception e) {
-                // we need to catch all exceptions because otherwise if some invalid data is in the message queue
-                // it will never get processed and instead the service will just crash forever
-                log.error("Error while processing user progress event", e);
-            }
+            log.info("Received user-progress event: {}", cloudEvent.getData());
+            achievementService.chapterProgress(cloudEvent.getData());
         })
         .subscribeOn(Schedulers.boundedElastic()).then();
     }
