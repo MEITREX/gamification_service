@@ -11,7 +11,7 @@ import java.util.List;
 
 public class Achievements {
 
-    public void generateAchievements(CourseEntity course) {
+    public List<AchievementEntity> generateAchievements(CourseEntity course) {
         List<AchievementEntity> achievements = new ArrayList<>();
         AchievementEntity quizMaster = generateQuizMaster(course);
         AchievementEntity forumAnswer = generateForumAnswerer(course);
@@ -23,7 +23,7 @@ public class Achievements {
         achievements.add(loginAchievement);
         achievements.add(quizzer);
         achievements.add(activeUser);
-        course.setAchievements(achievements);
+        return achievements;
     }
 
     public AchievementEntity generateQuizMaster(CourseEntity course) {
@@ -64,8 +64,8 @@ public class Achievements {
         quizzerGoal1.setMinimumScore(1.0F);
         quizzerGoal1.setRequiredCount(2);
         CompletedQuizzesGoalEntity quizzerGoal2 = new CompletedQuizzesGoalEntity();
-        quizzerGoal1.setMinimumScore(0.5F);
-        quizzerGoal1.setRequiredCount(4);
+        quizzerGoal2.setMinimumScore(0.5F);
+        quizzerGoal2.setRequiredCount(4);
         OrCombinatorGoalEntity orCombinatorGoalEntity = new OrCombinatorGoalEntity();
         orCombinatorGoalEntity.setGoal1(quizzerGoal1);
         orCombinatorGoalEntity.setGoal2(quizzerGoal2);
@@ -87,7 +87,7 @@ public class Achievements {
         completeSpecificChapterGoalEntity.setChapterName(firstChapter.getTitle());
         AndCombinatorGoalEntity andCombinatorGoalEntity = new AndCombinatorGoalEntity();
         andCombinatorGoalEntity.setGoal1(loginStreakGoal);
-        andCombinatorGoalEntity.setGoal2(loginStreakGoal);
+        andCombinatorGoalEntity.setGoal2(completeSpecificChapterGoalEntity);
         activeUser.setGoal(andCombinatorGoalEntity);
         activeUser.setCourse(course);
         return activeUser;

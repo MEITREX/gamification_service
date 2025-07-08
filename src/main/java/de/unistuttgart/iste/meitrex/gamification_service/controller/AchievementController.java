@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.controller;
 
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.service.AchievementService;
 import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
 import lombok.RequiredArgsConstructor;
@@ -19,10 +20,15 @@ public class AchievementController {
     private final AchievementService achievementService;
 
     @QueryMapping
-    public List<Achievement> progressByCourseId(@Argument UUID courseId,
+    public List<Achievement> achievementsByCourseId(@Argument UUID courseId,
                                                @ContextValue final LoggedInUser currentUser) {
         validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT, courseId);
-        return achievementService.getAchievementsForUser(currentUser.getId(), courseId);
+        return achievementService.getAchievementsForUserInCourse(currentUser.getId(), courseId);
+    }
+
+    @QueryMapping
+    public List<Achievement> achievementsByUserId(@ContextValue final LoggedInUser currentUser) {
+        return achievementService.getAchievementsForUser(currentUser.getId());
     }
 
     @MutationMapping

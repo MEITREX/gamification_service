@@ -2,6 +2,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.ach
 
 import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
+import de.unistuttgart.iste.meitrex.generated.dto.Course;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -23,4 +24,7 @@ public class UserEntity implements IWithId<UUID> {
 
     @OneToMany(cascade = CascadeType.ALL)
     List<UserGoalProgressEntity> userGoalProgressEntities;
+
+    @ElementCollection
+    List<UUID> courseIds;
 }

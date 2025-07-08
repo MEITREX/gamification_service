@@ -29,7 +29,7 @@ public class AchievementEntity implements IWithId<UUID> {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     GoalEntity goal;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     CourseEntity course;
 
     public void setGoal(GoalEntity goal) {
