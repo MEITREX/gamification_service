@@ -8,6 +8,6 @@ type Achievement {
     completed: Boolean!
     requiredCount: Int
     completedCount: Int
-    trackingStartTime: DateTime!
+    trackingStartTime: DateTime
     trackingEndTime: DateTime
 }

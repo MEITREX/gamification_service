@@ -29,7 +29,7 @@ public class SubscriptionController {
     public Mono<Void> logUserProgress(@RequestBody final CloudEvent<ContentProgressedEvent> cloudEvent) {
         return Mono.fromRunnable(() -> {
             log.info("Received content-progressed event: {}", cloudEvent.getData());
-            achievementService.progessUserProgress(cloudEvent.getData());
+            achievementService.progressUserProgress(cloudEvent.getData());
         })
         .subscribeOn(Schedulers.boundedElastic()).then();
     }
@@ -43,7 +43,7 @@ public class SubscriptionController {
     public Mono<Void> onUserProgress(@RequestBody final CloudEvent<UserProgressUpdatedEvent> cloudEvent) {
         return Mono.fromRunnable(() -> {
             log.info("Received user-progress event: {}", cloudEvent.getData());
-            achievementService.chapterProgress(cloudEvent.getData());
+            //achievementService.chapterProgress(cloudEvent.getData());
         })
         .subscribeOn(Schedulers.boundedElastic()).then();
     }

@@ -27,7 +27,8 @@ public class AchievementController {
     }
 
     @QueryMapping
-    public List<Achievement> achievementsByUserId(@ContextValue final LoggedInUser currentUser) {
+    public List<Achievement> achievementsByUserId(@Argument UUID userId,
+            @ContextValue final LoggedInUser currentUser) {
         return achievementService.getAchievementsForUser(currentUser.getId());
     }
 

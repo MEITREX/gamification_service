@@ -29,6 +29,7 @@ public class Achievements {
     public AchievementEntity generateQuizMaster(CourseEntity course) {
         AchievementEntity quizMaster = new AchievementEntity();
         quizMaster.setName("Quiz Master");
+        quizMaster.setImageUrl("");
         CompletedQuizzesGoalEntity quizMasterGoal = new CompletedQuizzesGoalEntity();
         quizMasterGoal.setMinimumScore(1.0F);
         quizMasterGoal.setRequiredCount(1);
@@ -40,6 +41,7 @@ public class Achievements {
     public AchievementEntity generateForumAnswerer(CourseEntity course) {
         AchievementEntity forumAnswerer = new AchievementEntity();
         forumAnswerer.setName("Forum Answer");
+        forumAnswerer.setImageUrl("");
         AnswerForumQuestionGoalEntity forumAnswerGoal = new AnswerForumQuestionGoalEntity();
         forumAnswerGoal.setRequiredCount(1);
         forumAnswerer.setGoal(forumAnswerGoal);
@@ -50,6 +52,7 @@ public class Achievements {
     public AchievementEntity generateLoginAchievement(CourseEntity course) {
         AchievementEntity loginAchievement = new AchievementEntity();
         loginAchievement.setName("Login Achievement");
+        loginAchievement.setImageUrl("");
         LoginStreakGoalEntity loginStreakGoal = new LoginStreakGoalEntity();
         loginStreakGoal.setRequiredCount(2);
         loginAchievement.setGoal(loginStreakGoal);
@@ -60,6 +63,7 @@ public class Achievements {
     public AchievementEntity generateQuizzerAchievement(CourseEntity course) {
         AchievementEntity quizzer = new AchievementEntity();
         quizzer.setName("Quizzer");
+        quizzer.setImageUrl("");
         CompletedQuizzesGoalEntity quizzerGoal1 = new CompletedQuizzesGoalEntity();
         quizzerGoal1.setMinimumScore(1.0F);
         quizzerGoal1.setRequiredCount(2);
@@ -77,6 +81,7 @@ public class Achievements {
     public AchievementEntity generateActiveAchievement(CourseEntity course) {
         AchievementEntity activeUser = new AchievementEntity();
         activeUser.setName("Active User");
+        activeUser.setImageUrl("");
         LoginStreakGoalEntity loginStreakGoal = new LoginStreakGoalEntity();
         loginStreakGoal.setRequiredCount(7);
         CompleteSpecificChapterGoalEntity completeSpecificChapterGoalEntity = new CompleteSpecificChapterGoalEntity();

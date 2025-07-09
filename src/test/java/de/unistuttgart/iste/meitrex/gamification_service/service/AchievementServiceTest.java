@@ -81,7 +81,7 @@ public class AchievementServiceTest {
         chapter.setDescription("Chapter Description");
         List<Chapter> chapters = new ArrayList<>(List.of(chapter));
         when(courseServiceClient.queryChapterByCourseId(courseId)).thenReturn(chapters);
-        achievementService.progessUserProgress(contentProgressedEvent);
+        achievementService.progressUserProgress(contentProgressedEvent);
         verify(userRepository).findById(userId);
         verify(courseRepository, times(2)).findById(courseId);
         CourseEntity courseEntity = new CourseEntity();
@@ -134,7 +134,7 @@ public class AchievementServiceTest {
                 .setMetadata(contentMetadata).build();
         when(contentServiceClient.queryContentsByIds(userId, List.of(contentId))).thenReturn(List.of(content));
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(courseEntity));
-        achievementService.progessUserProgress(contentProgressedEvent);
+        achievementService.progressUserProgress(contentProgressedEvent);
         verify(userRepository).findById(userId);
         verify(courseRepository, times(2)).findById(courseId);
         List<UserGoalProgressEntity> userGoalProgress = courseEntity.getAchievements().stream().map(achievement ->
@@ -184,7 +184,7 @@ public class AchievementServiceTest {
         when(contentServiceClient.queryContentsByIds(userId, List.of(contentId))).thenReturn(List.of(content));
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(courseEntity));
         when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
-        achievementService.progessUserProgress(contentProgressedEvent);
+        achievementService.progressUserProgress(contentProgressedEvent);
         verify(userRepository).findById(userId);
         verify(courseRepository, times(2)).findById(courseId);
         verify(userRepository).save(userEntity);

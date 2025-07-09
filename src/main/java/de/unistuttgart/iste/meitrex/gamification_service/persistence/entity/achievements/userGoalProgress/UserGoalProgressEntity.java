@@ -8,7 +8,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -27,6 +29,12 @@ public class UserGoalProgressEntity implements IWithId<UUID> {
     @Column
     boolean completed;
 
+    @Column
+    OffsetDateTime startedAt;
+
+    @Column
+    OffsetDateTime endedAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     UserEntity user;
 
@@ -37,6 +45,7 @@ public class UserGoalProgressEntity implements IWithId<UUID> {
         this.user = user;
         this.goal = goal;
         completed = false;
+        startedAt = OffsetDateTime.now();
     }
 
     public void updateProgress(GoalProgressEvent progressEvent) {
