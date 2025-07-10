@@ -31,6 +31,13 @@ type PlayerHexadScore {
   scores: [PlayerTypeScore!]!
 }
 
+type User {
+  id: UUID!
+  name: String!
+  email: String!
+}
+
+
 type Mutation {
   evaluatePlayerHexadScore(userId: UUID!, input: PlayerAnswerInput!): PlayerHexadScore!
 }
@@ -38,6 +45,9 @@ type Mutation {
 type Query {
   getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
   PlayerHexadScoreExists(userId: UUID!): Boolean!
+  getWeeklyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
+  getMonthlyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
+  getAllTimeCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
 }
 
 

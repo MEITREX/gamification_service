@@ -17,6 +17,9 @@ import de.unistuttgart.iste.meitrex.gamification_service.service.scoring.IScorin
 import de.unistuttgart.iste.meitrex.gamification_service.time.IPeriodCalculator;
 import de.unistuttgart.iste.meitrex.gamification_service.time.ITimeService;
 import de.unistuttgart.iste.meitrex.gamification_service.time.Period;
+import de.unistuttgart.iste.meitrex.generated.dto.Leaderboard;
+import de.unistuttgart.iste.meitrex.generated.dto.User;
+import de.unistuttgart.iste.meitrex.generated.dto.UserScore;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -86,6 +89,21 @@ class DefaultLeaderboardService implements ILeaderboardService {
         this.timeService = Objects.requireNonNull(timeService);
     }
 
+    @Override
+    public List<Leaderboard> find(UUID courseID, LocalDate date, Period period) {
+        final Leaderboard leaderboard = new Leaderboard();
+        leaderboard.setId("ID0");
+        leaderboard.setPeriod(de.unistuttgart.iste.meitrex.generated.dto.Period.ALL_TIME);
+        leaderboard.setStartDate(LocalDate.now());
+        leaderboard.setTitle("Test");
+        leaderboard.setUserScores(new ArrayList<>());
+        {
+            leaderboard.getUserScores().add(new UserScore("id", 0.0, new User(UUID.randomUUID(), "Test", "user@user.com")));
+            leaderboard.getUserScores().add(new UserScore("id", 2.0, new User(UUID.randomUUID(), "Test", "user@user.com")));
+            leaderboard.getUserScores().add(new UserScore("id", 10.0, new User(UUID.randomUUID(), "Test", "user@user.com")));
+        }
+        return List.of(leaderboard);
+    }
 
     // Scheduled Logic
 
@@ -244,4 +262,6 @@ class DefaultLeaderboardService implements ILeaderboardService {
                     return this.userScoreRepository.save(scoreEntity);
                 });
     }
+
+
 }
