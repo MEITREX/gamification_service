@@ -45,9 +45,6 @@ type Mutation {
 type Query {
   getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
   PlayerHexadScoreExists(userId: UUID!): Boolean!
-  getWeeklyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
-  getMonthlyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
-  getAllTimeCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
 }
 
 

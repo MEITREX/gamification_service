@@ -10,6 +10,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.Cour
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.LeaderboardEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserScoreEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper.LeaderboardMapper;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.ICourseRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.ILeaderboardRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.IUserScoreRepository;
@@ -66,6 +67,7 @@ class DefaultLeaderboardService implements ILeaderboardService {
 
     private final ITimeService timeService;
 
+    private final LeaderboardMapper leaderboardMapper;
 
     public DefaultLeaderboardService(
             @Autowired IScoringFunction scoringFunction,
@@ -76,7 +78,8 @@ class DefaultLeaderboardService implements ILeaderboardService {
             @Autowired DefaultCourseService courseService,
             @Autowired IPersistentUserProgressUpdatedRepository userProgressUpdatedRepository,
             @Autowired IPeriodCalculator periodCalculator,
-            @Autowired ITimeService timeService
+            @Autowired ITimeService timeService,
+            @Autowired LeaderboardMapper leaderboardMapper
     ) {
         this.scoringFunction = Objects.requireNonNull(scoringFunction);
         this.userScoreRepository = Objects.requireNonNull(userScoreRepository);
@@ -87,22 +90,13 @@ class DefaultLeaderboardService implements ILeaderboardService {
         this.userProgressUpdatedRepository = userProgressUpdatedRepository;
         this.periodCalculator = Objects.requireNonNull(periodCalculator);
         this.timeService = Objects.requireNonNull(timeService);
+        this.leaderboardMapper = Objects.requireNonNull(leaderboardMapper);
     }
 
     @Override
     public List<Leaderboard> find(UUID courseID, LocalDate date, Period period) {
-        final Leaderboard leaderboard = new Leaderboard();
-        leaderboard.setId("ID0");
-        leaderboard.setPeriod(de.unistuttgart.iste.meitrex.generated.dto.Period.ALL_TIME);
-        leaderboard.setStartDate(LocalDate.now());
-        leaderboard.setTitle("Test");
-        leaderboard.setUserScores(new ArrayList<>());
-        {
-            leaderboard.getUserScores().add(new UserScore("id", 0.0, new User(UUID.randomUUID(), "Test", "user@user.com")));
-            leaderboard.getUserScores().add(new UserScore("id", 2.0, new User(UUID.randomUUID(), "Test", "user@user.com")));
-            leaderboard.getUserScores().add(new UserScore("id", 10.0, new User(UUID.randomUUID(), "Test", "user@user.com")));
-        }
-        return List.of(leaderboard);
+        final LeaderboardEntity leaderboard = new LeaderboardEntity(UUID.randomUUID(), "Title", LocalDate.now(), period, new CourseEntity(), List.of(), List.of());
+        return List.of(this.leaderboardMapper.toDTO(leaderboard, 3));
     }
 
     // Scheduled Logic

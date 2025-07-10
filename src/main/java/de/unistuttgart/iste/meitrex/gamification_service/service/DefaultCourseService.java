@@ -59,15 +59,14 @@ class DefaultCourseService {
     }
 
     private CourseEntity setupCourse(UUID uuid) {
-        CourseEntity courseEntity = new CourseEntity();
+        final CourseEntity courseEntity = new CourseEntity();
         courseEntity.setId(uuid);
         courseEntity.setTitle("");
-        courseEntity = this.courseRepository
+        final CourseEntity persistentCourseEntity = this.courseRepository
                 .save(courseEntity);
-        this.createAndAddLeaderboard(courseEntity, Period.ALL_TIME);
-        this.createAndAddLeaderboard(courseEntity, Period.MONTHLY);
-        this.createAndAddLeaderboard(courseEntity, Period.WEEKLY);
-        return courseEntity;
+        Arrays.stream(Period.values())
+                .forEach(period -> this.createAndAddLeaderboard(persistentCourseEntity, period));
+        return persistentCourseEntity;
     }
 
     private void createAndAddLeaderboard(CourseEntity courseEntity, Period period) {

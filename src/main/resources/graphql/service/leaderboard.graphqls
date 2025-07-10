@@ -19,4 +19,8 @@ type UserScore {
 }
 
 
-
+extend type Query {
+  getWeeklyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
+  getMonthlyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
+  getAllTimeCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
+}
