@@ -29,7 +29,7 @@ public class AchievementController {
     @QueryMapping
     public List<Achievement> achievementsByUserId(@Argument UUID userId,
             @ContextValue final LoggedInUser currentUser) {
-        return achievementService.getAchievementsForUser(currentUser.getId());
+        return achievementService.getAchievementsForUser(userId);
     }
 
     @MutationMapping
