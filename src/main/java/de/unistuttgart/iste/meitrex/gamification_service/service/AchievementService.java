@@ -14,6 +14,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achi
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.*;
 import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
+import de.unistuttgart.iste.meitrex.generated.dto.CompositeProgressInformation;
 import de.unistuttgart.iste.meitrex.generated.dto.Content;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -102,15 +103,22 @@ public class AchievementService {
         if (!user.getCourseIds().contains(courseEntity.getId())) {
             addUserToCourse(courseEntity, user);
         }
-        CompleteSpecificChapterGoalProgressEvent completeSpecificChapterGoalProgressEvent = new CompleteSpecificChapterGoalProgressEvent();
-        completeSpecificChapterGoalProgressEvent.setProgressType(ProgressType.CHAPTER);
-        completeSpecificChapterGoalProgressEvent.setUserId(userId);
-        completeSpecificChapterGoalProgressEvent.setChapterId(chapterId);
-        completeSpecificChapterGoalProgressEvent.setCourseId(courseId);
-        user.getUserGoalProgressEntities().forEach(goalProgressEntity -> {
-            goalProgressEntity.updateProgress(completeSpecificChapterGoalProgressEvent);
-        });
-        userRepository.save(user);
+        try {
+            CompositeProgressInformation progressInformation = contentServiceClient.queryProgressByChapterId(userId, chapterId);
+            if (progressInformation.getCompletedContents() == progressInformation.getTotalContents()) {
+                CompleteSpecificChapterGoalProgressEvent completeSpecificChapterGoalProgressEvent = new CompleteSpecificChapterGoalProgressEvent();
+                completeSpecificChapterGoalProgressEvent.setProgressType(ProgressType.CHAPTER);
+                completeSpecificChapterGoalProgressEvent.setUserId(userId);
+                completeSpecificChapterGoalProgressEvent.setChapterId(chapterId);
+                completeSpecificChapterGoalProgressEvent.setCourseId(courseId);
+                user.getUserGoalProgressEntities().forEach(goalProgressEntity -> {
+                    goalProgressEntity.updateProgress(completeSpecificChapterGoalProgressEvent);
+                });
+                userRepository.save(user);
+            }
+        } catch (ContentServiceConnectionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void forumProgress(final ForumActivityEvent forumActivityEvent) {
