@@ -232,14 +232,18 @@ public class AchievementService {
         return courseEntity;
     }
 
-    private void addUserToCourse(final CourseEntity course, final UserEntity user) {
+    private void addUserToCourse(final CourseEntity course, UserEntity user) {
         log.info("add user to course {}", course.getId());
         user.getCourseIds().add(course.getId());
         userRepository.saveAndFlush(user);
-        List<UserGoalProgressEntity> userGoalProgress = course.getAchievements().stream().map(achievement ->
-                achievement.getGoal().generateUserGoalProgress(user)).collect(Collectors.toCollection(ArrayList::new));
-        user.setUserGoalProgressEntities(userGoalProgress);
-        userRepository.save(user);
+        List<UserGoalProgressEntity> userGoalProgressEntities = new ArrayList<>();
+        for (AchievementEntity achievement : course.getAchievements()) {
+            UserGoalProgressEntity userGoalProgressEntity = achievement.getGoal().generateUserGoalProgress(user);
+            userGoalProgressEntities.add(userGoalProgressEntity);
+        }
+        userGoalProgressRepository.saveAll(userGoalProgressEntities);
+        user.setUserGoalProgressEntities(userGoalProgressEntities);
+        user = userRepository.save(user);
         log.info("Added user to course {}", user);
     }
 
