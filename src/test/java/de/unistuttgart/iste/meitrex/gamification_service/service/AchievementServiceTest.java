@@ -4,11 +4,13 @@ package de.unistuttgart.iste.meitrex.gamification_service.service;
 import de.unistuttgart.iste.meitrex.common.event.ContentProgressedEvent;
 import de.unistuttgart.iste.meitrex.common.event.ForumActivity;
 import de.unistuttgart.iste.meitrex.common.event.ForumActivityEvent;
+import de.unistuttgart.iste.meitrex.common.event.UserProgressUpdatedEvent;
 import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
 import de.unistuttgart.iste.meitrex.content_service.exception.ContentServiceConnectionException;
 import de.unistuttgart.iste.meitrex.course_service.client.CourseServiceClient;
 import de.unistuttgart.iste.meitrex.gamification_service.achievements.Achievements;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.*;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.CompleteSpecificChapterGoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.CompletedQuizzesGoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.GoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.ProgressType;
@@ -187,6 +189,160 @@ public class AchievementServiceTest {
         achievementService.progressUserProgress(contentProgressedEvent);
         verify(userRepository).findById(userId);
         verify(courseRepository, times(2)).findById(courseId);
+        verify(userRepository).save(userEntity);
+    }
+
+    @Test
+    void testProgressChapterProgressUserCourseEmpty() throws ContentServiceConnectionException {
+        UUID contentId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID courseId = UUID.randomUUID();
+        UUID chapterId = UUID.randomUUID();
+        UserProgressUpdatedEvent userProgressUpdatedEvent = UserProgressUpdatedEvent.builder()
+                .chapterId(chapterId)
+                .courseId(courseId)
+                .userId(userId)
+                .build();
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(userId);
+        userEntity.setCourseIds(new ArrayList<>(List.of(courseId)));
+        ContentMetadata contentMetadata = ContentMetadata.builder()
+                .setCourseId(courseId)
+                .setType(ContentType.QUIZ).build();
+        Content content = MediaContent.builder()
+                .setId(contentId)
+                .setMetadata(contentMetadata).build();
+        when(contentServiceClient.queryContentsByIds(userId, List.of(contentId))).thenReturn(List.of(content));
+        Chapter chapter = new Chapter();
+        chapter.setId(chapterId);
+        chapter.setTitle("Chapter Title");
+        chapter.setDescription("Chapter Description");
+        List<Chapter> chapters = new ArrayList<>(List.of(chapter));
+        when(courseServiceClient.queryChapterByCourseId(courseId)).thenReturn(chapters);
+        CompositeProgressInformation compositeProgressInformation = CompositeProgressInformation.builder()
+                .setProgress(100.0)
+                .setCompletedContents(2)
+                .setTotalContents(2)
+                .build();
+        when(contentServiceClient.queryProgressByChapterId(userId, chapterId)).thenReturn(compositeProgressInformation);
+        achievementService.chapterProgress(userProgressUpdatedEvent);
+        verify(userRepository).findById(userId);
+        verify(courseRepository, times(1)).findById(courseId);
+        CourseEntity courseEntity = new CourseEntity();
+        courseEntity.setId(courseId);
+        courseEntity.setChapters(courseServiceClient.queryChapterByCourseId(courseId));
+        List<AchievementEntity> achievementEntities = achievements.generateAchievements(courseEntity);
+        courseEntity.setAchievements(achievementEntities);
+        List<UserGoalProgressEntity> userGoalProgress = courseEntity.getAchievements().stream().map(achievement ->
+                achievement.getGoal().generateUserGoalProgress(userEntity)).toList();
+        userEntity.setUserGoalProgressEntities(userGoalProgress);
+        verify(courseRepository).save(courseEntity);
+        userEntity.setUserGoalProgressEntities(userGoalProgress);
+        CompleteSpecificChapterGoalProgressEvent completeSpecificChapterGoalProgressEvent = getCompleteSpecificChapterGoalProgressEvent(userProgressUpdatedEvent);
+        userEntity.getUserGoalProgressEntities().forEach(goalProgressEntity -> {
+            goalProgressEntity.updateProgress(completeSpecificChapterGoalProgressEvent);
+        });
+        verify(userRepository, times(3)).save(userEntity);
+    }
+
+    @Test
+    void testProgressChapterProgressWithCourseEmptyUser() throws ContentServiceConnectionException {
+        UUID chapterId = UUID.randomUUID();
+        UUID contentId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID courseId = UUID.randomUUID();
+        Chapter chapter = new Chapter();
+        chapter.setId(chapterId);
+        chapter.setTitle("Chapter Title");
+        chapter.setDescription("Chapter Description");
+        List<Chapter> chapters = new ArrayList<>(List.of(chapter));
+        CourseEntity courseEntity = CourseEntity.builder()
+                .id(courseId)
+                .chapters(chapters)
+                .build();
+        List<AchievementEntity> achievementEntities = achievements.generateAchievements(courseEntity);
+        courseEntity.setAchievements(achievementEntities);
+        UserProgressUpdatedEvent userProgressUpdatedEvent = UserProgressUpdatedEvent.builder()
+                .chapterId(chapterId)
+                .courseId(courseId)
+                .userId(userId)
+                .build();
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(userId);
+        userEntity.setCourseIds(new ArrayList<>(List.of(courseId)));
+        ContentMetadata contentMetadata = ContentMetadata.builder()
+                .setCourseId(courseId)
+                .setType(ContentType.QUIZ).build();
+        Content content = MediaContent.builder()
+                .setId(contentId)
+                .setMetadata(contentMetadata).build();
+        when(contentServiceClient.queryContentsByIds(userId, List.of(contentId))).thenReturn(List.of(content));
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(courseEntity));
+        CompositeProgressInformation compositeProgressInformation = CompositeProgressInformation.builder()
+                .setProgress(100.0)
+                .setCompletedContents(2)
+                .setTotalContents(2)
+                .build();
+        when(contentServiceClient.queryProgressByChapterId(userId, chapterId)).thenReturn(compositeProgressInformation);
+        achievementService.chapterProgress(userProgressUpdatedEvent);
+        verify(userRepository).findById(userId);
+        verify(courseRepository, times(1)).findById(courseId);
+        List<UserGoalProgressEntity> userGoalProgress = courseEntity.getAchievements().stream().map(achievement ->
+                achievement.getGoal().generateUserGoalProgress(userEntity)).toList();
+        userEntity.setUserGoalProgressEntities(userGoalProgress);
+        CompleteSpecificChapterGoalProgressEvent completeSpecificChapterGoalProgressEvent = getCompleteSpecificChapterGoalProgressEvent(userProgressUpdatedEvent);
+        userEntity.getUserGoalProgressEntities().forEach(goalProgressEntity -> {
+            goalProgressEntity.updateProgress(completeSpecificChapterGoalProgressEvent);
+        });
+        verify(userRepository, times(3)).save(userEntity);
+    }
+
+    @Test
+    void testProgressChapterProgressWithCourseAndUser() throws ContentServiceConnectionException {
+        UUID chapterId = UUID.randomUUID();
+        UUID contentId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID courseId = UUID.randomUUID();
+        Chapter chapter = new Chapter();
+        chapter.setId(chapterId);
+        chapter.setTitle("Chapter Title");
+        chapter.setDescription("Chapter Description");
+        List<Chapter> chapters = new ArrayList<>(List.of(chapter));
+        CourseEntity courseEntity = CourseEntity.builder()
+                .id(courseId)
+                .chapters(chapters)
+                .build();
+        List<AchievementEntity> achievementEntities = achievements.generateAchievements(courseEntity);
+        courseEntity.setAchievements(achievementEntities);
+        UserProgressUpdatedEvent userProgressUpdatedEvent = UserProgressUpdatedEvent.builder()
+                .chapterId(chapterId)
+                .courseId(courseId)
+                .userId(userId)
+                .build();
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(userId);
+        userEntity.setCourseIds(new ArrayList<>(List.of(courseId)));
+        ContentMetadata contentMetadata = ContentMetadata.builder()
+                .setCourseId(courseId)
+                .setType(ContentType.QUIZ).build();
+        Content content = MediaContent.builder()
+                .setId(contentId)
+                .setMetadata(contentMetadata).build();
+        List<UserGoalProgressEntity> userGoalProgress = achievementEntities.stream().map(achievement ->
+                achievement.getGoal().generateUserGoalProgress(userEntity)).toList();
+        userEntity.setUserGoalProgressEntities(userGoalProgress);
+        when(contentServiceClient.queryContentsByIds(userId, List.of(contentId))).thenReturn(List.of(content));
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(courseEntity));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
+        CompositeProgressInformation compositeProgressInformation = CompositeProgressInformation.builder()
+                .setProgress(100.0)
+                .setCompletedContents(2)
+                .setTotalContents(2)
+                .build();
+        when(contentServiceClient.queryProgressByChapterId(userId, chapterId)).thenReturn(compositeProgressInformation);
+        achievementService.chapterProgress(userProgressUpdatedEvent);
+        verify(userRepository).findById(userId);
+        verify(courseRepository, times(1)).findById(courseId);
         verify(userRepository).save(userEntity);
     }
 
@@ -382,5 +538,14 @@ public class AchievementServiceTest {
         completedQuizzesGoalProgressEvent.setScore(correctness);
         completedQuizzesGoalProgressEvent.setContentId(contendId);
         return completedQuizzesGoalProgressEvent;
+    }
+
+    private static @NotNull CompleteSpecificChapterGoalProgressEvent getCompleteSpecificChapterGoalProgressEvent(UserProgressUpdatedEvent userProgressUpdatedEvent) {
+        CompleteSpecificChapterGoalProgressEvent completeSpecificChapterGoalProgressEvent = new CompleteSpecificChapterGoalProgressEvent();
+        completeSpecificChapterGoalProgressEvent.setProgressType(ProgressType.CHAPTER);
+        completeSpecificChapterGoalProgressEvent.setUserId(userProgressUpdatedEvent.getUserId());
+        completeSpecificChapterGoalProgressEvent.setCourseId(userProgressUpdatedEvent.getCourseId());
+        completeSpecificChapterGoalProgressEvent.setChapterId(userProgressUpdatedEvent.getChapterId());
+        return completeSpecificChapterGoalProgressEvent;
     }
 }
