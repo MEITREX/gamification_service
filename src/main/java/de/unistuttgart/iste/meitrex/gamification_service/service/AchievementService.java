@@ -23,9 +23,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -182,10 +184,12 @@ public class AchievementService {
     public List<Achievement> getAchievementsForUserInCourse(UUID userId, UUID courseId) {
         CourseEntity courseEntity = courseRepository.findById(courseId).orElseThrow(()
                 -> new EntityNotFoundException("Course with the id " + courseId + " not found"));
-        UserEntity user = userRepository.findById(userId).orElseThrow(()
-                -> new EntityNotFoundException("User with the id " + userId + " not found"));
+        Optional<UserEntity> user = userRepository.findById(userId);
+        if (user.isEmpty()) {
+            return new  ArrayList<>();
+        }
         List<UserGoalProgressEntity> userGoalProgressEntities = courseEntity.getAchievements().stream()
-                .map(achievement -> userGoalProgressRepository.findAllByUserAndGoal(user, achievement.getGoal()))
+                .map(achievement -> userGoalProgressRepository.findAllByUserAndGoal(user.get(), achievement.getGoal()))
                 .flatMap(List::stream).toList();
         List<Achievement> userAchievements = new ArrayList<>();
         generateAchievements(getUserGoalProgressEntities(userGoalProgressEntities), courseId, userAchievements);
@@ -218,18 +222,20 @@ public class AchievementService {
     }
 
     public List<Achievement> getAchievementsForUser(UUID userId) {
-        UserEntity user = userRepository.findById(userId).orElseThrow(()
-                -> new EntityNotFoundException("User with the id " + userId + " not found"));
-        log.info("get achievements for user {}", user.getId());
+        Optional<UserEntity> user = userRepository.findById(userId);
+        if (user.isEmpty()) {
+            return new  ArrayList<>();
+        }
+        log.info("get achievements for user {}", user.get().getId());
         List<Achievement> userAchievements = new ArrayList<>();
-        user.getCourseIds().forEach(courseId -> {
+        user.get().getCourseIds().forEach(courseId -> {
             log.info("courseId {}", courseId);
             CourseEntity courseEntity = courseRepository.findById(courseId).orElse(null);
             log.info("CourseEntity: {}", courseEntity);
             if (courseEntity != null) {
                 log.info("Generate achievement for user {} with course {}", userId, courseId);
                 List<UserGoalProgressEntity> userGoalProgressEntities = courseEntity.getAchievements().stream()
-                        .map(achievement -> userGoalProgressRepository.findAllByUserAndGoal(user, achievement.getGoal()))
+                        .map(achievement -> userGoalProgressRepository.findAllByUserAndGoal(user.get(), achievement.getGoal()))
                         .flatMap(List::stream).toList();
                 generateAchievements(userGoalProgressEntities, courseId, userAchievements);
             }
