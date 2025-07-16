@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
 
 import de.unistuttgart.iste.meitrex.common.event.ContentProgressedEvent;
+import de.unistuttgart.iste.meitrex.common.event.ForumActivity;
 import de.unistuttgart.iste.meitrex.common.event.ForumActivityEvent;
 import de.unistuttgart.iste.meitrex.common.event.UserProgressUpdatedEvent;
 import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
@@ -19,6 +20,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.
 import de.unistuttgart.iste.meitrex.generated.dto.Chapter;
 import de.unistuttgart.iste.meitrex.generated.dto.CompositeProgressInformation;
 import de.unistuttgart.iste.meitrex.generated.dto.Content;
+import de.unistuttgart.iste.meitrex.generated.dto.ContentType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,7 @@ import org.springframework.stereotype.Service;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -66,9 +69,8 @@ public class GoalProgressService {
             addUserToCourse(courseEntity, user);
         }
         log.info("User {} ", user);
-        switch (content.getMetadata().getType()) {
-            case QUIZ -> quizProgress(contentProgressedEvent, user, courseId);
-            case MEDIA -> mediaProgress(contentProgressedEvent, user, courseId);
+        if (Objects.requireNonNull(content.getMetadata().getType()) == ContentType.QUIZ) {
+            quizProgress(contentProgressedEvent, user, courseId);
         }
     }
 
@@ -106,14 +108,6 @@ public class GoalProgressService {
         completedQuizzesGoalProgressEvent.setContentId(contendId);
         return completedQuizzesGoalProgressEvent;
     }
-
-    /**
-     * For future achievements
-     * @param contentProgressedEvent Event that caused the progress
-     * @param user User that progressed
-     * @param courseId course in which the event happend
-     */
-    private void mediaProgress(final ContentProgressedEvent contentProgressedEvent, UserEntity user, UUID courseId) {}
 
     public void chapterProgress(final UserProgressUpdatedEvent userProgressUpdatedEvent) {
         UUID courseId = userProgressUpdatedEvent.getCourseId();
@@ -164,9 +158,8 @@ public class GoalProgressService {
         if (!user.getCourseIds().contains(courseEntity.getId())) {
             addUserToCourse(courseEntity, user);
         }
-        switch (forumActivityEvent.getActivity()) {
-            case ANSWER -> forumAnswerProgress(user, courseId);
-            case INFO -> forumInfoProgress(user, courseId);
+        if (forumActivityEvent.getActivity() == ForumActivity.ANSWER) {
+            forumAnswerProgress(user, courseId);
         }
     }
 
@@ -183,8 +176,6 @@ public class GoalProgressService {
                 });
         userRepository.save(user);
     }
-
-    private void forumInfoProgress(UserEntity user, UUID courseId) {}
 
     public UUID loginUser(UUID userId, UUID courseId) {
         CourseEntity courseEntity = courseRepository.findById(courseId).orElseGet(() -> createCourse(courseId));
