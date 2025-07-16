@@ -2,7 +2,10 @@ package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.ach
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.GoalEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToOne;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

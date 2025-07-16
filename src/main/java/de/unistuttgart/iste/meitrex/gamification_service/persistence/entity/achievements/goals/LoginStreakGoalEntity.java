@@ -8,8 +8,6 @@ import jakarta.persistence.Entity;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.OffsetDateTime;
-
 
 @Entity(name = "LoginStreakGoal")
 @Data

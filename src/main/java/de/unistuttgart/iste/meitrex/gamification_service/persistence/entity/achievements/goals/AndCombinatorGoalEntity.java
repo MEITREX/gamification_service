@@ -1,16 +1,15 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals;
 
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.GoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.CombineUserGoalProgressEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.CountableUserGoalProgressEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToOne;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.time.OffsetDateTime;
-import java.util.UUID;
 
 
 @EqualsAndHashCode(callSuper = true)

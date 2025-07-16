@@ -1,12 +1,15 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals;
 
 import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.AchievementEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.HasGoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.GoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import java.time.OffsetDateTime;
@@ -30,7 +33,7 @@ public abstract class GoalEntity implements IWithId<UUID> {
     OffsetDateTime trackingEndTime;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    AchievementEntity achievement;
+    HasGoalEntity hasGoal;
 
     public abstract void updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgress);
 
@@ -40,7 +43,7 @@ public abstract class GoalEntity implements IWithId<UUID> {
 
     @Override
     public String toString() {
-        if (achievement == null || achievement.getId() == null) {
+        if (hasGoal == null || hasGoal.getId() == null) {
             return "GoalEntity{" +
                     "id=" + id +
                     ", trackingStartTime=" + trackingStartTime +
@@ -52,7 +55,7 @@ public abstract class GoalEntity implements IWithId<UUID> {
                 "id=" + id +
                 ", trackingStartTime=" + trackingStartTime +
                 ", trackingEndTime=" + trackingEndTime +
-                ", achievement=" + achievement.getId().toString() +
+                ", achievement=" + hasGoal.getId().toString() +
                 '}';
     }
 
@@ -61,16 +64,16 @@ public abstract class GoalEntity implements IWithId<UUID> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GoalEntity that = (GoalEntity) o;
-        if (achievement == null && that.achievement == null) {
+        if (hasGoal == null && that.hasGoal == null) {
             return Objects.equals(id, that.id) && Objects.equals(trackingStartTime, that.trackingStartTime) && Objects.equals(trackingEndTime, that.trackingEndTime);
         }
-        if ((achievement == null) || (that.achievement == null)) return false;
-        return Objects.equals(id, that.id) && Objects.equals(trackingStartTime, that.trackingStartTime) && Objects.equals(trackingEndTime, that.trackingEndTime) && Objects.equals(achievement.getId(), that.achievement.getId());
+        if ((hasGoal == null) || (that.hasGoal == null)) return false;
+        return Objects.equals(id, that.id) && Objects.equals(trackingStartTime, that.trackingStartTime) && Objects.equals(trackingEndTime, that.trackingEndTime) && Objects.equals(hasGoal.getId(), that.hasGoal.getId());
     }
 
     @Override
     public int hashCode() {
-        if (achievement == null) return Objects.hash(id, trackingStartTime, trackingEndTime, null);
-        return Objects.hash(id, trackingStartTime, trackingEndTime, achievement.getId());
+        if (hasGoal == null) return Objects.hash(id, trackingStartTime, trackingEndTime, null);
+        return Objects.hash(id, trackingStartTime, trackingEndTime, hasGoal.getId());
     }
 }

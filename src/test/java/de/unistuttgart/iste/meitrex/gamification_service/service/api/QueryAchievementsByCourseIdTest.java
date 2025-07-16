@@ -14,8 +14,6 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.CourseRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserGoalProgressRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.service.test_config.MockContentServiceClientConfiguration;
-import de.unistuttgart.iste.meitrex.gamification_service.service.test_config.MockCourseServiceClientConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.service.test_util.CourseUtil;
 import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
 import jakarta.transaction.Transactional;
@@ -32,8 +30,6 @@ import java.util.UUID;
 import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMembershipInCourseWithId;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.*;
 
 @ContextConfiguration(classes = {MockTestPublisherConfiguration.class})
 @GraphQlApiTest
@@ -63,6 +59,7 @@ public class QueryAchievementsByCourseIdTest {
     void queryAchievementsByCourseIdEmpty (GraphQlTester tester) {
         UserEntity user = new UserEntity();
         user.setId(loggedInUser.getId());
+        user.setUserGoalProgressEntities(new ArrayList<>());
         userRepository.save(user);
 
         CourseEntity courseEntity = CourseUtil.dummyCourseEntity(courseId, achievementRepository);

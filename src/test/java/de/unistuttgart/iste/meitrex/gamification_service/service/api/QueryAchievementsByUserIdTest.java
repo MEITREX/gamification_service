@@ -17,7 +17,6 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.
 import de.unistuttgart.iste.meitrex.gamification_service.service.test_util.CourseMembershipUtil;
 import de.unistuttgart.iste.meitrex.gamification_service.service.test_util.CourseUtil;
 import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
-import de.unistuttgart.iste.meitrex.generated.dto.CourseMembership;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,9 +63,7 @@ public class QueryAchievementsByUserIdTest {
 
     @Test
     void queryAchievementsByUserIdEmpty (GraphQlTester tester) {
-        UserEntity user = new UserEntity();
-        user.setId(loggedInUser.getId());
-        user.setCourseIds(new ArrayList<>());
+        UserEntity user = new UserEntity(loggedInUser.getId(), new ArrayList<>(), new ArrayList<>());
         userRepository.save(user);
 
         CourseEntity courseEntity = CourseUtil.dummyCourseEntity(courseId1, achievementRepository);

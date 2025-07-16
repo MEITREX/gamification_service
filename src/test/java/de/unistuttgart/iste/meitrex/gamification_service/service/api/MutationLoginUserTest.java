@@ -5,32 +5,25 @@ import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
 import de.unistuttgart.iste.meitrex.common.testutil.MockTestPublisherConfiguration;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
-import de.unistuttgart.iste.meitrex.content_service.service.ContentService;
 import de.unistuttgart.iste.meitrex.course_service.client.CourseServiceClient;
-import de.unistuttgart.iste.meitrex.course_service.service.CourseService;
 import de.unistuttgart.iste.meitrex.gamification_service.service.test_config.MockContentServiceClientConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.service.test_config.MockCourseServiceClientConfiguration;
 import de.unistuttgart.iste.meitrex.generated.dto.Chapter;
-import de.unistuttgart.iste.meitrex.generated.dto.Content;
-import de.unistuttgart.iste.meitrex.generated.dto.MediaContent;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.test.tester.GraphQlTester;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMembershipInCourseWithId;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
-import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMembershipsAndRealmRoles;
+import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMembershipInCourseWithId;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @ContextConfiguration(classes = {MockTestPublisherConfiguration.class, MockContentServiceClientConfiguration.class, MockCourseServiceClientConfiguration.class})
 @GraphQlApiTest

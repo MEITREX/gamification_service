@@ -1,5 +1,4 @@
-package de.unistuttgart.iste.meitrex.gamification_service.service;
-
+package de.unistuttgart.iste.meitrex.gamification_service.service.service;
 
 import de.unistuttgart.iste.meitrex.common.event.ContentProgressedEvent;
 import de.unistuttgart.iste.meitrex.common.event.ForumActivity;
@@ -9,51 +8,53 @@ import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
 import de.unistuttgart.iste.meitrex.content_service.exception.ContentServiceConnectionException;
 import de.unistuttgart.iste.meitrex.course_service.client.CourseServiceClient;
 import de.unistuttgart.iste.meitrex.gamification_service.achievements.Achievements;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.*;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.AchievementEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.CompleteSpecificChapterGoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.CompletedQuizzesGoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.GoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.ProgressType;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.*;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.AchievementRepository;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.CourseRepository;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserGoalProgressRepository;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
+import de.unistuttgart.iste.meitrex.gamification_service.service.GoalProgressService;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.modelmapper.ModelMapper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
 
-public class AchievementServiceTest {
+public class GoalProgressServiceTest {
+
     private final AchievementRepository achievementRepository = mock(AchievementRepository.class);
 
     private final ContentServiceClient contentServiceClient = mock(ContentServiceClient.class);
     private final CourseServiceClient courseServiceClient = mock(CourseServiceClient.class);
     private final CourseRepository courseRepository  = mock(CourseRepository.class);
-    private final CompletedQuizzesGoalRepository completedQuizzesGoalRepository  = mock(CompletedQuizzesGoalRepository.class);
     private final UserRepository userRepository  = mock(UserRepository.class);
     private final UserGoalProgressRepository userGoalProgressRepository  = mock(UserGoalProgressRepository.class);
-    private final ModelMapper modelMapper = new ModelMapper();
-    private final GoalRepository goalRepository  = mock(GoalRepository.class);
 
     private final Achievements achievements = new Achievements();
 
-    AchievementService achievementService;
+    GoalProgressService goalProgressService;
 
     @BeforeEach
     void setUp() {
         openMocks(this);
-        achievementService = new AchievementService(achievementRepository, contentServiceClient, courseServiceClient,
-                courseRepository, completedQuizzesGoalRepository ,userRepository, userGoalProgressRepository,
-                modelMapper, goalRepository);
+        goalProgressService = new GoalProgressService(achievementRepository, contentServiceClient, courseServiceClient,
+                courseRepository, userRepository, userGoalProgressRepository);
     }
 
     @Test
@@ -83,7 +84,7 @@ public class AchievementServiceTest {
         chapter.setDescription("Chapter Description");
         List<Chapter> chapters = new ArrayList<>(List.of(chapter));
         when(courseServiceClient.queryChapterByCourseId(courseId)).thenReturn(chapters);
-        achievementService.progressUserProgress(contentProgressedEvent);
+        goalProgressService.progressUserProgress(contentProgressedEvent);
         verify(userRepository).findById(userId);
         verify(courseRepository, times(2)).findById(courseId);
         CourseEntity courseEntity = new CourseEntity();
@@ -136,7 +137,7 @@ public class AchievementServiceTest {
                 .setMetadata(contentMetadata).build();
         when(contentServiceClient.queryContentsByIds(userId, List.of(contentId))).thenReturn(List.of(content));
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(courseEntity));
-        achievementService.progressUserProgress(contentProgressedEvent);
+        goalProgressService.progressUserProgress(contentProgressedEvent);
         verify(userRepository).findById(userId);
         verify(courseRepository, times(2)).findById(courseId);
         List<UserGoalProgressEntity> userGoalProgress = courseEntity.getAchievements().stream().map(achievement ->
@@ -186,7 +187,7 @@ public class AchievementServiceTest {
         when(contentServiceClient.queryContentsByIds(userId, List.of(contentId))).thenReturn(List.of(content));
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(courseEntity));
         when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
-        achievementService.progressUserProgress(contentProgressedEvent);
+        goalProgressService.progressUserProgress(contentProgressedEvent);
         verify(userRepository).findById(userId);
         verify(courseRepository, times(2)).findById(courseId);
         verify(userRepository).save(userEntity);
@@ -225,7 +226,7 @@ public class AchievementServiceTest {
                 .setTotalContents(2)
                 .build();
         when(contentServiceClient.queryProgressByChapterId(userId, chapterId)).thenReturn(compositeProgressInformation);
-        achievementService.chapterProgress(userProgressUpdatedEvent);
+        goalProgressService.chapterProgress(userProgressUpdatedEvent);
         verify(userRepository).findById(userId);
         verify(courseRepository, times(1)).findById(courseId);
         CourseEntity courseEntity = new CourseEntity();
@@ -284,7 +285,7 @@ public class AchievementServiceTest {
                 .setTotalContents(2)
                 .build();
         when(contentServiceClient.queryProgressByChapterId(userId, chapterId)).thenReturn(compositeProgressInformation);
-        achievementService.chapterProgress(userProgressUpdatedEvent);
+        goalProgressService.chapterProgress(userProgressUpdatedEvent);
         verify(userRepository).findById(userId);
         verify(courseRepository, times(1)).findById(courseId);
         List<UserGoalProgressEntity> userGoalProgress = courseEntity.getAchievements().stream().map(achievement ->
@@ -340,7 +341,7 @@ public class AchievementServiceTest {
                 .setTotalContents(2)
                 .build();
         when(contentServiceClient.queryProgressByChapterId(userId, chapterId)).thenReturn(compositeProgressInformation);
-        achievementService.chapterProgress(userProgressUpdatedEvent);
+        goalProgressService.chapterProgress(userProgressUpdatedEvent);
         verify(userRepository).findById(userId);
         verify(courseRepository, times(1)).findById(courseId);
         verify(userRepository).save(userEntity);
@@ -366,7 +367,7 @@ public class AchievementServiceTest {
         chapter.setDescription("Chapter Description");
         List<Chapter> chapters = new ArrayList<>(List.of(chapter));
         when(courseServiceClient.queryChapterByCourseId(courseId)).thenReturn(chapters);
-        achievementService.forumProgress(forumActivityEvent);
+        goalProgressService.forumProgress(forumActivityEvent);
         verify(userRepository).findById(userId);
         verify(courseRepository).findById(courseId);
     }
@@ -397,7 +398,7 @@ public class AchievementServiceTest {
         userEntity.setId(userId);
         userEntity.setCourseIds(new ArrayList<>(List.of(courseId)));
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(courseEntity));
-        achievementService.forumProgress(forumActivityEvent);
+        goalProgressService.forumProgress(forumActivityEvent);
         verify(userRepository).findById(userId);
         verify(courseRepository).findById(courseId);
         List<UserGoalProgressEntity> userGoalProgress = achievementEntities.stream().map(achievement ->
@@ -440,7 +441,7 @@ public class AchievementServiceTest {
         userEntity.setUserGoalProgressEntities(userGoalProgress);
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(courseEntity));
         when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
-        achievementService.forumProgress(forumActivityEvent);
+        goalProgressService.forumProgress(forumActivityEvent);
         verify(userRepository).findById(userId);
         verify(courseRepository).findById(courseId);
 
@@ -461,7 +462,7 @@ public class AchievementServiceTest {
         chapter.setDescription("Chapter Description");
         List<Chapter> chapters = new ArrayList<>(List.of(chapter));
         when(courseServiceClient.queryChapterByCourseId(courseId)).thenReturn(chapters);
-        achievementService.loginUser(userId, courseId);
+        goalProgressService.loginUser(userId, courseId);
         verify(userRepository).findById(userId);
         verify(courseRepository).findById(courseId);
     }
@@ -485,7 +486,7 @@ public class AchievementServiceTest {
         userEntity.setId(userId);
         userEntity.setCourseIds(new ArrayList<>(List.of(courseId)));
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(courseEntity));
-        UUID currentUserId = achievementService.loginUser(userId, courseId);
+        UUID currentUserId = goalProgressService.loginUser(userId, courseId);
         verify(userRepository).findById(userId);
         verify(courseRepository).findById(courseId);
         assertThat(currentUserId, is(userId));
@@ -514,7 +515,7 @@ public class AchievementServiceTest {
         userEntity.setUserGoalProgressEntities(userGoalProgress);
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(courseEntity));
         when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
-        UUID currentUserId = achievementService.loginUser(userId, courseId);
+        UUID currentUserId = goalProgressService.loginUser(userId, courseId);
         verify(userRepository).findById(userId);
         verify(courseRepository).findById(courseId);
         assertThat(currentUserId, is(userId));
