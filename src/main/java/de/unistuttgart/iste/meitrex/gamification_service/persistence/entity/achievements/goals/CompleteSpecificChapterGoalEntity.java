@@ -26,20 +26,12 @@ public class CompleteSpecificChapterGoalEntity extends GoalEntity{
     @Column
     String chapterName;
 
+    @Override
     public String generateDescription() {
         return "Complete the chapter " + chapterName + ".";
     }
 
-    public void updateProgress(UserGoalProgressEntity userGoalProgress) {
-
-    }
-
-    public void updateProgress(UserGoalProgressEntity userGoalProgress, UUID chapterId) {
-        if (chapterId.equals(this.chapterId)) {
-            userGoalProgress.setCompleted(true);
-        }
-    }
-
+    @Override
     public void updateProgress(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgress) {
         if (progressEvent instanceof CompleteSpecificChapterGoalProgressEvent completeSpecificChapterGoalProgressEvent){
             UUID eventChapterId = completeSpecificChapterGoalProgressEvent.getChapterId();

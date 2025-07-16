@@ -25,10 +25,12 @@ public class CompletedQuizzesGoalEntity extends CountableGoalEntity implements I
     @Column
     float minimumScore;
 
+    @Override
     public String generateDescription(){
         return "Complete " + super.getRequiredCount() + " quizzes.";
     }
 
+    @Override
     public void updateProgress(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgressEntity){
         if (progressEvent instanceof CompletedQuizzesGoalProgressEvent completedQuizzesGoalProgressEvent &&
         userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity) {

@@ -17,10 +17,13 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class LoginStreakGoalEntity extends CountableGoalEntity{
+
+    @Override
     public String generateDescription(){
         return "Login " + super.getRequiredCount() + " Days in a row.";
     }
 
+    @Override
     public void updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgressEntity){
         if (goalProgressEvent instanceof LoginStreakGoalProgressEvent loginStreakGoalProgressEvent) {
             if (userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity) {
