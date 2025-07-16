@@ -211,7 +211,7 @@ public class GoalProgressService {
         List<AchievementEntity> achievementEntities = achievements.generateAchievements(courseEntity);
         achievementRepository.saveAll(achievementEntities);
         courseEntity.setAchievements(achievementEntities);
-        courseRepository.save(courseEntity);
+        courseEntity = courseRepository.save(courseEntity);
         log.info("Created course with id {}", courseId);
         log.info("Created course {}", courseEntity);
         return courseEntity;
@@ -234,7 +234,7 @@ public class GoalProgressService {
 
     private UserEntity createUser(final UUID userId) {
         UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new ArrayList<>());
-        userRepository.save(userEntity);
+        userEntity = userRepository.save(userEntity);
         log.info("Created user with id {}", userId);
         log.info("Created user {}", userEntity);
         return userEntity;
