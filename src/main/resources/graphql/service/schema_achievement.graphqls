@@ -1,4 +1,4 @@
-type Achievement implements ParentWithGoal{
+type Achievement implements HasGoal{
     id: UUID
     name : String!
     imageUrl: String!
@@ -12,7 +12,7 @@ type Achievement implements ParentWithGoal{
     trackingEndTime: DateTime
 }
 
-interface ParentWithGoal {
+interface HasGoal {
     courseId: UUID!
     userId: UUID
 }

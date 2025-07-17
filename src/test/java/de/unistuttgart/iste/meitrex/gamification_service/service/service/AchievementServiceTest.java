@@ -99,9 +99,9 @@ public class AchievementServiceTest {
     private static void mapUserGoalProgressToAchievements(List<UserGoalProgressEntity> userGoalProgressEntities,
                                                           List<Achievement> userAchievements) {
         userGoalProgressEntities.forEach(userGoalProgressEntity -> {
-            if (userGoalProgressEntity.getGoal().getParentWithGoal() instanceof AchievementEntity achievementEntity) {
+            if (userGoalProgressEntity.getGoal().getHasGoal() instanceof AchievementEntity achievementEntity) {
                 Achievement achievement = new Achievement();
-                achievement.setId(userGoalProgressEntity.getGoal().getParentWithGoal().getId());
+                achievement.setId(userGoalProgressEntity.getGoal().getHasGoal().getId());
                 achievement.setName(achievementEntity.getName());
                 achievement.setDescription(userGoalProgressEntity.getGoal().generateDescription());
                 achievement.setCourseId(achievementEntity.getCourse().getId());
