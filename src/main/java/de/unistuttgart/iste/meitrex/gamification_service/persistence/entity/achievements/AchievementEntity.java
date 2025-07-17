@@ -13,7 +13,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AchievementEntity extends HasGoalEntity {
+public class AchievementEntity extends ParentWithGoalEntity {
     @Column
     String name;
 
@@ -25,7 +25,7 @@ public class AchievementEntity extends HasGoalEntity {
 
     public void setGoal(GoalEntity goal) {
         super.setGoal(goal);
-        goal.setHasGoal(this);
+        goal.setParentWithGoal(this);
     }
 
 

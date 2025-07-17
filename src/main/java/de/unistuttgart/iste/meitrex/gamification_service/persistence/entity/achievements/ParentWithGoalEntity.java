@@ -11,12 +11,12 @@ import lombok.experimental.FieldDefaults;
 
 import java.util.UUID;
 
-@Entity(name = "HasGoal")
+@Entity(name = "ParentWithGoal")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public abstract class HasGoalEntity implements IWithId<UUID> {
+public abstract class ParentWithGoalEntity implements IWithId<UUID> {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;

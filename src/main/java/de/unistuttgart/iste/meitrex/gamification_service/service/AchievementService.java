@@ -34,7 +34,7 @@ public class AchievementService {
         List<Achievement> userAchievements = new ArrayList<>();
         List<UserGoalProgressEntity> userGoalProgressEntities = user.get().getUserGoalProgressEntities().stream()
                 .filter(userGoalProgressEntity -> {
-                            if (userGoalProgressEntity.getGoal().getHasGoal() instanceof AchievementEntity achievement) {
+                            if (userGoalProgressEntity.getGoal().getParentWithGoal() instanceof AchievementEntity achievement) {
                                 return  achievement.getCourse().getId().equals(courseId);
                             } else {
                                 return false;
@@ -47,9 +47,9 @@ public class AchievementService {
     private static void mapUserGoalProgressToAchievements(List<UserGoalProgressEntity> userGoalProgressEntities,
                                                           List<Achievement> userAchievements) {
         userGoalProgressEntities.forEach(userGoalProgressEntity -> {
-            if (userGoalProgressEntity.getGoal().getHasGoal() instanceof AchievementEntity achievementEntity) {
+            if (userGoalProgressEntity.getGoal().getParentWithGoal() instanceof AchievementEntity achievementEntity) {
                 Achievement achievement = new Achievement();
-                achievement.setId(userGoalProgressEntity.getGoal().getHasGoal().getId());
+                achievement.setId(userGoalProgressEntity.getGoal().getParentWithGoal().getId());
                 achievement.setName(achievementEntity.getName());
                 achievement.setDescription(userGoalProgressEntity.getGoal().generateDescription());
                 achievement.setCourseId(achievementEntity.getCourse().getId());

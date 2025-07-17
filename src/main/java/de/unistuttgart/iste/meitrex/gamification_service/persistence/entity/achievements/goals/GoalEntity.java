@@ -1,7 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals;
 
 import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.HasGoalEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.ParentWithGoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.GoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
@@ -33,7 +33,7 @@ public abstract class GoalEntity implements IWithId<UUID> {
     OffsetDateTime trackingEndTime;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    HasGoalEntity hasGoal;
+    ParentWithGoalEntity parentWithGoal;
 
     public abstract void updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgress);
 
@@ -43,7 +43,7 @@ public abstract class GoalEntity implements IWithId<UUID> {
 
     @Override
     public String toString() {
-        if (hasGoal == null || hasGoal.getId() == null) {
+        if (parentWithGoal == null || parentWithGoal.getId() == null) {
             return "GoalEntity{" +
                     "id=" + id +
                     ", trackingStartTime=" + trackingStartTime +
@@ -55,7 +55,7 @@ public abstract class GoalEntity implements IWithId<UUID> {
                 "id=" + id +
                 ", trackingStartTime=" + trackingStartTime +
                 ", trackingEndTime=" + trackingEndTime +
-                ", achievement=" + hasGoal.getId().toString() +
+                ", achievement=" + parentWithGoal.getId().toString() +
                 '}';
     }
 
@@ -64,16 +64,16 @@ public abstract class GoalEntity implements IWithId<UUID> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GoalEntity that = (GoalEntity) o;
-        if (hasGoal == null && that.hasGoal == null) {
+        if (parentWithGoal == null && that.parentWithGoal == null) {
             return Objects.equals(id, that.id) && Objects.equals(trackingStartTime, that.trackingStartTime) && Objects.equals(trackingEndTime, that.trackingEndTime);
         }
-        if ((hasGoal == null) || (that.hasGoal == null)) return false;
-        return Objects.equals(id, that.id) && Objects.equals(trackingStartTime, that.trackingStartTime) && Objects.equals(trackingEndTime, that.trackingEndTime) && Objects.equals(hasGoal.getId(), that.hasGoal.getId());
+        if ((parentWithGoal == null) || (that.parentWithGoal == null)) return false;
+        return Objects.equals(id, that.id) && Objects.equals(trackingStartTime, that.trackingStartTime) && Objects.equals(trackingEndTime, that.trackingEndTime) && Objects.equals(parentWithGoal.getId(), that.parentWithGoal.getId());
     }
 
     @Override
     public int hashCode() {
-        if (hasGoal == null) return Objects.hash(id, trackingStartTime, trackingEndTime, null);
-        return Objects.hash(id, trackingStartTime, trackingEndTime, hasGoal.getId());
+        if (parentWithGoal == null) return Objects.hash(id, trackingStartTime, trackingEndTime, null);
+        return Objects.hash(id, trackingStartTime, trackingEndTime, parentWithGoal.getId());
     }
 }
