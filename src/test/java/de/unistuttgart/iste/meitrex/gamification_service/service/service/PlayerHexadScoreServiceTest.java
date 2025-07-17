@@ -1,25 +1,20 @@
-package de.unistuttgart.iste.meitrex.gamification_service.service;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import java.util.Optional;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.*;
+package de.unistuttgart.iste.meitrex.gamification_service.service.service;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerHexadScoreEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper.PlayerHexadScoreMapper;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.PlayerHexadScoreRepository;
+import de.unistuttgart.iste.meitrex.gamification_service.service.PlayerHexadScoreService;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
-import java.util.UUID;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 public class PlayerHexadScoreServiceTest {
 
@@ -30,7 +25,7 @@ public class PlayerHexadScoreServiceTest {
     @Mock
     private PlayerHexadScoreMapper playerHexadScoreMapper;
 
-    private PlayerHexadScoreService playerHexadScoreService;  
+    private PlayerHexadScoreService playerHexadScoreService;
 
     @Mock
     private PlayerAnswerInput input; 

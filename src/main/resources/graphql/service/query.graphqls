@@ -1,0 +1,6 @@
+type Query {
+    getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
+    PlayerHexadScoreExists(userId: UUID!): Boolean!
+    achievementsByCourseId(courseId: UUID!): [Achievement!]!
+    achievementsByUserId(userId: UUID): [Achievement!]!
+}

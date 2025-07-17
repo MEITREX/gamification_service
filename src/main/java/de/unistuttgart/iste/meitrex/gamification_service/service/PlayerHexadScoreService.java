@@ -1,23 +1,19 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
 
-import java.util.Arrays;
-import java.util.EnumMap;
-
-import org.springframework.stereotype.Service;
-
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerHexadScoreEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper.PlayerHexadScoreMapper;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.PlayerHexadScoreRepository;
-import de.unistuttgart.iste.meitrex.generated.dto.*;
+import de.unistuttgart.iste.meitrex.generated.dto.PlayerAnswerInput;
+import de.unistuttgart.iste.meitrex.generated.dto.PlayerHexadScore;
+import de.unistuttgart.iste.meitrex.generated.dto.PlayerType;
+import de.unistuttgart.iste.meitrex.generated.dto.PlayerTypeScore;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import lombok.*;
+import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service

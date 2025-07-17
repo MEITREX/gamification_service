@@ -1,0 +1,18 @@
+type Achievement implements HasGoal{
+    id: UUID
+    name : String!
+    imageUrl: String!
+    description: String!
+    courseId: UUID!
+    userId: UUID
+    completed: Boolean!
+    requiredCount: Int
+    completedCount: Int
+    trackingStartTime: DateTime
+    trackingEndTime: DateTime
+}
+
+interface HasGoal {
+    courseId: UUID!
+    userId: UUID
+}
