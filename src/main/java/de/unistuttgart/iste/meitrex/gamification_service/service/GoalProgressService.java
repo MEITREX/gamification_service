@@ -88,7 +88,7 @@ public class GoalProgressService {
     }
 
     private static boolean checkUserGoalProgressInCourse(UUID courseId, UserGoalProgressEntity userGoalProgressEntity) {
-        if (userGoalProgressEntity.getGoal().getHasGoal() instanceof AchievementEntity achievement) {
+        if (userGoalProgressEntity.getGoal().getParentWithGoal() instanceof AchievementEntity achievement) {
             return achievement.getCourse().getId().equals(courseId);
         } else {
             return false;

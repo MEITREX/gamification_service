@@ -25,7 +25,7 @@ public class AchievementEntity extends HasGoalEntity {
 
     public void setGoal(GoalEntity goal) {
         super.setGoal(goal);
-        goal.setHasGoal(this);
+        goal.setParentWithGoal(this);
     }
 
 
