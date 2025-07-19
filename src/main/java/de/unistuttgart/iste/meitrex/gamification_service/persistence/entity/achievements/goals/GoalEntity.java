@@ -32,7 +32,7 @@ public abstract class GoalEntity implements IWithId<UUID> {
     @Column
     OffsetDateTime trackingEndTime;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL)
     HasGoalEntity parentWithGoal;
 
     public abstract void updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgress);
