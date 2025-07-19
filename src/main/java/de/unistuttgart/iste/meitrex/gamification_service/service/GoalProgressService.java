@@ -64,7 +64,7 @@ public class GoalProgressService {
         UUID courseId = content.getMetadata().getCourseId();
         log.info("Course exists: {}", courseRepository.findById(courseId).isPresent());
         CourseEntity courseEntity = courseRepository.findById(courseId).orElseGet(() -> createCourse(courseId));
-        UserEntity user = userRepository.findById(userId).orElse(createUser(userId));
+        UserEntity user = userRepository.findById(userId).orElseGet(() -> createUser(userId));
         if (!user.getCourseIds().contains(courseEntity.getId())) {
             addUserToCourse(courseEntity, user);
         }
@@ -114,7 +114,7 @@ public class GoalProgressService {
         CourseEntity courseEntity = courseRepository.findById(courseId).orElseGet(() -> createCourse(courseId));
         UUID userId = userProgressUpdatedEvent.getUserId();
         UUID chapterId = userProgressUpdatedEvent.getChapterId();
-        UserEntity user = userRepository.findById(userId).orElse(createUser(userId));
+        UserEntity user = userRepository.findById(userId).orElseGet(() -> createUser(userId));
         if (!user.getCourseIds().contains(courseEntity.getId())) {
             addUserToCourse(courseEntity, user);
         }
@@ -154,7 +154,7 @@ public class GoalProgressService {
         CourseEntity courseEntity = courseRepository.findById(courseId).orElseGet(() -> createCourse(courseId));
         log.info(courseEntity.toString());
         UUID userId = forumActivityEvent.getUserId();
-        UserEntity user = userRepository.findById(userId).orElse(createUser(userId));
+        UserEntity user = userRepository.findById(userId).orElseGet(() -> createUser(userId));
         if (!user.getCourseIds().contains(courseEntity.getId())) {
             addUserToCourse(courseEntity, user);
         }
