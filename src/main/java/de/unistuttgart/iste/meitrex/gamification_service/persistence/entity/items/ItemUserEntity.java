@@ -2,7 +2,6 @@ package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.ite
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,7 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserEntity {
+public class ItemUserEntity {
     @Id
     UUID id;
 
