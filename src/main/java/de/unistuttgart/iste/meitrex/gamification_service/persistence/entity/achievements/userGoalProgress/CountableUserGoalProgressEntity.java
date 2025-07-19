@@ -63,7 +63,7 @@ public class CountableUserGoalProgressEntity extends UserGoalProgressEntity{
     }
 
     private long getDifferenceInDays(OffsetDateTime firstTime, OffsetDateTime secondTime) {
-        return ChronoUnit.DAYS.between(firstTime, secondTime);
+        return ChronoUnit.DAYS.between(firstTime.toLocalDate(), secondTime.toLocalDate());
     }
 
 
