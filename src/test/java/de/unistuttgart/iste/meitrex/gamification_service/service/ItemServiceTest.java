@@ -21,10 +21,4 @@ public class ItemServiceTest {
         openMocks(this);
         itemService = new ItemService();
     }
-
-    @Test
-    void testStartup() {
-        List<ColorTheme> colorThemeList = itemService.getColorThemes();
-        assertThat(colorThemeList, hasSize(20));
-    }
 }

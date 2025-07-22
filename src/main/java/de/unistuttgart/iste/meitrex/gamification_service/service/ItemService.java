@@ -32,8 +32,4 @@ public class ItemService {
             throw new RuntimeException(e);
         }
     }
-
-    public List<ColorTheme> getColorThemes() {
-        return items.getColorThemes();
-    }
 }
