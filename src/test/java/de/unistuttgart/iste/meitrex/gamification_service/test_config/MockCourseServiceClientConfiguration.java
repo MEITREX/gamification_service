@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.meitrex.gamification_service.service.test_config;
+package de.unistuttgart.iste.meitrex.gamification_service.test_config;
 
 import de.unistuttgart.iste.meitrex.course_service.client.CourseServiceClient;
 import org.mockito.Mockito;

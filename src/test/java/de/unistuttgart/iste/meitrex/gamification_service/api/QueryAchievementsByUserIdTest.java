@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.meitrex.gamification_service.service.api;
+package de.unistuttgart.iste.meitrex.gamification_service.api;
 
 import de.unistuttgart.iste.meitrex.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
@@ -14,9 +14,8 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.CourseRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserGoalProgressRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.service.test_config.MockContentServiceClientConfiguration;
-import de.unistuttgart.iste.meitrex.gamification_service.service.test_config.MockCourseServiceClientConfiguration;
-import de.unistuttgart.iste.meitrex.gamification_service.service.test_util.CourseUtil;
+import de.unistuttgart.iste.meitrex.gamification_service.test_util.CourseMembershipUtil;
+import de.unistuttgart.iste.meitrex.gamification_service.test_util.CourseUtil;
 import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
@@ -29,18 +28,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMembershipInCourseWithId;
+import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMemberships;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.*;
 
 @ContextConfiguration(classes = {MockTestPublisherConfiguration.class})
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")
-public class QueryAchievementsByCourseIdTest {
-    UUID courseId = UUID.randomUUID();
+public class QueryAchievementsByUserIdTest {
+    private final UUID courseId1 = UUID.randomUUID();
+    private final UUID courseId2 = UUID.randomUUID();
+
 
     @Autowired
     CourseServiceClient courseServiceClient;
@@ -48,8 +47,11 @@ public class QueryAchievementsByCourseIdTest {
     @Autowired
     ContentServiceClient contentServiceClient;
 
+    private final LoggedInUser.CourseMembership courseMembership1 = CourseMembershipUtil.dummyCourseMembershipBuilder(courseId1);
+    private final LoggedInUser.CourseMembership courseMembership2 = CourseMembershipUtil.dummyCourseMembershipBuilder(courseId2);
+
     @InjectCurrentUserHeader
-    private final LoggedInUser loggedInUser = userWithMembershipInCourseWithId(courseId, LoggedInUser.UserRoleInCourse.STUDENT);
+    private final LoggedInUser loggedInUser = userWithMemberships(courseMembership1, courseMembership2);
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -60,17 +62,18 @@ public class QueryAchievementsByCourseIdTest {
     private AchievementRepository achievementRepository;
 
     @Test
-    void queryAchievementsByCourseIdEmpty (GraphQlTester tester) {
+    void queryAchievementsByUserIdEmpty (GraphQlTester tester) {
         UserEntity user = new UserEntity();
         user.setId(loggedInUser.getId());
+        user.setCourseIds(new ArrayList<>());
         userRepository.save(user);
 
-        CourseEntity courseEntity = CourseUtil.dummyCourseEntity(courseId, achievementRepository);
+        CourseEntity courseEntity = CourseUtil.dummyCourseEntity(courseId1, achievementRepository);
         courseRepository.save(courseEntity);
 
         final String query = """
                 query {
-                    achievementsByCourseId(courseId: "%s") {
+                    achievementsByUserId(userId: "%s") {
                         id
                         name
                         imageUrl
@@ -84,21 +87,21 @@ public class QueryAchievementsByCourseIdTest {
                         trackingEndTime
                     }
                 }
-                """.formatted(courseId);
+                """.formatted(loggedInUser.getId());
         List<Achievement> achievements = tester.document(query)
                 .execute()
-                .path("achievementsByCourseId").entityList(Achievement.class).get();
+                .path("achievementsByUserId").entityList(Achievement.class).get();
         assertThat(achievements, hasSize(0));
     }
 
     @Test
-    void queryAchievementsByCourseId (GraphQlTester tester) {
+    void queryAchievementsByUserId (GraphQlTester tester) {
         UserEntity user = new UserEntity();
         user.setId(loggedInUser.getId());
-        user.setCourseIds(new ArrayList<>(List.of(courseId)));
+        user.setCourseIds(new ArrayList<>(List.of(courseId1)));
         userRepository.save(user);
 
-        CourseEntity courseEntity = CourseUtil.dummyCourseEntity(courseId, achievementRepository);
+        CourseEntity courseEntity = CourseUtil.dummyCourseEntity(courseId1, achievementRepository);
         courseRepository.save(courseEntity);
 
         List<UserGoalProgressEntity> userGoalProgressEntities = new ArrayList<>();
@@ -112,7 +115,7 @@ public class QueryAchievementsByCourseIdTest {
 
         final String query = """
                 query {
-                    achievementsByCourseId(courseId: "%s") {
+                    achievementsByUserId(userId: "%s") {
                         id
                         name
                         imageUrl
@@ -126,10 +129,59 @@ public class QueryAchievementsByCourseIdTest {
                         trackingEndTime
                     }
                 }
-                """.formatted(courseId);
+                """.formatted(loggedInUser.getId());
         List<Achievement> achievements = tester.document(query)
                 .execute()
-                .path("achievementsByCourseId").entityList(Achievement.class).get();
+                .path("achievementsByUserId").entityList(Achievement.class).get();
         assertThat(achievements, hasSize(courseEntity.getAchievements().size()));
     }
+
+    @Test
+    void queryAchievementsByUserIdTwoCourses (GraphQlTester tester) {
+        UserEntity user = new UserEntity();
+        user.setId(loggedInUser.getId());
+        user.setCourseIds(new ArrayList<>(List.of(courseId1, courseId2)));
+        userRepository.save(user);
+
+        CourseEntity courseEntity1 = CourseUtil.dummyCourseEntity(courseId1, achievementRepository);
+        courseRepository.save(courseEntity1);
+        CourseEntity courseEntity2 = CourseUtil.dummyCourseEntity(courseId2, achievementRepository);
+        courseRepository.save(courseEntity2);
+
+        List<UserGoalProgressEntity> userGoalProgressEntities = new ArrayList<>();
+        for (AchievementEntity achievement : courseEntity1.getAchievements()) {
+            UserGoalProgressEntity userGoalProgressEntity = achievement.getGoal().generateUserGoalProgress(user);
+            userGoalProgressEntities.add(userGoalProgressEntity);
+        }
+        for (AchievementEntity achievement : courseEntity2.getAchievements()) {
+            UserGoalProgressEntity userGoalProgressEntity = achievement.getGoal().generateUserGoalProgress(user);
+            userGoalProgressEntities.add(userGoalProgressEntity);
+        }
+        userGoalProgressRepository.saveAll(userGoalProgressEntities);
+        user.setUserGoalProgressEntities(userGoalProgressEntities);
+        userRepository.save(user);
+
+        final String query = """
+                query {
+                    achievementsByUserId(userId: "%s") {
+                        id
+                        name
+                        imageUrl
+                        description
+                        courseId
+                        userId
+                        completed
+                        requiredCount
+                        completedCount
+                        trackingStartTime
+                        trackingEndTime
+                    }
+                }
+                """.formatted(loggedInUser.getId());
+        List<Achievement> achievements = tester.document(query)
+                .execute()
+                .path("achievementsByUserId").entityList(Achievement.class).get();
+        assertThat(achievements, hasSize(courseEntity1.getAchievements().size() + courseEntity2.getAchievements().size()));
+    }
 }
+

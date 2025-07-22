@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
 
+import de.unistuttgart.iste.meitrex.gamification_service.model.ColorTheme;
 import de.unistuttgart.iste.meitrex.gamification_service.model.ItemData;
 import de.unistuttgart.iste.meitrex.gamification_service.model.PatternTheme;
 import de.unistuttgart.iste.meitrex.gamification_service.utility.ItemParser;
@@ -26,10 +27,13 @@ public class ItemService {
         try {
             log.info("Parsing JSON file with path {}", filePath);
             items = ItemParser.parseFromFile(filePath);
-            log.info("Parsed {} items", items.getPatternThemes().size());
-            log.info("Parsed {} color themes", items.getColorThemes().size());
+            log.info("Finished Parsing JSON file with path {}", filePath);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public List<ColorTheme> getColorThemes() {
+        return items.getColorThemes();
     }
 }
