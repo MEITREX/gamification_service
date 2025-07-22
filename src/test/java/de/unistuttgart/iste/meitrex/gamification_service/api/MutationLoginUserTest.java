@@ -8,8 +8,6 @@ import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
 import de.unistuttgart.iste.meitrex.course_service.client.CourseServiceClient;
 import de.unistuttgart.iste.meitrex.gamification_service.test_config.MockContentServiceClientConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.test_config.MockCourseServiceClientConfiguration;
-import de.unistuttgart.iste.meitrex.gamification_service.service.test_config.MockContentServiceClientConfiguration;
-import de.unistuttgart.iste.meitrex.gamification_service.service.test_config.MockCourseServiceClientConfiguration;
 import de.unistuttgart.iste.meitrex.generated.dto.Chapter;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
