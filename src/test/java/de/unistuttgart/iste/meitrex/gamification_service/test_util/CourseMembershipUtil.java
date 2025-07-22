@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.meitrex.gamification_service.service.test_util;
+package de.unistuttgart.iste.meitrex.gamification_service.test_util;
 
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 
