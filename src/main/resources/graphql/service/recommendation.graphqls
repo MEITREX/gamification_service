@@ -1,0 +1,26 @@
+enum RecommendationUserFeedback {
+    JUST_RIGHT,
+    MORE_OFTEN,
+    LESS_OFTEN,
+}
+
+enum GamificationCategory {
+    SOCIALIZATION,
+    ASSISTANCE,
+    IMMERSION,
+    RISK_REWARD,
+    CUSTOMIZATION,
+    PROGRESSION,
+    ALTRUISM,
+    INCENTIVE,
+}
+
+type GamificationCategoryRecommendation {
+    category: GamificationCategory!
+    requestFeedback: Boolean!
+}
+
+type WidgetSettings {
+    numberOfRecommendations: Int!
+    recommendationRefreshInterval: Int! # in hours
+}

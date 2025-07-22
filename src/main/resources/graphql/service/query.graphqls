@@ -3,4 +3,12 @@ type Query {
     PlayerHexadScoreExists(userId: UUID!): Boolean!
     achievementsByCourseId(courseId: UUID!): [Achievement!]!
     achievementsByUserId(userId: UUID): [Achievement!]!
+
+    """
+    Gets the widget recommendations for the current user. Number of recommendations depends on the user's widget
+    settings. Recommendations are refreshed on an interval based on the user's widget settings.
+    """
+    _internal_noauth_currentUserWidgetRecommendations(courseId: UUID!): [GamificationCategoryRecommendation!]!
+
+    currentUserWidgetSettings: WidgetSettings!
 }
