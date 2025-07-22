@@ -6,10 +6,11 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Entity
+@Entity(name = "Course")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,4 +25,10 @@ public class CourseEntity implements IWithId<UUID> {
 
     @OneToMany(cascade = CascadeType.ALL)
     List<AchievementEntity> achievements;
+
+    public CourseEntity(final UUID id, final List<Chapter> chapters) {
+        this.id = id;
+        this.chapters = chapters;
+        this.achievements = new ArrayList<>();
+    }
 }

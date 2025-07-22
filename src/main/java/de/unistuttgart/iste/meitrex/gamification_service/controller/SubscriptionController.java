@@ -3,10 +3,9 @@ package de.unistuttgart.iste.meitrex.gamification_service.controller;
 import de.unistuttgart.iste.meitrex.common.event.ContentProgressedEvent;
 import de.unistuttgart.iste.meitrex.common.event.ForumActivityEvent;
 import de.unistuttgart.iste.meitrex.common.event.UserProgressUpdatedEvent;
-import de.unistuttgart.iste.meitrex.gamification_service.service.AchievementService;
+import de.unistuttgart.iste.meitrex.gamification_service.service.GoalProgressService;
 import io.dapr.Topic;
 import io.dapr.client.domain.CloudEvent;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +18,7 @@ import reactor.core.scheduler.Schedulers;
 @RestController
 @RequiredArgsConstructor
 public class SubscriptionController {
-    private final AchievementService achievementService;
+    private final GoalProgressService goalProgressService;
 
     /**
      * Listens to the content-progressed topic and processes the user progress.
@@ -29,7 +28,7 @@ public class SubscriptionController {
     public Mono<Void> logUserProgress(@RequestBody final CloudEvent<ContentProgressedEvent> cloudEvent) {
         return Mono.fromRunnable(() -> {
             log.info("Received content-progressed event: {}", cloudEvent.getData());
-            achievementService.progressUserProgress(cloudEvent.getData());
+            goalProgressService.progressUserProgress(cloudEvent.getData());
         })
         .subscribeOn(Schedulers.boundedElastic()).then();
     }
@@ -43,7 +42,7 @@ public class SubscriptionController {
     public Mono<Void> onUserProgress(@RequestBody final CloudEvent<UserProgressUpdatedEvent> cloudEvent) {
         return Mono.fromRunnable(() -> {
             log.info("Received user-progress event: {}", cloudEvent.getData());
-            achievementService.chapterProgress(cloudEvent.getData());
+            goalProgressService.chapterProgress(cloudEvent.getData());
         })
         .subscribeOn(Schedulers.boundedElastic()).then();
     }
@@ -57,7 +56,7 @@ public class SubscriptionController {
         return Mono.fromRunnable(() -> {
             try {
                 log.info("Received forum-activity event: {}", cloudEvent.getData());
-                achievementService.forumProgress(cloudEvent.getData());
+                goalProgressService.forumProgress(cloudEvent.getData());
             } catch (Exception e) {
                 // we need to catch all exceptions because otherwise if some invalid data is in the message queue
                 // it will never get processed and instead the service will just crash forever

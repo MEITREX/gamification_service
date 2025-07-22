@@ -1,8 +1,9 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 

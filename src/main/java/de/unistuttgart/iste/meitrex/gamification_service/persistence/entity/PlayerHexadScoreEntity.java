@@ -1,13 +1,13 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity;
 
-import java.util.UUID;
-
 import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+
+import java.util.UUID;
 
 @Getter
 @Setter

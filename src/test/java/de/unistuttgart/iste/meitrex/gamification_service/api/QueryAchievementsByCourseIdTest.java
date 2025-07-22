@@ -15,6 +15,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserGoalProgressRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.test_util.CourseUtil;
+import de.unistuttgart.iste.meitrex.gamification_service.service.test_util.CourseUtil;
 import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
@@ -60,6 +61,7 @@ public class QueryAchievementsByCourseIdTest {
     void queryAchievementsByCourseIdEmpty (GraphQlTester tester) {
         UserEntity user = new UserEntity();
         user.setId(loggedInUser.getId());
+        user.setUserGoalProgressEntities(new ArrayList<>());
         userRepository.save(user);
 
         CourseEntity courseEntity = CourseUtil.dummyCourseEntity(courseId, achievementRepository);

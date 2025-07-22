@@ -63,9 +63,7 @@ public class QueryAchievementsByUserIdTest {
 
     @Test
     void queryAchievementsByUserIdEmpty (GraphQlTester tester) {
-        UserEntity user = new UserEntity();
-        user.setId(loggedInUser.getId());
-        user.setCourseIds(new ArrayList<>());
+        UserEntity user = new UserEntity(loggedInUser.getId(), new ArrayList<>(), new ArrayList<>());
         userRepository.save(user);
 
         CourseEntity courseEntity = CourseUtil.dummyCourseEntity(courseId1, achievementRepository);

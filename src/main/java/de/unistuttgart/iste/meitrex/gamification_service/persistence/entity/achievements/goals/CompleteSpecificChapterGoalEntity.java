@@ -4,7 +4,8 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achi
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.CompleteSpecificChapterGoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.GoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -25,20 +26,12 @@ public class CompleteSpecificChapterGoalEntity extends GoalEntity{
     @Column
     String chapterName;
 
+    @Override
     public String generateDescription() {
         return "Complete the chapter " + chapterName + ".";
     }
 
-    public void updateProgress(UserGoalProgressEntity userGoalProgress) {
-
-    }
-
-    public void updateProgress(UserGoalProgressEntity userGoalProgress, UUID chapterId) {
-        if (chapterId.equals(this.chapterId)) {
-            userGoalProgress.setCompleted(true);
-        }
-    }
-
+    @Override
     public void updateProgress(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgress) {
         if (progressEvent instanceof CompleteSpecificChapterGoalProgressEvent completeSpecificChapterGoalProgressEvent){
             UUID eventChapterId = completeSpecificChapterGoalProgressEvent.getChapterId();

@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.achievements;
 
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.*;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.AchievementEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.*;
 import de.unistuttgart.iste.meitrex.generated.dto.Chapter;
 import jakarta.persistence.EntityNotFoundException;

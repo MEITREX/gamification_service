@@ -15,10 +15,13 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AnswerForumQuestionGoalEntity extends CountableGoalEntity{
+
+    @Override
     public String generateDescription(){
         return "Answer " + super.getRequiredCount() + " questions in the Forum.";
     }
 
+    @Override
     public void updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgressEntity){
         if (goalProgressEvent.getProgressType().equals(ProgressType.FORUM)) {
             if (userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity){

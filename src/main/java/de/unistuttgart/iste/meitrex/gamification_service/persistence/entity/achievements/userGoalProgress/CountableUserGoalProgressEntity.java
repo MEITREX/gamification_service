@@ -1,12 +1,15 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.UserEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.CompletedQuizzesGoalEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.CountableGoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.GoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.LoginStreakGoalEntity;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -60,7 +63,7 @@ public class CountableUserGoalProgressEntity extends UserGoalProgressEntity{
     }
 
     private long getDifferenceInDays(OffsetDateTime firstTime, OffsetDateTime secondTime) {
-        return ChronoUnit.DAYS.between(firstTime, secondTime);
+        return ChronoUnit.DAYS.between(firstTime.toLocalDate(), secondTime.toLocalDate());
     }
 
 

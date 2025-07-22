@@ -5,7 +5,8 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achi
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.GoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.CountableUserGoalProgressEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -24,10 +25,12 @@ public class CompletedQuizzesGoalEntity extends CountableGoalEntity implements I
     @Column
     float minimumScore;
 
+    @Override
     public String generateDescription(){
         return "Complete " + super.getRequiredCount() + " quizzes.";
     }
 
+    @Override
     public void updateProgress(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgressEntity){
         if (progressEvent instanceof CompletedQuizzesGoalProgressEvent completedQuizzesGoalProgressEvent &&
         userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity) {
