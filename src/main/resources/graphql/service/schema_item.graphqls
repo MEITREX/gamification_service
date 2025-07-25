@@ -1,0 +1,12 @@
+type Item {
+    id: UUID!
+    uniqueDescription: String!
+    equipped: Boolean!
+    unlocked: Boolean!
+}
+
+type Inventory {
+    userId: UUID!
+    unspentPoints: Int!
+    items: [Item!]!
+}
