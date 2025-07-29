@@ -20,7 +20,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AndCombinatorGoalEntity extends GoalEntity{
+public class AndCombinatorGoalEntity extends GoalEntity {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     GoalEntity goal1;
 
@@ -29,19 +29,24 @@ public class AndCombinatorGoalEntity extends GoalEntity{
 
     @Override
     public String generateDescription() {
-        return goal1.generateDescription().substring(0, goal1.generateDescription().length() - 1)+ " and " +
+        return goal1.generateDescription().substring(0, goal1.generateDescription().length() - 1) + " and " +
                 goal2.generateDescription().substring(0, 1).toLowerCase() + goal2.generateDescription().substring(1);
     }
 
     @Override
-    public void updateProgress(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgress) {
+    public boolean updateProgress(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgress) {
         if (userGoalProgress instanceof CombineUserGoalProgressEntity combineUserGoalProgress) {
             combineUserGoalProgress.getUserGoalProgressEntity1().updateProgress(progressEvent);
             combineUserGoalProgress.getUserGoalProgressEntity2().updateProgress(progressEvent);
-            if (combineUserGoalProgress.getUserGoalProgressEntity1().isCompleted() && combineUserGoalProgress.getUserGoalProgressEntity2().isCompleted()){
+            if (combineUserGoalProgress.getUserGoalProgressEntity1().isCompleted()
+                    && combineUserGoalProgress.getUserGoalProgressEntity2().isCompleted()
+                    && !combineUserGoalProgress.isCompleted()) {
                 combineUserGoalProgress.setCompleted(true);
+                return true;
             }
         }
+
+        return false;
     }
 
     @Override

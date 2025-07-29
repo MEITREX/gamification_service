@@ -1,10 +1,13 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
 
+import de.unistuttgart.iste.meitrex.gamification_service.achievements.Achievements;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.AchievementEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.CountableGoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.CountableUserGoalProgressEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.AchievementRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
 import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
 import jakarta.transaction.Transactional;
@@ -23,8 +26,9 @@ import java.util.UUID;
 @Transactional
 public class AchievementService {
     private final UserRepository userRepository;
+    private final AchievementRepository achievementRepository;
 
-
+    private final Achievements achievements = new Achievements();
 
     public List<Achievement> getAchievementsForUserInCourse(UUID userId, UUID courseId) {
         Optional<UserEntity> user = userRepository.findById(userId);
@@ -61,6 +65,9 @@ public class AchievementService {
                     if (countableUserGoalProgressEntity.getGoal() instanceof CountableGoalEntity countableGoalEntity) {
                         achievement.setRequiredCount(countableGoalEntity.getRequiredCount());
                         achievement.setCompletedCount(countableUserGoalProgressEntity.getCompletedCount());
+                    } else {
+                        throw new RuntimeException("UserGoalProgress was countable, but its parent GoalEntity was not" +
+                                " countable. This should never happen!");
                     }
                 }
                 userAchievements.add(achievement);
@@ -77,5 +84,20 @@ public class AchievementService {
         List<Achievement> userAchievements = new ArrayList<>();
         mapUserGoalProgressToAchievements(user.get().getUserGoalProgressEntities(), userAchievements);
         return userAchievements;
+    }
+
+    public void tryGenerateAdaptiveAchievementForUser(UserEntity user,
+                                                      CourseEntity course,
+                                                      AchievementEntity completedAchievement) {
+        if(!(completedAchievement.getGoal() instanceof CountableGoalEntity countableGoal))
+            return;
+
+        AchievementEntity newAchievement = new AchievementEntity();
+    }
+
+    public void createInitialAchievementsInCourseEntity(CourseEntity course) {
+        List<AchievementEntity> achievementEntities = achievements.generateAchievements(course);
+        achievementRepository.saveAll(achievementEntities);
+        course.setAchievements(achievementEntities);
     }
 }

@@ -22,14 +22,18 @@ public class AnswerForumQuestionGoalEntity extends CountableGoalEntity{
     }
 
     @Override
-    public void updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgressEntity){
+    public boolean updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgressEntity){
         if (goalProgressEvent.getProgressType().equals(ProgressType.FORUM)) {
             if (userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity){
                 countableUserGoalProgressEntity.setCompletedCount(countableUserGoalProgressEntity.getCompletedCount() + 1);
-                if (countableUserGoalProgressEntity.getCompletedCount() >= super.getRequiredCount()) {
+                if (countableUserGoalProgressEntity.getCompletedCount() >= super.getRequiredCount()
+                && !countableUserGoalProgressEntity.isCompleted()) {
                     countableUserGoalProgressEntity.setCompleted(true);
+                    return true;
                 }
             }
         }
+
+        return false;
     }
 }

@@ -26,14 +26,14 @@ public class CompletedQuizzesGoalEntity extends CountableGoalEntity implements I
     float minimumScore;
 
     @Override
-    public String generateDescription(){
+    public String generateDescription() {
         return "Complete " + super.getRequiredCount() + " quizzes.";
     }
 
     @Override
-    public void updateProgress(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgressEntity){
+    public boolean updateProgress(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgressEntity) {
         if (progressEvent instanceof CompletedQuizzesGoalProgressEvent completedQuizzesGoalProgressEvent &&
-        userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity) {
+                userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity) {
             float score = completedQuizzesGoalProgressEvent.getScore();
             UUID contentId = completedQuizzesGoalProgressEvent.getContentId();
             log.info("Updating progress for user goal progress with minimum Score {} with score {} and contentId {}",
@@ -42,12 +42,14 @@ public class CompletedQuizzesGoalEntity extends CountableGoalEntity implements I
                 countableUserGoalProgressEntity.setCompletedCount(countableUserGoalProgressEntity.getCompletedCount() + 1);
                 countableUserGoalProgressEntity.getContentIds().add(contentId);
             }
-            if (countableUserGoalProgressEntity.getCompletedCount()>= getRequiredCount()) {
+            if (countableUserGoalProgressEntity.getCompletedCount() >= getRequiredCount()
+                    && !countableUserGoalProgressEntity.isCompleted()) {
                 countableUserGoalProgressEntity.setCompleted(true);
+                return true;
             }
         }
 
-
+        return false;
     }
 
     @Override

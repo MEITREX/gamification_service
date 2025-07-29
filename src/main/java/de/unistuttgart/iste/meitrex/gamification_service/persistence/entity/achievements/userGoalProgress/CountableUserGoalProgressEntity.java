@@ -45,7 +45,9 @@ public class CountableUserGoalProgressEntity extends UserGoalProgressEntity{
         completedCount = 0;
     }
 
-    public void updateProgress(OffsetDateTime loginTime) {
+    public boolean updateProgress(OffsetDateTime loginTime) {
+        boolean completedNow = false;
+
         if (super.getGoal() instanceof LoginStreakGoalEntity) {
             if (loginTimes.isEmpty()) {
                 completedCount = 1;
@@ -54,12 +56,16 @@ public class CountableUserGoalProgressEntity extends UserGoalProgressEntity{
                 completedCount = 0;
             } else if (getDifferenceInDays(loginTimes.getLast(), loginTime) == 1) {
                 completedCount++;
-                if (completedCount >= ((LoginStreakGoalEntity) super.getGoal()).getRequiredCount()) {
+                if (completedCount >= ((LoginStreakGoalEntity) super.getGoal()).getRequiredCount()
+                && !isCompleted()) {
                     setCompleted(true);
+                    completedNow = true;
                 }
             }
             loginTimes.add(loginTime);
         }
+
+        return completedNow;
     }
 
     private long getDifferenceInDays(OffsetDateTime firstTime, OffsetDateTime secondTime) {

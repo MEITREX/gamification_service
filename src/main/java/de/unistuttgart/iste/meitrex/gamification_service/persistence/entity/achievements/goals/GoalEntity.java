@@ -35,7 +35,7 @@ public abstract class GoalEntity implements IWithId<UUID> {
     @OneToOne(cascade = CascadeType.ALL)
     HasGoalEntity parentWithGoal;
 
-    public abstract void updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgress);
+    public abstract boolean updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgress);
 
     public abstract UserGoalProgressEntity generateUserGoalProgress(UserEntity user);
 

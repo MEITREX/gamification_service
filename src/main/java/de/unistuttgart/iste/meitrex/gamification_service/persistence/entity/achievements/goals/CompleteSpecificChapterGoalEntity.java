@@ -32,13 +32,17 @@ public class CompleteSpecificChapterGoalEntity extends GoalEntity{
     }
 
     @Override
-    public void updateProgress(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgress) {
+    public boolean updateProgress(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgress) {
         if (progressEvent instanceof CompleteSpecificChapterGoalProgressEvent completeSpecificChapterGoalProgressEvent){
             UUID eventChapterId = completeSpecificChapterGoalProgressEvent.getChapterId();
-            if (eventChapterId.equals(this.chapterId)) {
+            if (eventChapterId.equals(this.chapterId)
+                && !userGoalProgress.isCompleted()) {
                 userGoalProgress.setCompleted(true);
+                return true;
             }
         }
+
+        return false;
     }
 
     @Override

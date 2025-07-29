@@ -19,8 +19,11 @@ import java.util.UUID;
 public abstract class HasGoalEntity implements IWithId<UUID> {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    UUID id;
+    private UUID id;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    GoalEntity goal;
+    private GoalEntity goal;
+
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private CourseEntity course;
 }
