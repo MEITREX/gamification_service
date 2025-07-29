@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.meitrex.gamification_service.service.service;
+package de.unistuttgart.iste.meitrex.gamification_service.service;
 
 import de.unistuttgart.iste.meitrex.common.event.ContentProgressedEvent;
 import de.unistuttgart.iste.meitrex.common.event.ForumActivity;
@@ -10,12 +10,13 @@ import de.unistuttgart.iste.meitrex.course_service.client.CourseServiceClient;
 import de.unistuttgart.iste.meitrex.gamification_service.achievements.Achievements;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.AchievementEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.UserEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.CompleteSpecificChapterGoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.CompletedQuizzesGoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.GoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.ProgressType;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.UserInventoryEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.AchievementRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.CourseRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserGoalProgressRepository;
@@ -68,7 +69,7 @@ public class GoalProgressServiceTest {
                 .correctness(1)
                 .success(true)
                 .build();
-        UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new ArrayList<>());
+        UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
         ContentMetadata contentMetadata = ContentMetadata.builder()
                 .setCourseId(courseId)
                 .setType(ContentType.QUIZ).build();
@@ -124,7 +125,7 @@ public class GoalProgressServiceTest {
                 .correctness(1)
                 .success(true)
                 .build();
-        UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new ArrayList<>());
+        UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
         ContentMetadata contentMetadata = ContentMetadata.builder()
                 .setCourseId(courseId)
                 .setType(ContentType.QUIZ).build();
@@ -201,7 +202,7 @@ public class GoalProgressServiceTest {
                 .courseId(courseId)
                 .userId(userId)
                 .build();
-        UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new ArrayList<>());
+        UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
         ContentMetadata contentMetadata = ContentMetadata.builder()
                 .setCourseId(courseId)
                 .setType(ContentType.QUIZ).build();
@@ -263,7 +264,7 @@ public class GoalProgressServiceTest {
                 .courseId(courseId)
                 .userId(userId)
                 .build();
-        UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new ArrayList<>());
+        UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
         ContentMetadata contentMetadata = ContentMetadata.builder()
                 .setCourseId(courseId)
                 .setType(ContentType.QUIZ).build();
@@ -353,7 +354,7 @@ public class GoalProgressServiceTest {
                 .courseId(courseId)
                 .activity(ForumActivity.ANSWER)
                 .build();
-        UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new ArrayList<>());
+        UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
         Chapter chapter = new Chapter();
         chapter.setId(UUID.randomUUID());
         chapter.setTitle("Chapter Title");
@@ -392,7 +393,7 @@ public class GoalProgressServiceTest {
                 .courseId(courseId)
                 .activity(ForumActivity.ANSWER)
                 .build();
-        UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new ArrayList<>());
+        UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(courseEntity));
         when(userRepository.save(userEntity)).thenReturn(userEntity);
         goalProgressService.forumProgress(forumActivityEvent);
@@ -450,7 +451,7 @@ public class GoalProgressServiceTest {
         UUID userId = UUID.randomUUID();
         UUID courseId = UUID.randomUUID();
 
-        UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new ArrayList<>());
+        UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
         Chapter chapter = new Chapter();
         chapter.setId(UUID.randomUUID());
         chapter.setTitle("Chapter Title");
@@ -482,7 +483,7 @@ public class GoalProgressServiceTest {
                 .build();
         List<AchievementEntity> achievementEntities = achievements.generateAchievements(courseEntity);
         courseEntity.setAchievements(achievementEntities);
-        UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new ArrayList<>());
+        UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(courseEntity));
         when(userRepository.save(userEntity)).thenReturn(userEntity);
         UUID currentUserId = goalProgressService.loginUser(userId, courseId);

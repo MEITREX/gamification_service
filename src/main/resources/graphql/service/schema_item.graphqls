@@ -1,4 +1,4 @@
-type Item {
+type UserItem {
     id: UUID!
     uniqueDescription: String!
     equipped: Boolean!
@@ -8,5 +8,5 @@ type Item {
 type Inventory {
     userId: UUID!
     unspentPoints: Int!
-    items: [Item!]!
+    items: [UserItem!]!
 }
