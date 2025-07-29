@@ -7,8 +7,10 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.
 import de.unistuttgart.iste.meitrex.gamification_service.utility.ItemParser;
 import de.unistuttgart.iste.meitrex.generated.dto.Inventory;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -22,17 +24,24 @@ import java.util.UUID;
 public class ItemService {
     private final UserRepository userRepository;
     private final GoalProgressService goalProgressService;
-    private String filePath = "src/main/resources/itemSchema.json";
+
+    @Value("${item.file.path}")
+    private String FILE_PATH;
 
     private ItemData items;
 
     public ItemService(UserRepository userRepository, GoalProgressService goalProgressService) {
-        parseItemJson();
         this.userRepository = userRepository;
         this.goalProgressService = goalProgressService;
     }
 
-    private void parseItemJson() {
+    @PostConstruct
+    public void init() {
+        log.info("File path: {}", FILE_PATH);
+        parseItemJson(FILE_PATH);
+    }
+
+    private void parseItemJson(String filePath) {
         try {
             log.info("Parsing JSON file with path {}", filePath);
             items = ItemParser.parseFromFile(filePath);

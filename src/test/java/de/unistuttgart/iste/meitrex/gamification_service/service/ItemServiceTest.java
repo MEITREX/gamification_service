@@ -3,11 +3,15 @@ package de.unistuttgart.iste.meitrex.gamification_service.service;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.UserInventoryEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.service.ItemService;
 import de.unistuttgart.iste.meitrex.generated.dto.Inventory;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,25 +26,27 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+@SpringBootTest
+@ActiveProfiles("test")
 public class ItemServiceTest {
 
+    @Autowired
     ItemService itemService;
 
-    private final UserRepository userRepository  = mock(UserRepository.class);
+    @MockitoBean
+    private UserRepository userRepository  = mock(UserRepository.class);
 
-    private final GoalProgressService goalProgressService = mock(GoalProgressService.class);
+    @MockitoBean
+    private GoalProgressService goalProgressService = mock(GoalProgressService.class);
 
-    @BeforeEach
-    void setUp() {
-        openMocks(this);
-        itemService = new ItemService(userRepository, goalProgressService);
-    }
+
 
     @Test
     void testGetInventoryForUser() {
         UUID userId = UUID.randomUUID();
         UserEntity user = new UserEntity(userId, new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
         Inventory inventory = itemService.getInventoryForUser(userId);
         assertThat(inventory.getItems(), hasSize(81));
         assertThat(inventory.getUserId(), is(userId));
