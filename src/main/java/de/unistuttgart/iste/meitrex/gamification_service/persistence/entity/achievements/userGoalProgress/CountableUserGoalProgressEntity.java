@@ -1,6 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress;
 
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.UserEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.GoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.LoginStreakGoalEntity;
 import jakarta.persistence.Column;

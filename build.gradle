@@ -125,6 +125,8 @@ dependencies {
     implementation 'com.graphql-java:graphql-java-extended-validation:22.0'
     implementation 'io.dapr:dapr-sdk:1.9.0'
     implementation 'io.dapr:dapr-sdk-springboot:1.9.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.1'
+    implementation 'org.projectlombok:lombok:1.18.30'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'org.postgresql:postgresql'

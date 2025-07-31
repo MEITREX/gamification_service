@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.meitrex.gamification_service.service.entity;
+package de.unistuttgart.iste.meitrex.gamification_service.entity;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.AchievementEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;

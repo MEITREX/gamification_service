@@ -3,4 +3,6 @@ type Query {
     PlayerHexadScoreExists(userId: UUID!): Boolean!
     achievementsByCourseId(courseId: UUID!): [Achievement!]!
     achievementsByUserId(userId: UUID): [Achievement!]!
+    itemsByUserId(userId: UUID!): [UserItem!]!
+    inventoryForUser: Inventory!
 }
