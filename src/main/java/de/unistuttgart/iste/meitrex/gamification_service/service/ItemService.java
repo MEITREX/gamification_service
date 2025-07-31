@@ -3,6 +3,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.service;
 import de.unistuttgart.iste.meitrex.gamification_service.model.ItemData;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.ItemInstanceEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.UserInventoryEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.utility.ItemParser;
 import de.unistuttgart.iste.meitrex.generated.dto.Inventory;
@@ -103,6 +104,9 @@ public class ItemService {
     }
 
     private static void getItems(UserEntity user, UUID itemId, List<UserItem> userItems) {
+        if (user.getInventory() == null) {
+            user.setInventory(new UserInventoryEntity());
+        }
         ItemInstanceEntity itemInstance = user.getInventory().getItems().stream()
                 .filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId().equals(itemId))
                 .findFirst().orElse(null);

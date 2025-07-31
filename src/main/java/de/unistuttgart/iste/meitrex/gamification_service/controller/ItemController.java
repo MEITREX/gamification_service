@@ -6,6 +6,7 @@ import de.unistuttgart.iste.meitrex.generated.dto.Inventory;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.ContextValue;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
@@ -24,13 +25,13 @@ public class ItemController {
 
     @QueryMapping
     public List<UserItem> itemsByUserId(@Argument UUID userId,
-                                        @ContextValue final LoggedInUser loggedInUser) {
+                                        @ContextValue final LoggedInUser currentUser) {
         return itemService.getItemsForUser(userId);
     }
 
     @QueryMapping
-    public Inventory inventoryForUser(@ContextValue final LoggedInUser loggedInUser) {
-       return itemService.getInventoryForUser(loggedInUser.getId());
+    public Inventory inventoryForUser(@NotNull @ContextValue final LoggedInUser currentUser) {
+        return itemService.getInventoryForUser(currentUser.getId());
     }
 
     @MutationMapping
