@@ -78,6 +78,19 @@ public abstract class GoalEntity implements IWithId<UUID> {
                 '}';
     }
 
+    /**
+     * Used to compare 2 goal entities in regard to their actual goal targets, ignoring ID, parent entity, etc.
+     * @param other The entity to compare to
+     * @return True if the entities are equal, false otherwise.
+     */
+    public boolean equalsGoalTargets(GoalEntity other) {
+        if(!getClass().equals(other.getClass()))
+            return false;
+
+        return Objects.equals(trackingStartTime, other.trackingStartTime)
+                && Objects.equals(trackingEndTime, other.trackingEndTime);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

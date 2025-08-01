@@ -66,4 +66,12 @@ public class OrCombinatorGoalEntity extends GoalEntity{
                 goal1.generateUserGoalProgress(user),
                 goal2.generateUserGoalProgress(user));
     }
+
+    @Override
+    public boolean equalsGoalTargets(GoalEntity other) {
+        OrCombinatorGoalEntity otherOr = (OrCombinatorGoalEntity) other;
+        return super.equalsGoalTargets(other)
+                && goal1.equalsGoalTargets(otherOr.getGoal1())
+                && goal2.equalsGoalTargets(otherOr.getGoal2());
+    }
 }

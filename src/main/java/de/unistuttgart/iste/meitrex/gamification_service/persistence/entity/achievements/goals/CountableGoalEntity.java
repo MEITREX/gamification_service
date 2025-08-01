@@ -36,6 +36,13 @@ public abstract class CountableGoalEntity extends GoalEntity {
     }
 
     @Override
+    public boolean equalsGoalTargets(GoalEntity other) {
+        CountableGoalEntity otherCountable = (CountableGoalEntity) other;
+        return super.equalsGoalTargets(other)
+                && requiredCount == otherCountable.requiredCount;
+    }
+
+    @Override
     public UserGoalProgressEntity generateUserGoalProgress(UserEntity user) {
         return new CountableUserGoalProgressEntity(user, this);
     }

@@ -66,4 +66,13 @@ public class AndCombinatorGoalEntity extends GoalEntity {
                 goal2.generateUserGoalProgress(user));
 
     }
+
+    @Override
+    public boolean equalsGoalTargets(GoalEntity other) {
+        AndCombinatorGoalEntity otherAnd = (AndCombinatorGoalEntity) other;
+
+        return super.equalsGoalTargets(other)
+                && goal1.equalsGoalTargets(otherAnd.getGoal1())
+                && goal2.equalsGoalTargets(otherAnd.getGoal2());
+    }
 }

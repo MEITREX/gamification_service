@@ -61,6 +61,13 @@ public class CompletedQuizzesGoalEntity extends CountableGoalEntity implements I
     }
 
     @Override
+    public boolean equalsGoalTargets(GoalEntity other) {
+        CompletedQuizzesGoalEntity otherQuizzes = (CompletedQuizzesGoalEntity) other;
+        return super.equalsGoalTargets(other)
+                && minimumScore == otherQuizzes.minimumScore;
+    }
+
+    @Override
     public String toString() {
         return "CompletedQuizzesGoalEntity{" +
                 "super=" + super.toString() +
