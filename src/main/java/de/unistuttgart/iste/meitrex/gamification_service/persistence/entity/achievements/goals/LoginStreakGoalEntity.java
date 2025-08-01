@@ -24,6 +24,11 @@ public class LoginStreakGoalEntity extends CountableGoalEntity{
     }
 
     @Override
+    protected void populateFromOther(GoalEntity goal) {
+
+    }
+
+    @Override
     public boolean updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgressEntity){
         if (goalProgressEvent instanceof LoginStreakGoalProgressEvent loginStreakGoalProgressEvent) {
             if (userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity) {

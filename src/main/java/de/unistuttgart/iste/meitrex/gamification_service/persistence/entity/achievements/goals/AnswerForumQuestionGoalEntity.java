@@ -10,24 +10,29 @@ import lombok.experimental.FieldDefaults;
 
 
 @Entity(name = "AnswerForumQuestionGoal")
-@Data@EqualsAndHashCode(callSuper = true)
+@Data
+@EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AnswerForumQuestionGoalEntity extends CountableGoalEntity{
+public class AnswerForumQuestionGoalEntity extends CountableGoalEntity {
 
     @Override
-    public String generateDescription(){
+    public String generateDescription() {
         return "Answer " + super.getRequiredCount() + " questions in the Forum.";
     }
 
     @Override
-    public boolean updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgressEntity){
+    protected void populateFromOther(GoalEntity goal) {
+    }
+
+    @Override
+    public boolean updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgressEntity) {
         if (goalProgressEvent.getProgressType().equals(ProgressType.FORUM)) {
-            if (userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity){
+            if (userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity) {
                 countableUserGoalProgressEntity.setCompletedCount(countableUserGoalProgressEntity.getCompletedCount() + 1);
                 if (countableUserGoalProgressEntity.getCompletedCount() >= super.getRequiredCount()
-                && !countableUserGoalProgressEntity.isCompleted()) {
+                        && !countableUserGoalProgressEntity.isCompleted()) {
                     countableUserGoalProgressEntity.setCompleted(true);
                     return true;
                 }

@@ -35,6 +35,15 @@ public class OrCombinatorGoalEntity extends GoalEntity{
     }
 
     @Override
+    protected void populateFromOther(GoalEntity goal) {
+        if(!(goal instanceof OrCombinatorGoalEntity orGoal))
+            throw new IllegalArgumentException("Passed goal needs to be of type OrCombinatorGoalEntity.");
+
+        goal1 = orGoal.getGoal1().clone();
+        goal2 = orGoal.getGoal2().clone();
+    }
+
+    @Override
     public boolean updateProgress(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgress) {
         if (userGoalProgress instanceof CombineUserGoalProgressEntity combineUserGoalProgress) {
             combineUserGoalProgress.getUserGoalProgressEntity1().updateProgress(progressEvent);

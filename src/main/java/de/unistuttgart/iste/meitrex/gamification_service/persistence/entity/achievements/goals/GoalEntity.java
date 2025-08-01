@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.lang.reflect.InvocationTargetException;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.UUID;
@@ -34,6 +35,24 @@ public abstract class GoalEntity implements IWithId<UUID> {
 
     @OneToOne(cascade = CascadeType.ALL)
     HasGoalEntity parentWithGoal;
+
+    public GoalEntity clone() {
+        GoalEntity newGoal = null;
+        try {
+            newGoal = this.getClass().getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException |
+                 InvocationTargetException | NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+
+        newGoal.setTrackingStartTime(trackingStartTime);
+        newGoal.setTrackingEndTime(trackingEndTime);
+
+        populateFromOther(newGoal);
+        return newGoal;
+    }
+
+    protected abstract void populateFromOther(GoalEntity goal);
 
     public abstract boolean updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgress);
 

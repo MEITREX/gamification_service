@@ -31,6 +31,14 @@ public class CompletedQuizzesGoalEntity extends CountableGoalEntity implements I
     }
 
     @Override
+    protected void populateFromOther(GoalEntity goal) {
+        if (!(goal instanceof CompletedQuizzesGoalEntity quizzesGoal))
+            throw new IllegalArgumentException("Passed goal must be of type CompletedQuizzesGoalEntity.");
+
+        minimumScore = quizzesGoal.getMinimumScore();
+    }
+
+    @Override
     public boolean updateProgress(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgressEntity) {
         if (progressEvent instanceof CompletedQuizzesGoalProgressEvent completedQuizzesGoalProgressEvent &&
                 userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity) {

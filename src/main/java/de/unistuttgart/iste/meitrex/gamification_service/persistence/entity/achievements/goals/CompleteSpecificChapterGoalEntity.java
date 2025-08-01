@@ -19,7 +19,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CompleteSpecificChapterGoalEntity extends GoalEntity{
+public class CompleteSpecificChapterGoalEntity extends GoalEntity {
     @Column
     UUID chapterId;
 
@@ -32,11 +32,20 @@ public class CompleteSpecificChapterGoalEntity extends GoalEntity{
     }
 
     @Override
+    protected void populateFromOther(GoalEntity goal) {
+        if (!(goal instanceof CompleteSpecificChapterGoalEntity chapterGoal))
+            throw new IllegalArgumentException("Passed goal must be of type CompleteSpecificChapterGoalEntity.");
+
+        chapterId = chapterGoal.getChapterId();
+        chapterName = chapterGoal.getChapterName();
+    }
+
+    @Override
     public boolean updateProgress(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgress) {
-        if (progressEvent instanceof CompleteSpecificChapterGoalProgressEvent completeSpecificChapterGoalProgressEvent){
+        if (progressEvent instanceof CompleteSpecificChapterGoalProgressEvent completeSpecificChapterGoalProgressEvent) {
             UUID eventChapterId = completeSpecificChapterGoalProgressEvent.getChapterId();
             if (eventChapterId.equals(this.chapterId)
-                && !userGoalProgress.isCompleted()) {
+                    && !userGoalProgress.isCompleted()) {
                 userGoalProgress.setCompleted(true);
                 return true;
             }
