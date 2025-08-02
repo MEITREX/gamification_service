@@ -8,7 +8,7 @@ import java.util.UUID;
 public class ProfilePic {
     private String name;
     private String description;
-    private String rarity;
+    private ItemRarity rarity;
     private boolean obtainableInLottery;
     private boolean obtainableAsReward;
     private boolean obtainableInShop;

@@ -60,6 +60,9 @@ public class ItemService {
 
     public Inventory getInventoryForUser(UUID userId) {
         UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
+        if(user.getInventory().getItems().isEmpty()) {
+            addDefaultItems(user);
+        }
         List<UserItem> userItems = getItemsForUser(userId);
         Inventory inventory = new Inventory();
         inventory.setItems(userItems);
@@ -71,6 +74,9 @@ public class ItemService {
     public List<UserItem> getItemsForUser(UUID userId) {
         List<UserItem> userItems = new ArrayList<>();
         UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
+        if(user.getInventory().getItems().isEmpty()) {
+            addDefaultItems(user);
+        }
         getProfilePictureFrames(user, userItems);
         getProfilePictures(user, userItems);
         getTutorCharacters(user, userItems);
@@ -81,6 +87,9 @@ public class ItemService {
 
     public Inventory buyItem(UUID userId, UUID itemId) {
         UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
+        if(user.getInventory().getItems().isEmpty()) {
+            addDefaultItems(user);
+        }
         if (user.getInventory().getItems().stream()
                 .filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId().equals(itemId)).findAny().isEmpty()) {
             if (itemExists(itemId)) {
@@ -98,6 +107,9 @@ public class ItemService {
 
     public Inventory equipItem(UUID userId, UUID itemId) {
         UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
+        if(user.getInventory().getItems().isEmpty()) {
+            addDefaultItems(user);
+        }
         user.getInventory().getItems().stream().filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId().equals(itemId)).findFirst().ifPresent(itemInstanceEntity -> {
             user.getInventory().getItems().stream().filter(itemInstanceEntity1 ->
                     itemInstanceEntity1.getItemType().equals(itemInstanceEntity.getItemType()))
@@ -111,6 +123,9 @@ public class ItemService {
 
     public Inventory unequipItem(UUID userId, UUID itemId) {
         UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
+        if(user.getInventory().getItems().isEmpty()) {
+            addDefaultItems(user);
+        }
         user.getInventory().getItems().stream().filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId().equals(itemId)).findFirst().ifPresent(itemInstanceEntity -> {
            if (itemInstanceEntity.getItemType() != ItemType.Tutor) {
                itemInstanceEntity.setEquipped(false);
@@ -118,6 +133,50 @@ public class ItemService {
            }
         });
         return getInventoryForUser(userId);
+    }
+
+    private void addDefaultItems(UserEntity user) {
+        items.getTutors().stream().filter(tutor -> tutor.getRarity().equals(ItemRarity.DEFAULT)).forEach(tutor -> {
+            ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
+            itemInstanceEntity.setUniqueDescription("");
+            itemInstanceEntity.setItemType(ItemType.Tutor);
+            itemInstanceEntity.setEquipped(true);
+            itemInstanceEntity.setPrototypeId(tutor.getId());
+            user.getInventory().getItems().add(itemInstanceEntity);
+        });
+        items.getPatternThemes().stream().filter(patternTheme -> patternTheme.getRarity().equals(ItemRarity.DEFAULT)).forEach(patternTheme -> {
+            ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
+            itemInstanceEntity.setUniqueDescription("");
+            itemInstanceEntity.setItemType(ItemType.PatternTheme);
+            itemInstanceEntity.setEquipped(false);
+            itemInstanceEntity.setPrototypeId(patternTheme.getId());
+            user.getInventory().getItems().add(itemInstanceEntity);
+        });
+        items.getColorThemes().stream().filter(colorTheme -> colorTheme.getRarity().equals(ItemRarity.DEFAULT)).forEach(colorTheme -> {
+            ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
+            itemInstanceEntity.setUniqueDescription("");
+            itemInstanceEntity.setItemType(ItemType.ColorTheme);
+            itemInstanceEntity.setEquipped(false);
+            itemInstanceEntity.setPrototypeId(colorTheme.getId());
+            user.getInventory().getItems().add(itemInstanceEntity);
+        });
+        items.getProfilePics().stream().filter(profilePic -> profilePic.getRarity().equals(ItemRarity.DEFAULT)).forEach(profilePic -> {
+            ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
+            itemInstanceEntity.setUniqueDescription("");
+            itemInstanceEntity.setItemType(ItemType.ProfilePic);
+            itemInstanceEntity.setEquipped(false);
+            itemInstanceEntity.setPrototypeId(profilePic.getId());
+            user.getInventory().getItems().add(itemInstanceEntity);
+        });
+        items.getProfilePicFrames().stream().filter(profilePicFrame -> profilePicFrame.getRarity().equals(ItemRarity.DEFAULT)).forEach(profilePicFrame -> {
+            ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
+            itemInstanceEntity.setUniqueDescription("");
+            itemInstanceEntity.setItemType(ItemType.ProfilePicFrame);
+            itemInstanceEntity.setEquipped(false);
+            itemInstanceEntity.setPrototypeId(profilePicFrame.getId());
+            user.getInventory().getItems().add(itemInstanceEntity);
+        });
+        userRepository.save(user);
     }
 
     private ItemType getItemType(UUID itemId) {

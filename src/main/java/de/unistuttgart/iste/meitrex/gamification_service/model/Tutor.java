@@ -10,7 +10,7 @@ public class Tutor {
     private String name;
     private String nickname;
     private String description;
-    private String rarity;
+    private ItemRarity rarity;
     private boolean obtainableInLottery;
     private boolean obtainableAsReward;
     private boolean obtainableInShop;
