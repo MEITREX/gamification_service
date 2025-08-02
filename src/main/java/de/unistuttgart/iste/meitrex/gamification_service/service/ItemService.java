@@ -16,11 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -34,12 +32,13 @@ public class ItemService {
     @Value("${item.file.path}")
     private String FILE_PATH;
 
-    private ItemData items;
+    private final List<ItemParent> itemList;
 
     public ItemService(UserRepository userRepository, GoalProgressService goalProgressService, ItemInstanceRepository itemInstanceRepository) {
         this.userRepository = userRepository;
         this.goalProgressService = goalProgressService;
         this.itemInstanceRepository = itemInstanceRepository;
+        itemList = new ArrayList<>();
     }
 
     @PostConstruct
@@ -51,8 +50,13 @@ public class ItemService {
     private void parseItemJson(String filePath) {
         try {
             log.info("Parsing JSON file with path {}", filePath);
-            items = ItemParser.parseFromFile(filePath);
+            ItemData items = ItemParser.parseFromFile(filePath);
             log.info("Finished Parsing JSON file with path {}", filePath);
+            itemList.addAll(items.getColorThemes());
+            itemList.addAll(items.getTutors());
+            itemList.addAll(items.getProfilePics());
+            itemList.addAll(items.getPatternThemes());
+            itemList.addAll(items.getProfilePicFrames());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -72,17 +76,11 @@ public class ItemService {
     }
 
     public List<UserItem> getItemsForUser(UUID userId) {
-        List<UserItem> userItems = new ArrayList<>();
         UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
         if(user.getInventory().getItems().isEmpty()) {
             addDefaultItems(user);
         }
-        getProfilePictureFrames(user, userItems);
-        getProfilePictures(user, userItems);
-        getTutorCharacters(user, userItems);
-        getProfileColorThemes(user, userItems);
-        getProfilePatterns(user, userItems);
-        return userItems;
+        return getItems(user);
     }
 
     public Inventory buyItem(UUID userId, UUID itemId) {
@@ -92,15 +90,11 @@ public class ItemService {
         }
         if (user.getInventory().getItems().stream()
                 .filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId().equals(itemId)).findAny().isEmpty()) {
-            if (itemExists(itemId)) {
-                ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
-                itemInstanceEntity.setPrototypeId(itemId);
-                itemInstanceEntity.setEquipped(false);
-                itemInstanceEntity.setUniqueDescription("");
-                itemInstanceEntity.setItemType(getItemType(itemId));
-                user.getInventory().getItems().add(itemInstanceEntity);
-                userRepository.save(user);
-            }
+            itemList.stream().filter(itemParent -> itemParent.getId().equals(itemId))
+                .findAny().ifPresent(itemParent -> {
+                    user.getInventory().getItems().add(itemParent.toItemInstance());
+                    userRepository.save(user);
+            });
         }
         return getInventoryForUser(user);
     }
@@ -174,115 +168,21 @@ public class ItemService {
     }
 
     private void addDefaultItems(UserEntity user) {
-        items.getTutors().stream().filter(tutor -> tutor.getRarity().equals(ItemRarity.DEFAULT)).forEach(tutor -> {
-            ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
-            itemInstanceEntity.setUniqueDescription("");
-            itemInstanceEntity.setItemType(ItemType.Tutor);
-            itemInstanceEntity.setEquipped(true);
-            itemInstanceEntity.setPrototypeId(tutor.getId());
-            user.getInventory().getItems().add(itemInstanceEntity);
-        });
-        items.getPatternThemes().stream().filter(patternTheme -> patternTheme.getRarity().equals(ItemRarity.DEFAULT)).forEach(patternTheme -> {
-            ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
-            itemInstanceEntity.setUniqueDescription("");
-            itemInstanceEntity.setItemType(ItemType.PatternTheme);
-            itemInstanceEntity.setEquipped(false);
-            itemInstanceEntity.setPrototypeId(patternTheme.getId());
-            user.getInventory().getItems().add(itemInstanceEntity);
-        });
-        items.getColorThemes().stream().filter(colorTheme -> colorTheme.getRarity().equals(ItemRarity.DEFAULT)).forEach(colorTheme -> {
-            ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
-            itemInstanceEntity.setUniqueDescription("");
-            itemInstanceEntity.setItemType(ItemType.ColorTheme);
-            itemInstanceEntity.setEquipped(false);
-            itemInstanceEntity.setPrototypeId(colorTheme.getId());
-            user.getInventory().getItems().add(itemInstanceEntity);
-        });
-        items.getProfilePics().stream().filter(profilePic -> profilePic.getRarity().equals(ItemRarity.DEFAULT)).forEach(profilePic -> {
-            ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
-            itemInstanceEntity.setUniqueDescription("");
-            itemInstanceEntity.setItemType(ItemType.ProfilePic);
-            itemInstanceEntity.setEquipped(false);
-            itemInstanceEntity.setPrototypeId(profilePic.getId());
-            user.getInventory().getItems().add(itemInstanceEntity);
-        });
-        items.getProfilePicFrames().stream().filter(profilePicFrame -> profilePicFrame.getRarity().equals(ItemRarity.DEFAULT)).forEach(profilePicFrame -> {
-            ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
-            itemInstanceEntity.setUniqueDescription("");
-            itemInstanceEntity.setItemType(ItemType.ProfilePicFrame);
-            itemInstanceEntity.setEquipped(false);
-            itemInstanceEntity.setPrototypeId(profilePicFrame.getId());
-            user.getInventory().getItems().add(itemInstanceEntity);
+        itemList.stream().filter(itemParent -> itemParent.getRarity().equals(ItemRarity.DEFAULT)).forEach(itemParent -> {
+            user.getInventory().getItems().add(itemParent.toItemInstance());
         });
         userRepository.save(user);
     }
 
-    private ItemType getItemType(UUID itemId) {
-        if (items.getPatternThemes().stream().anyMatch(patternTheme -> patternTheme.getId().equals(itemId))) {
-            return ItemType.PatternTheme;
-        }
-        if (items.getTutors().stream().anyMatch(tutor -> tutor.getId().equals(itemId))) {
-            return ItemType.Tutor;
-        }
-        if (items.getColorThemes().stream().anyMatch(colorTheme -> colorTheme.getId().equals(itemId))) {
-            return ItemType.ColorTheme;
-        }
-        if (items.getProfilePics().stream().anyMatch(profilePic -> profilePic.getId().equals(itemId))) {
-            return ItemType.ProfilePic;
-        }
-        if (items.getProfilePicFrames().stream().anyMatch(profilePicFrame -> profilePicFrame.getId().equals(itemId))) {
-            return ItemType.ProfilePicFrame;
-        }
-        return null;
-    }
-
-    private boolean itemExists(UUID itemId) {
-        if (items.getPatternThemes().stream().anyMatch(patternTheme -> patternTheme.getId().equals(itemId))) {
-            return true;
-        }
-        if (items.getTutors().stream().anyMatch(tutor -> tutor.getId().equals(itemId))) {
-            return true;
-        }
-        if (items.getColorThemes().stream().anyMatch(colorTheme -> colorTheme.getId().equals(itemId))) {
-            return true;
-        }
-        if (items.getProfilePics().stream().anyMatch(profilePic -> profilePic.getId().equals(itemId))) {
-            return true;
-        }
-        return items.getProfilePicFrames().stream().anyMatch(profilePicFrame -> profilePicFrame.getId().equals(itemId));
-    }
-
-    private void getProfilePictureFrames(UserEntity user, List<UserItem> userItems) {
-        items.getProfilePicFrames().forEach(profilePicFrame -> {
-            getItems(user, profilePicFrame.getId(), userItems);
+    private List<UserItem> getItems(UserEntity user) {
+        List<UserItem> userItems = new ArrayList<>();
+        itemList.forEach(itemParent -> {
+            getItem(user, itemParent.getId(), userItems);
         });
+        return userItems;
     }
 
-    private void getProfilePictures(UserEntity user, List<UserItem> userItems) {
-        items.getProfilePics().forEach(profilePic -> {
-            getItems(user, profilePic.getId(), userItems);
-        });
-    }
-
-    private void getTutorCharacters(UserEntity user, List<UserItem> userItems) {
-        items.getTutors().forEach(tutor -> {
-            getItems(user, tutor.getId(), userItems);
-        });
-    }
-
-    private void getProfileColorThemes(UserEntity user, List<UserItem> userItems) {
-        items.getColorThemes().forEach(colorTheme -> {
-            getItems(user, colorTheme.getId(), userItems);
-        });
-    }
-
-    private void getProfilePatterns(UserEntity user, List<UserItem> userItems) {
-        items.getPatternThemes().forEach(patternTheme -> {
-            getItems(user, patternTheme.getId(), userItems);
-        });
-    }
-
-    private static void getItems(UserEntity user, UUID itemId, List<UserItem> userItems) {
+    private static void getItem(UserEntity user, UUID itemId, List<UserItem> userItems) {
         if (user.getInventory() == null) {
             user.setInventory(new UserInventoryEntity());
         }
