@@ -1,5 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.model;
 
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.ItemInstanceEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.ItemType;
 import lombok.Data;
 
 import java.util.UUID;
@@ -17,4 +19,13 @@ public class PatternTheme {
     private int moneyCost;
     private int sellCompensation;
     private String url;
+
+    public ItemInstanceEntity toItemInstance() {
+        ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
+        itemInstanceEntity.setUniqueDescription("");
+        itemInstanceEntity.setItemType(ItemType.PatternTheme);
+        itemInstanceEntity.setEquipped(false);
+        itemInstanceEntity.setPrototypeId(id);
+        return itemInstanceEntity;
+    }
 }

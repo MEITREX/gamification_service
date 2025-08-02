@@ -137,44 +137,19 @@ public class ItemService {
 
     private void addDefaultItems(UserEntity user) {
         items.getTutors().stream().filter(tutor -> tutor.getRarity().equals(ItemRarity.DEFAULT)).forEach(tutor -> {
-            ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
-            itemInstanceEntity.setUniqueDescription("");
-            itemInstanceEntity.setItemType(ItemType.Tutor);
-            itemInstanceEntity.setEquipped(true);
-            itemInstanceEntity.setPrototypeId(tutor.getId());
-            user.getInventory().getItems().add(itemInstanceEntity);
+            user.getInventory().getItems().add(tutor.toItemInstance());
         });
         items.getPatternThemes().stream().filter(patternTheme -> patternTheme.getRarity().equals(ItemRarity.DEFAULT)).forEach(patternTheme -> {
-            ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
-            itemInstanceEntity.setUniqueDescription("");
-            itemInstanceEntity.setItemType(ItemType.PatternTheme);
-            itemInstanceEntity.setEquipped(false);
-            itemInstanceEntity.setPrototypeId(patternTheme.getId());
-            user.getInventory().getItems().add(itemInstanceEntity);
+            user.getInventory().getItems().add(patternTheme.toItemInstance());
         });
         items.getColorThemes().stream().filter(colorTheme -> colorTheme.getRarity().equals(ItemRarity.DEFAULT)).forEach(colorTheme -> {
-            ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
-            itemInstanceEntity.setUniqueDescription("");
-            itemInstanceEntity.setItemType(ItemType.ColorTheme);
-            itemInstanceEntity.setEquipped(false);
-            itemInstanceEntity.setPrototypeId(colorTheme.getId());
-            user.getInventory().getItems().add(itemInstanceEntity);
+            user.getInventory().getItems().add(colorTheme.toItemInstance());
         });
         items.getProfilePics().stream().filter(profilePic -> profilePic.getRarity().equals(ItemRarity.DEFAULT)).forEach(profilePic -> {
-            ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
-            itemInstanceEntity.setUniqueDescription("");
-            itemInstanceEntity.setItemType(ItemType.ProfilePic);
-            itemInstanceEntity.setEquipped(false);
-            itemInstanceEntity.setPrototypeId(profilePic.getId());
-            user.getInventory().getItems().add(itemInstanceEntity);
+            user.getInventory().getItems().add(profilePic.toItemInstance());
         });
         items.getProfilePicFrames().stream().filter(profilePicFrame -> profilePicFrame.getRarity().equals(ItemRarity.DEFAULT)).forEach(profilePicFrame -> {
-            ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
-            itemInstanceEntity.setUniqueDescription("");
-            itemInstanceEntity.setItemType(ItemType.ProfilePicFrame);
-            itemInstanceEntity.setEquipped(false);
-            itemInstanceEntity.setPrototypeId(profilePicFrame.getId());
-            user.getInventory().getItems().add(itemInstanceEntity);
+            user.getInventory().getItems().add(profilePicFrame.toItemInstance());
         });
         userRepository.save(user);
     }
