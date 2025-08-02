@@ -51,4 +51,16 @@ public class ItemController {
                                @ContextValue final LoggedInUser currentUser) {
         return itemService.unequipItem(currentUser.getId(), itemId);
     }
+
+    @MutationMapping
+    public Inventory itemReward(@Argument UUID itemId,
+                                @ContextValue final LoggedInUser currentUser) {
+        return itemService.addItemToUser(currentUser.getId(), itemId);
+    }
+
+    @MutationMapping
+    public Inventory currencyReward(@Argument Integer points,
+                                    @ContextValue final LoggedInUser currentUser) {
+        return itemService.addPointsToUser(currentUser.getId(), points);
+    }
 }
