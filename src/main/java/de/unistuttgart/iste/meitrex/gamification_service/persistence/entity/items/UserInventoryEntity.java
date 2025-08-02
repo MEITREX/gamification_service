@@ -17,7 +17,7 @@ public class UserInventoryEntity {
     @Column
     int unspentPoints;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     List<ItemInstanceEntity> items;
 
     public UserInventoryEntity() {

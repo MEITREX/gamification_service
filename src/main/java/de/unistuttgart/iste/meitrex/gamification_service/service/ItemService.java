@@ -1,9 +1,11 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
 
-import de.unistuttgart.iste.meitrex.gamification_service.model.ItemData;
+import de.unistuttgart.iste.meitrex.gamification_service.model.*;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.ItemInstanceEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.ItemType;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.UserInventoryEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.ItemInstanceRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.utility.ItemParser;
 import de.unistuttgart.iste.meitrex.generated.dto.Inventory;
@@ -14,9 +16,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -25,15 +29,17 @@ import java.util.UUID;
 public class ItemService {
     private final UserRepository userRepository;
     private final GoalProgressService goalProgressService;
+    private final ItemInstanceRepository itemInstanceRepository;
 
     @Value("${item.file.path}")
     private String FILE_PATH;
 
     private ItemData items;
 
-    public ItemService(UserRepository userRepository, GoalProgressService goalProgressService) {
+    public ItemService(UserRepository userRepository, GoalProgressService goalProgressService, ItemInstanceRepository itemInstanceRepository) {
         this.userRepository = userRepository;
         this.goalProgressService = goalProgressService;
+        this.itemInstanceRepository = itemInstanceRepository;
     }
 
     @PostConstruct
@@ -71,6 +77,82 @@ public class ItemService {
         getProfileColorThemes(user, userItems);
         getProfilePatterns(user, userItems);
         return userItems;
+    }
+
+    public Inventory buyItem(UUID userId, UUID itemId) {
+        UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
+        if (user.getInventory().getItems().stream()
+                .filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId().equals(itemId)).findAny().isEmpty()) {
+            if (itemExists(itemId)) {
+                ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
+                itemInstanceEntity.setPrototypeId(itemId);
+                itemInstanceEntity.setEquipped(false);
+                itemInstanceEntity.setUniqueDescription("");
+                itemInstanceEntity.setItemType(getItemType(itemId));
+                user.getInventory().getItems().add(itemInstanceEntity);
+                userRepository.save(user);
+            }
+        }
+        return getInventoryForUser(userId);
+    }
+
+    public Inventory equipItem(UUID userId, UUID itemId) {
+        UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
+        user.getInventory().getItems().stream().filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId().equals(itemId)).findFirst().ifPresent(itemInstanceEntity -> {
+            user.getInventory().getItems().stream().filter(itemInstanceEntity1 ->
+                    itemInstanceEntity1.getItemType().equals(itemInstanceEntity.getItemType()))
+                    .forEach(itemInstanceEntity1 -> itemInstanceEntity1.setEquipped(false));
+            userRepository.save(user);
+            itemInstanceEntity.setEquipped(true);
+            itemInstanceRepository.save(itemInstanceEntity);
+        });
+        return getInventoryForUser(userId);
+    }
+
+    public Inventory unequipItem(UUID userId, UUID itemId) {
+        UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
+        user.getInventory().getItems().stream().filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId().equals(itemId)).findFirst().ifPresent(itemInstanceEntity -> {
+           if (itemInstanceEntity.getItemType() != ItemType.Tutor) {
+               itemInstanceEntity.setEquipped(false);
+               itemInstanceRepository.save(itemInstanceEntity);
+           }
+        });
+        return getInventoryForUser(userId);
+    }
+
+    private ItemType getItemType(UUID itemId) {
+        if (items.getPatternThemes().stream().anyMatch(patternTheme -> patternTheme.getId().equals(itemId))) {
+            return ItemType.PatternTheme;
+        }
+        if (items.getTutors().stream().anyMatch(tutor -> tutor.getId().equals(itemId))) {
+            return ItemType.Tutor;
+        }
+        if (items.getColorThemes().stream().anyMatch(colorTheme -> colorTheme.getId().equals(itemId))) {
+            return ItemType.ColorTheme;
+        }
+        if (items.getProfilePics().stream().anyMatch(profilePic -> profilePic.getId().equals(itemId))) {
+            return ItemType.ProfilePic;
+        }
+        if (items.getProfilePicFrames().stream().anyMatch(profilePicFrame -> profilePicFrame.getId().equals(itemId))) {
+            return ItemType.ProfilePicFrame;
+        }
+        return null;
+    }
+
+    private boolean itemExists(UUID itemId) {
+        if (items.getPatternThemes().stream().anyMatch(patternTheme -> patternTheme.getId().equals(itemId))) {
+            return true;
+        }
+        if (items.getTutors().stream().anyMatch(tutor -> tutor.getId().equals(itemId))) {
+            return true;
+        }
+        if (items.getColorThemes().stream().anyMatch(colorTheme -> colorTheme.getId().equals(itemId))) {
+            return true;
+        }
+        if (items.getProfilePics().stream().anyMatch(profilePic -> profilePic.getId().equals(itemId))) {
+            return true;
+        }
+        return items.getProfilePicFrames().stream().anyMatch(profilePicFrame -> profilePicFrame.getId().equals(itemId));
     }
 
     private void getProfilePictureFrames(UserEntity user, List<UserItem> userItems) {
