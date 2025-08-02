@@ -5,19 +5,10 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.item
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.util.UUID;
-
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class PatternTheme extends ItemParent{
     private String foreColor;
-    private String name;
-    private String description;
-    private boolean obtainableInLottery;
-    private boolean obtainableAsReward;
-    private boolean obtainableInShop;
-    private int moneyCost;
-    private int sellCompensation;
     private String url;
 
     public ItemInstanceEntity toItemInstance() {

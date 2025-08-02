@@ -55,7 +55,7 @@ public class ItemController {
     @MutationMapping
     public Inventory itemReward(@Argument UUID itemId,
                                 @ContextValue final LoggedInUser currentUser) {
-        return itemService.addItemToUser(currentUser.getId(), itemId);
+        return itemService.addItemRewardToUser(currentUser.getId(), itemId);
     }
 
     @MutationMapping

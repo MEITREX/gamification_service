@@ -67,7 +67,7 @@ public class ItemService {
         if(user.getInventory().getItems().isEmpty()) {
             addDefaultItems(user);
         }
-        List<UserItem> userItems = getItemsForUser(user);
+        List<UserItem> userItems = getItems(user);
         Inventory inventory = new Inventory();
         inventory.setItems(userItems);
         inventory.setUserId(userId);
@@ -129,14 +129,23 @@ public class ItemService {
         return getInventoryForUser(user);
     }
 
-    public Inventory addItemToUser(UUID userId, UUID itemId) {
+    public Inventory addItemRewardToUser(UUID userId, UUID itemId) {
         UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
         if(user.getInventory().getItems().isEmpty()) {
             addDefaultItems(user);
         }
-        if (user.getInventory().getItems().stream().filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId().equals(itemId)).findAny().isEmpty()) {
-
-        }
+        itemList.stream().filter(ItemParent::isObtainableAsReward)
+                .filter(itemParent -> itemParent.getId().equals(itemId))
+                .findAny().ifPresent(itemParent -> {
+                    if (user.getInventory().getItems().stream().filter(itemInstanceEntity ->
+                            itemInstanceEntity.getPrototypeId().equals(itemId)).findAny().isEmpty()) {
+                        user.getInventory().getItems().add(itemParent.toItemInstance());
+                    } else {
+                        user.getInventory().setUnspentPoints(user.getInventory().getUnspentPoints()
+                                + itemParent.getSellCompensation());
+                    }
+                });
+        userRepository.save(user);
         return getInventoryForUser(user);
     }
 
@@ -145,26 +154,18 @@ public class ItemService {
         if(user.getInventory().getItems().isEmpty()) {
             addDefaultItems(user);
         }
+        user.getInventory().setUnspentPoints(user.getInventory().getUnspentPoints() + points);
+        userRepository.save(user);
         return getInventoryForUser(user);
     }
 
     private Inventory getInventoryForUser(UserEntity user) {
-        List<UserItem> userItems = getItemsForUser(user);
+        List<UserItem> userItems = getItems(user);
         Inventory inventory = new Inventory();
         inventory.setItems(userItems);
         inventory.setUserId(user.getId());
         inventory.setUnspentPoints(user.getInventory().getUnspentPoints());
         return inventory;
-    }
-
-    private List<UserItem> getItemsForUser(UserEntity user) {
-        List<UserItem> userItems = new ArrayList<>();
-        getProfilePictureFrames(user, userItems);
-        getProfilePictures(user, userItems);
-        getTutorCharacters(user, userItems);
-        getProfileColorThemes(user, userItems);
-        getProfilePatterns(user, userItems);
-        return userItems;
     }
 
     private void addDefaultItems(UserEntity user) {
