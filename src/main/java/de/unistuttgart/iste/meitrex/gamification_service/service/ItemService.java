@@ -172,6 +172,9 @@ public class ItemService {
         itemList.stream().filter(itemParent -> itemParent.getRarity().equals(ItemRarity.DEFAULT)).forEach(itemParent -> {
             user.getInventory().getItems().add(itemParent.toItemInstance());
         });
+        user.getInventory().getItems().forEach(itemInstanceEntity -> {
+            itemInstanceEntity.setEquipped(true);
+        });
         userRepository.save(user);
     }
 
