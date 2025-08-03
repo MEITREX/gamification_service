@@ -36,7 +36,19 @@ public class ItemController {
 
     @MutationMapping
     public Inventory buyItem(@Argument UUID itemId,
-                             @ContextValue final LoggedInUser loggedInUser) {
-        return new Inventory();
+                             @ContextValue final LoggedInUser currentUser) {
+        return itemService.buyItem(currentUser.getId(), itemId);
+    }
+
+    @MutationMapping
+    public Inventory equipItem(@Argument UUID itemId,
+                               @ContextValue final LoggedInUser currentUser) {
+        return itemService.equipItem(currentUser.getId(), itemId);
+    }
+
+    @MutationMapping
+    public Inventory unequipItem(@Argument UUID itemId,
+                               @ContextValue final LoggedInUser currentUser) {
+        return itemService.unequipItem(currentUser.getId(), itemId);
     }
 }

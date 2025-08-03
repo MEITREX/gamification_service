@@ -1,9 +1,11 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
 
-import de.unistuttgart.iste.meitrex.gamification_service.model.ItemData;
+import de.unistuttgart.iste.meitrex.gamification_service.model.*;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.ItemInstanceEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.ItemType;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.UserInventoryEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.ItemInstanceRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.utility.ItemParser;
 import de.unistuttgart.iste.meitrex.generated.dto.Inventory;
@@ -25,15 +27,18 @@ import java.util.UUID;
 public class ItemService {
     private final UserRepository userRepository;
     private final GoalProgressService goalProgressService;
+    private final ItemInstanceRepository itemInstanceRepository;
 
     @Value("${item.file.path}")
     private String FILE_PATH;
 
-    private ItemData items;
+    private final List<ItemParent> itemList;
 
-    public ItemService(UserRepository userRepository, GoalProgressService goalProgressService) {
+    public ItemService(UserRepository userRepository, GoalProgressService goalProgressService, ItemInstanceRepository itemInstanceRepository) {
         this.userRepository = userRepository;
         this.goalProgressService = goalProgressService;
+        this.itemInstanceRepository = itemInstanceRepository;
+        itemList = new ArrayList<>();
     }
 
     @PostConstruct
@@ -45,8 +50,13 @@ public class ItemService {
     private void parseItemJson(String filePath) {
         try {
             log.info("Parsing JSON file with path {}", filePath);
-            items = ItemParser.parseFromFile(filePath);
+            ItemData items = ItemParser.parseFromFile(filePath);
             log.info("Finished Parsing JSON file with path {}", filePath);
+            itemList.addAll(items.getColorThemes());
+            itemList.addAll(items.getTutors());
+            itemList.addAll(items.getProfilePics());
+            itemList.addAll(items.getPatternThemes());
+            itemList.addAll(items.getProfilePicFrames());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -54,6 +64,9 @@ public class ItemService {
 
     public Inventory getInventoryForUser(UUID userId) {
         UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
+        if(user.getInventory().getItems().isEmpty()) {
+            addDefaultItems(user);
+        }
         List<UserItem> userItems = getItemsForUser(userId);
         Inventory inventory = new Inventory();
         inventory.setItems(userItems);
@@ -63,47 +76,75 @@ public class ItemService {
     }
 
     public List<UserItem> getItemsForUser(UUID userId) {
-        List<UserItem> userItems = new ArrayList<>();
         UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
-        getProfilePictureFrames(user, userItems);
-        getProfilePictures(user, userItems);
-        getTutorCharacters(user, userItems);
-        getProfileColorThemes(user, userItems);
-        getProfilePatterns(user, userItems);
+        if(user.getInventory().getItems().isEmpty()) {
+            addDefaultItems(user);
+        }
+        return getItems(user);
+    }
+
+    public Inventory buyItem(UUID userId, UUID itemId) {
+        UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
+        if(user.getInventory().getItems().isEmpty()) {
+            addDefaultItems(user);
+        }
+        if (user.getInventory().getItems().stream()
+                .filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId().equals(itemId)).findAny().isEmpty()) {
+            itemList.stream().filter(itemParent -> itemParent.getId().equals(itemId))
+                .findAny().ifPresent(itemParent -> {
+                    user.getInventory().getItems().add(itemParent.toItemInstance());
+                    userRepository.save(user);
+            });
+        }
+        return getInventoryForUser(userId);
+    }
+
+    public Inventory equipItem(UUID userId, UUID itemId) {
+        UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
+        if(user.getInventory().getItems().isEmpty()) {
+            addDefaultItems(user);
+        }
+        user.getInventory().getItems().stream().filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId().equals(itemId)).findFirst().ifPresent(itemInstanceEntity -> {
+            user.getInventory().getItems().stream().filter(itemInstanceEntity1 ->
+                    itemInstanceEntity1.getItemType().equals(itemInstanceEntity.getItemType()))
+                    .forEach(itemInstanceEntity1 -> itemInstanceEntity1.setEquipped(false));
+            userRepository.save(user);
+            itemInstanceEntity.setEquipped(true);
+            itemInstanceRepository.save(itemInstanceEntity);
+        });
+        return getInventoryForUser(userId);
+    }
+
+    public Inventory unequipItem(UUID userId, UUID itemId) {
+        UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
+        if(user.getInventory().getItems().isEmpty()) {
+            addDefaultItems(user);
+        }
+        user.getInventory().getItems().stream().filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId().equals(itemId)).findFirst().ifPresent(itemInstanceEntity -> {
+           if (itemInstanceEntity.getItemType() != ItemType.Tutor) {
+               itemInstanceEntity.setEquipped(false);
+               itemInstanceRepository.save(itemInstanceEntity);
+           }
+        });
+        return getInventoryForUser(userId);
+    }
+
+    private void addDefaultItems(UserEntity user) {
+        itemList.stream().filter(itemParent -> itemParent.getRarity().equals(ItemRarity.DEFAULT)).forEach(itemParent -> {
+            user.getInventory().getItems().add(itemParent.toItemInstance());
+        });
+        userRepository.save(user);
+    }
+
+    private List<UserItem> getItems(UserEntity user) {
+        List<UserItem> userItems = new ArrayList<>();
+        itemList.forEach(itemParent -> {
+            getItem(user, itemParent.getId(), userItems);
+        });
         return userItems;
     }
 
-    private void getProfilePictureFrames(UserEntity user, List<UserItem> userItems) {
-        items.getProfilePicFrames().forEach(profilePicFrame -> {
-            getItems(user, profilePicFrame.getId(), userItems);
-        });
-    }
-
-    private void getProfilePictures(UserEntity user, List<UserItem> userItems) {
-        items.getProfilePics().forEach(profilePic -> {
-            getItems(user, profilePic.getId(), userItems);
-        });
-    }
-
-    private void getTutorCharacters(UserEntity user, List<UserItem> userItems) {
-        items.getTutors().forEach(tutor -> {
-            getItems(user, tutor.getId(), userItems);
-        });
-    }
-
-    private void getProfileColorThemes(UserEntity user, List<UserItem> userItems) {
-        items.getColorThemes().forEach(colorTheme -> {
-            getItems(user, colorTheme.getId(), userItems);
-        });
-    }
-
-    private void getProfilePatterns(UserEntity user, List<UserItem> userItems) {
-        items.getPatternThemes().forEach(patternTheme -> {
-            getItems(user, patternTheme.getId(), userItems);
-        });
-    }
-
-    private static void getItems(UserEntity user, UUID itemId, List<UserItem> userItems) {
+    private static void getItem(UserEntity user, UUID itemId, List<UserItem> userItems) {
         if (user.getInventory() == null) {
             user.setInventory(new UserInventoryEntity());
         }
