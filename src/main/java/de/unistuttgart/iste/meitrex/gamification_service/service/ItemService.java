@@ -92,8 +92,11 @@ public class ItemService {
                 .filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId().equals(itemId)).findAny().isEmpty()) {
             itemList.stream().filter(itemParent -> itemParent.getId().equals(itemId))
                 .findAny().ifPresent(itemParent -> {
-                    user.getInventory().getItems().add(itemParent.toItemInstance());
-                    userRepository.save(user);
+                    if (user.getInventory().getUnspentPoints()>= itemParent.getMoneyCost()) {
+                        user.getInventory().setUnspentPoints(user.getInventory().getUnspentPoints() - itemParent.getMoneyCost());
+                        user.getInventory().getItems().add(itemParent.toItemInstance());
+                        userRepository.save(user);
+                    }
             });
         }
         return getInventoryForUser(user);
