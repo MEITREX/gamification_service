@@ -3,6 +3,7 @@ type UserItem {
     uniqueDescription: String!
     equipped: Boolean!
     unlocked: Boolean!
+    unlockedTime: DateTime
 }
 
 type Inventory {

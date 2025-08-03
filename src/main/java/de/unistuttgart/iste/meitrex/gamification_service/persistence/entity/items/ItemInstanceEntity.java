@@ -1,18 +1,26 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items;
 
 import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
-import de.unistuttgart.iste.meitrex.gamification_service.model.ColorTheme;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
 @Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ItemInstanceEntity implements IWithId<UUID> {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
+
+    @Setter(AccessLevel.NONE)
+    OffsetDateTime creationTime;
 
     @Column(nullable = false)
     UUID prototypeId;
@@ -25,4 +33,8 @@ public class ItemInstanceEntity implements IWithId<UUID> {
 
     @Column
     ItemType itemType;
+
+    public ItemInstanceEntity() {
+        creationTime = OffsetDateTime.now();
+    }
 }

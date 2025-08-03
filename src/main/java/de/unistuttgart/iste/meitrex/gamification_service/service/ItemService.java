@@ -199,6 +199,7 @@ public class ItemService {
                 .build();
         if (itemInstance != null) {
             item.setUnlocked(true);
+            item.setUnlockedTime(itemInstance.getCreationTime());
             item.setUniqueDescription(itemInstance.getUniqueDescription());
             item.setEquipped(itemInstance.isEquipped());
         }

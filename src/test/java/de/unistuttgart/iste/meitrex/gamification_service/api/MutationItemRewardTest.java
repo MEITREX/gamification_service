@@ -21,6 +21,7 @@ import org.springframework.graphql.test.tester.GraphQlTester;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -98,6 +99,7 @@ public class MutationItemRewardTest {
                             uniqueDescription
                             equipped
                             unlocked
+                            unlockedTime
                         }
                     }
                 }
@@ -109,5 +111,6 @@ public class MutationItemRewardTest {
         assertThat(inventory.getUnspentPoints(), is(0));
         UserItem unlockedItem = inventory.getItems().stream().filter(userItem -> userItem.getId().equals(itemId)).findFirst().get();
         assertThat(unlockedItem.getUnlocked(), is(true));
+        assertThat(unlockedItem.getUnlockedTime().toLocalDate().getDayOfMonth(), is(OffsetDateTime.now().getDayOfMonth()));
     }
 }
