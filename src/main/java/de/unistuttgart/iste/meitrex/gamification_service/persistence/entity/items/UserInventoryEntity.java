@@ -1,7 +1,9 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +11,7 @@ import java.util.UUID;
 
 @Entity
 @Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserInventoryEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -17,7 +20,7 @@ public class UserInventoryEntity {
     @Column
     int unspentPoints;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     List<ItemInstanceEntity> items;
 
     public UserInventoryEntity() {
