@@ -8,6 +8,8 @@ type Mutation {
     sendRecommendationFeedback(category: GamificationCategory!, feedback: RecommendationUserFeedback!): Boolean!
 
     setCurrentUserWidgetSettings(settings: WidgetSettingsInput!): WidgetSettings!
+
+    buyItem(itemId:UUID!): Inventory
 }
 
 input WidgetSettingsInput {

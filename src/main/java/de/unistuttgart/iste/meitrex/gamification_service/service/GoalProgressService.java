@@ -9,9 +9,10 @@ import de.unistuttgart.iste.meitrex.content_service.exception.ContentServiceConn
 import de.unistuttgart.iste.meitrex.course_service.client.CourseServiceClient;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.AchievementEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.UserEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.*;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.UserInventoryEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.CourseRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserGoalProgressRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
@@ -175,7 +176,7 @@ public class GoalProgressService {
         return loginStreakGoalProgressEvent;
     }
 
-    private CourseEntity createCourse(final UUID courseId) {
+    protected CourseEntity createCourse(final UUID courseId) {
         log.info("try to create course {}", courseId);
         List<Chapter> chapters = courseServiceClient.queryChapterByCourseId(courseId);
         CourseEntity courseEntity = new CourseEntity(courseId, chapters);
@@ -204,8 +205,8 @@ public class GoalProgressService {
         log.info("Added user to course {}", user);
     }
 
-    private UserEntity createUser(final UUID userId) {
-        UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new ArrayList<>());
+    public UserEntity createUser(final UUID userId) {
+        UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
         userEntity = userRepository.save(userEntity);
         log.info("Created user with id {}", userId);
         log.info("Created user {}", userEntity);

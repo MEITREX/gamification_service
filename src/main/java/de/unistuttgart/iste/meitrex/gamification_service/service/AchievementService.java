@@ -4,7 +4,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.achievements.Achievemen
 import de.unistuttgart.iste.meitrex.gamification_service.config.AdaptivityConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.AchievementEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.UserEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.CountableGoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.GoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.CountableUserGoalProgressEntity;
@@ -167,7 +167,7 @@ public class AchievementService {
 
     public void createInitialAchievementsInCourseEntity(CourseEntity course) {
         List<AchievementEntity> achievementEntities = achievements.generateAchievements(course);
-        achievementRepository.saveAll(achievementEntities);
+        achievementEntities = achievementRepository.saveAll(achievementEntities);
         course.setAchievements(achievementEntities);
     }
 }

@@ -11,4 +11,7 @@ type Query {
     _internal_noauth_currentUserWidgetRecommendations(courseId: UUID!): [GamificationCategoryRecommendation!]!
 
     currentUserWidgetSettings: WidgetSettings!
+
+    itemsByUserId(userId: UUID!): [UserItem!]!
+    inventoryForUser: Inventory!
 }

@@ -26,4 +26,13 @@ public abstract class HasGoalEntity implements IWithId<UUID> {
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private CourseEntity course;
+
+    @Override
+    public String toString() {
+        return "HasGoalEntity{" +
+                "id=" + id +
+                ", goal=" + goal +
+                ", course=" + course.getId() +
+                '}';
+    }
 }

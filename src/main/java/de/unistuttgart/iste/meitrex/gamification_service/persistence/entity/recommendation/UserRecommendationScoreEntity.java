@@ -2,9 +2,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.rec
 
 import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
 import de.unistuttgart.iste.meitrex.generated.dto.GamificationCategory;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -24,20 +22,60 @@ public class UserRecommendationScoreEntity implements IWithId<UUID> {
     private static final double DEFAULT_SCORE = 1.0 / 8.0;
 
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "score", column = @Column(name = "socialization_score")),
+            @AttributeOverride(name = "lastAdjusted", column = @Column(name = "socialization_last_adjusted")),
+            @AttributeOverride(name = "nextAdjustmentRequestInDays", column = @Column(name = "socialization_next_adjustment"))
+    })
     private RecommendationScoreEmbeddable socialization = new RecommendationScoreEmbeddable(DEFAULT_SCORE);
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "score", column = @Column(name = "assistance_score")),
+            @AttributeOverride(name = "lastAdjusted", column = @Column(name = "assistance_last_adjusted")),
+            @AttributeOverride(name = "nextAdjustmentRequestInDays", column = @Column(name = "assistance_next_adjustment"))
+    })
     private RecommendationScoreEmbeddable assistance = new RecommendationScoreEmbeddable(DEFAULT_SCORE);
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "score", column = @Column(name = "immersion_score")),
+            @AttributeOverride(name = "lastAdjusted", column = @Column(name = "immersion_last_adjusted")),
+            @AttributeOverride(name = "nextAdjustmentRequestInDays", column = @Column(name = "immersion_next_adjustment"))
+    })
     private RecommendationScoreEmbeddable immersion = new RecommendationScoreEmbeddable(DEFAULT_SCORE);
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "score", column = @Column(name = "risk_reward_score")),
+            @AttributeOverride(name = "lastAdjusted", column = @Column(name = "risk_reward_last_adjusted")),
+            @AttributeOverride(name = "nextAdjustmentRequestInDays", column = @Column(name = "risk_reward_next_adjustment"))
+    })
     private RecommendationScoreEmbeddable riskReward = new RecommendationScoreEmbeddable(DEFAULT_SCORE);
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "score", column = @Column(name = "customization_score")),
+            @AttributeOverride(name = "lastAdjusted", column = @Column(name = "customization_last_adjusted")),
+            @AttributeOverride(name = "nextAdjustmentRequestInDays", column = @Column(name = "customization_next_adjustment"))
+    })
     private RecommendationScoreEmbeddable customization = new RecommendationScoreEmbeddable(DEFAULT_SCORE);
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "score", column = @Column(name = "progression_score")),
+            @AttributeOverride(name = "lastAdjusted", column = @Column(name = "progression_last_adjusted")),
+            @AttributeOverride(name = "nextAdjustmentRequestInDays", column = @Column(name = "progression_next_adjustment"))
+    })
     private RecommendationScoreEmbeddable progression = new RecommendationScoreEmbeddable(DEFAULT_SCORE);
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "score", column = @Column(name = "altruism_score")),
+            @AttributeOverride(name = "lastAdjusted", column = @Column(name = "altruism_last_adjusted")),
+            @AttributeOverride(name = "nextAdjustmentRequestInDays", column = @Column(name = "altruism_next_adjustment"))
+    })
     private RecommendationScoreEmbeddable altruism = new RecommendationScoreEmbeddable(DEFAULT_SCORE);
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "score", column = @Column(name = "incentive_score")),
+            @AttributeOverride(name = "lastAdjusted", column = @Column(name = "incentive_last_adjusted")),
+            @AttributeOverride(name = "nextAdjustmentRequestInDays", column = @Column(name = "incentive_next_adjustment"))
+    })
     private RecommendationScoreEmbeddable incentive = new RecommendationScoreEmbeddable(DEFAULT_SCORE);
 
     @Override
