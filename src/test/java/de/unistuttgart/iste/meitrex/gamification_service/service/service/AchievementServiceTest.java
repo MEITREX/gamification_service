@@ -2,12 +2,15 @@ package de.unistuttgart.iste.meitrex.gamification_service.service.service;
 
 
 import de.unistuttgart.iste.meitrex.gamification_service.achievements.Achievements;
+import de.unistuttgart.iste.meitrex.gamification_service.config.AdaptivityConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.AchievementEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.CountableGoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.CountableUserGoalProgressEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.AchievementRepository;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserGoalProgressRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.service.AchievementService;
 import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
@@ -28,6 +31,9 @@ import static org.mockito.MockitoAnnotations.openMocks;
 
 public class AchievementServiceTest {
     private final UserRepository userRepository  = mock(UserRepository.class);
+    private final AchievementRepository achievementRepository = mock(AchievementRepository.class);
+    private final UserGoalProgressRepository userGoalProgressRepository = mock(UserGoalProgressRepository.class);
+    private final AdaptivityConfiguration adaptivityConfiguration = mock(AdaptivityConfiguration.class);
 
     private final Achievements achievements = new Achievements();
 
@@ -36,7 +42,9 @@ public class AchievementServiceTest {
     @BeforeEach
     void setUp() {
         openMocks(this);
-        achievementService = new AchievementService(userRepository);
+        achievementService = new AchievementService(userRepository, achievementRepository,
+                userGoalProgressRepository, adaptivityConfiguration);
+        when(adaptivityConfiguration.getMaxAdaptiveAchievementCount()).thenReturn(10);
     }
 
     @Test

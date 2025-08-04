@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
 
 import de.unistuttgart.iste.meitrex.gamification_service.achievements.Achievements;
+import de.unistuttgart.iste.meitrex.gamification_service.config.AdaptivityConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.AchievementEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.UserEntity;
@@ -30,6 +31,7 @@ public class AchievementService {
     private final UserRepository userRepository;
     private final AchievementRepository achievementRepository;
     private final UserGoalProgressRepository userGoalProgressRepository;
+    private final AdaptivityConfiguration adaptivityConfiguration;
 
     private final Achievements achievements = new Achievements();
 
@@ -60,6 +62,7 @@ public class AchievementService {
                 achievement.setName(achievementEntity.getName());
                 achievement.setDescription(userGoalProgressEntity.getGoal().generateDescription());
                 achievement.setCourseId(achievementEntity.getCourse().getId());
+                achievement.setAdaptive(achievementEntity.isAdaptive());
                 achievement.setImageUrl(achievementEntity.getImageUrl());
                 achievement.setTrackingEndTime(userGoalProgressEntity.getEndedAt());
                 achievement.setTrackingStartTime(userGoalProgressEntity.getStartedAt());
@@ -83,9 +86,13 @@ public class AchievementService {
         if (user.isEmpty()) {
             return new ArrayList<>();
         }
-        log.info("get achievements for user {}", user.get().getId());
+        return getAchievementsForUserEntity(user.get());
+    }
+
+    private List<Achievement> getAchievementsForUserEntity(UserEntity user) {
+        log.info("get achievements for user {}", user.getId());
         List<Achievement> userAchievements = new ArrayList<>();
-        mapUserGoalProgressToAchievements(user.get().getUserGoalProgressEntities(), userAchievements);
+        mapUserGoalProgressToAchievements(user.getUserGoalProgressEntities(), userAchievements);
         return userAchievements;
     }
 
@@ -101,7 +108,9 @@ public class AchievementService {
 
         UserEntity user = goalProgress.getUser();
 
-        // TODO: Only generate new achievement for user if they haven't reached the max num of adaptive achievements yet
+        // Only generate new achievement for user if they haven't reached the max num of adaptive achievements yet
+        if(hasUserMaxAdaptiveAchievements(user))
+            return;
 
         // clone goal of original achievement but increase the number of required completions
         GoalEntity newGoal = completedAchievement.getGoal().clone();
@@ -123,11 +132,12 @@ public class AchievementService {
             newAchievement = otherUsersAchievement.get();
         } else {
             newAchievement = new AchievementEntity();
+            newAchievement.setAdaptive(true);
             newAchievement.setName(completedAchievement.getName() + "I");
             newAchievement.setImageUrl("");
             newAchievement.setGoal(newGoalCountable);
 
-            // TODO: Store achievement in achievement repository?
+            achievementRepository.save(newAchievement);
         }
 
         // create a user goal progress for our user
@@ -146,6 +156,13 @@ public class AchievementService {
         newGoalProgressCountable.setCompletedCount(countableGoalProgress.getCompletedCount());
 
         userGoalProgressRepository.save(newGoalProgress);
+    }
+
+    private boolean hasUserMaxAdaptiveAchievements(UserEntity user) {
+        long userAdaptiveAchievementCount = getAchievementsForUserEntity(user).stream()
+                .filter(Achievement::getAdaptive)
+                .count();
+        return userAdaptiveAchievementCount >= adaptivityConfiguration.getMaxAdaptiveAchievementCount();
     }
 
     public void createInitialAchievementsInCourseEntity(CourseEntity course) {

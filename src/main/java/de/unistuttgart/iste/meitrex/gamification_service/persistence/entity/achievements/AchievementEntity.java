@@ -20,6 +20,13 @@ public class AchievementEntity extends HasGoalEntity {
     @Column
     String imageUrl;
 
+    /**
+     * If true, this is an adaptive achievement, which means that not all users will receive it. Only if a user has
+     * a UserGoalProgressEntity for this achievement, they can progress on it.
+     */
+    @Column
+    boolean adaptive;
+
     public void setGoal(GoalEntity goal) {
         super.setGoal(goal);
         goal.setParentWithGoal(this);

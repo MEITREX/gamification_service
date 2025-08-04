@@ -192,6 +192,9 @@ public class GoalProgressService {
         userRepository.saveAndFlush(user);
         List<UserGoalProgressEntity> userGoalProgressEntities = new ArrayList<>();
         for (AchievementEntity achievement : course.getAchievements()) {
+            if(achievement.isAdaptive())
+                continue; // skip adaptive achievements, they are generated on demand
+
             UserGoalProgressEntity userGoalProgressEntity = achievement.getGoal().generateUserGoalProgress(user);
             userGoalProgressEntities.add(userGoalProgressEntity);
         }

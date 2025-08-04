@@ -26,7 +26,7 @@ public class AchievementController {
 
     @QueryMapping
     public List<Achievement> achievementsByCourseId(@Argument UUID courseId,
-                                               @ContextValue final LoggedInUser currentUser) {
+                                                    @ContextValue final LoggedInUser currentUser) {
         validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT, courseId);
         return achievementService.getAchievementsForUserInCourse(currentUser.getId(), courseId);
     }

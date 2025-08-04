@@ -20,6 +20,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.CourseRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserGoalProgressRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
+import de.unistuttgart.iste.meitrex.gamification_service.service.AchievementService;
 import de.unistuttgart.iste.meitrex.gamification_service.service.GoalProgressService;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 import org.jetbrains.annotations.NotNull;
@@ -38,7 +39,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
 
 public class GoalProgressServiceTest {
 
-    private final AchievementRepository achievementRepository = mock(AchievementRepository.class);
+    private final AchievementService achievementService = mock(AchievementService.class);
 
     private final ContentServiceClient contentServiceClient = mock(ContentServiceClient.class);
     private final CourseServiceClient courseServiceClient = mock(CourseServiceClient.class);
@@ -53,7 +54,7 @@ public class GoalProgressServiceTest {
     @BeforeEach
     void setUp() {
         openMocks(this);
-        goalProgressService = new GoalProgressService(achievementRepository, contentServiceClient, courseServiceClient,
+        goalProgressService = new GoalProgressService(achievementService, contentServiceClient, courseServiceClient,
                 courseRepository, userRepository, userGoalProgressRepository);
     }
 

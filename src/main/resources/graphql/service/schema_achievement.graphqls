@@ -6,6 +6,7 @@ type Achievement implements HasGoal{
     courseId: UUID!
     userId: UUID
     completed: Boolean!
+    adaptive: Boolean!
     requiredCount: Int
     completedCount: Int
     trackingStartTime: DateTime
