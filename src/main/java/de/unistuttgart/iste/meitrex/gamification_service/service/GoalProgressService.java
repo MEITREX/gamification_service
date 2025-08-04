@@ -7,13 +7,11 @@ import de.unistuttgart.iste.meitrex.common.event.UserProgressUpdatedEvent;
 import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
 import de.unistuttgart.iste.meitrex.content_service.exception.ContentServiceConnectionException;
 import de.unistuttgart.iste.meitrex.course_service.client.CourseServiceClient;
-import de.unistuttgart.iste.meitrex.gamification_service.achievements.Achievements;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.AchievementEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.*;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.AchievementRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.CourseRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserGoalProgressRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
@@ -225,7 +223,7 @@ public class GoalProgressService {
     private void onGoalCompleted(UserGoalProgressEntity goalProgressEntity) {
         if(goalProgressEntity.getGoal().getParentWithGoal() instanceof AchievementEntity achievement) {
             achievementService.tryGenerateAdaptiveAchievementForUser(
-                    goalProgressEntity.getUser(),
+                    goalProgressEntity,
                     achievement.getCourse(),
                     achievement);
         }
