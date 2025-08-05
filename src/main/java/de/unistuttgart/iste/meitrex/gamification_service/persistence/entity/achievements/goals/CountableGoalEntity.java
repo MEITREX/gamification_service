@@ -37,9 +37,8 @@ public abstract class CountableGoalEntity extends GoalEntity {
 
     @Override
     public boolean equalsGoalTargets(GoalEntity other) {
-        CountableGoalEntity otherCountable = (CountableGoalEntity) other;
         return super.equalsGoalTargets(other)
-                && requiredCount == otherCountable.requiredCount;
+                && requiredCount == ((CountableGoalEntity)other).requiredCount;
     }
 
     @Override

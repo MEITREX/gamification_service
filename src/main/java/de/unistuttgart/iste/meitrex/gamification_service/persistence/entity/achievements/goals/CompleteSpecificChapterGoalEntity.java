@@ -56,9 +56,8 @@ public class CompleteSpecificChapterGoalEntity extends GoalEntity {
 
     @Override
     public boolean equalsGoalTargets(GoalEntity other) {
-        CompleteSpecificChapterGoalEntity otherChapter = (CompleteSpecificChapterGoalEntity) other;
-        return super.equalsGoalTargets(otherChapter)
-                && this.chapterId.equals(otherChapter.chapterId);
+        return super.equalsGoalTargets(other)
+                && this.chapterId.equals(((CompleteSpecificChapterGoalEntity)other).chapterId);
     }
 
     @Override

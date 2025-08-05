@@ -16,6 +16,7 @@ import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -68,12 +69,13 @@ public class AchievementService {
                 achievement.setTrackingStartTime(userGoalProgressEntity.getStartedAt());
                 achievement.setCompleted(userGoalProgressEntity.isCompleted());
                 if (userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity) {
-                    if (countableUserGoalProgressEntity.getGoal() instanceof CountableGoalEntity countableGoalEntity) {
+                    GoalEntity goal = (GoalEntity)Hibernate.unproxy(countableUserGoalProgressEntity.getGoal());
+                    if (goal instanceof CountableGoalEntity countableGoalEntity) {
                         achievement.setRequiredCount(countableGoalEntity.getRequiredCount());
                         achievement.setCompletedCount(countableUserGoalProgressEntity.getCompletedCount());
                     } else {
                         throw new RuntimeException("UserGoalProgress was countable, but its parent GoalEntity was not" +
-                                " countable. This should never happen!");
+                                " countable. This should never happen! instaceof goal: " + userGoalProgressEntity.getGoal().getClass().getName());
                     }
                 }
                 userAchievements.add(achievement);
@@ -100,10 +102,12 @@ public class AchievementService {
                                                       CourseEntity course,
                                                       AchievementEntity completedAchievement) {
         // we can only create adaptive achievements based on countable achievements (e.g. "complete 5 quizzes")
-        if(!(completedAchievement.getGoal() instanceof CountableGoalEntity countableGoal))
+        if(!(Hibernate.unproxy(completedAchievement.getGoal(), GoalEntity.class)
+                instanceof CountableGoalEntity countableGoal))
             return;
 
-        if(!(goalProgress instanceof CountableUserGoalProgressEntity countableGoalProgress))
+        if(!(Hibernate.unproxy(goalProgress, UserGoalProgressEntity.class)
+                instanceof CountableUserGoalProgressEntity countableGoalProgress))
             throw new RuntimeException("Goal was countable but user goal progress was not. This should never happen!");
 
         UserEntity user = goalProgress.getUser();
@@ -132,6 +136,7 @@ public class AchievementService {
             newAchievement = otherUsersAchievement.get();
         } else {
             newAchievement = new AchievementEntity();
+            newAchievement.setCourse(course);
             newAchievement.setAdaptive(true);
             newAchievement.setName(completedAchievement.getName() + "I");
             newAchievement.setImageUrl("");
@@ -155,7 +160,9 @@ public class AchievementService {
         // so we also need the progress to include events from before this new achievement was created)
         newGoalProgressCountable.setCompletedCount(countableGoalProgress.getCompletedCount());
 
-        userGoalProgressRepository.save(newGoalProgress);
+        newGoalProgress = userGoalProgressRepository.save(newGoalProgress);
+        user.getUserGoalProgressEntities().add(newGoalProgress);
+        userRepository.save(user);
     }
 
     private boolean hasUserMaxAdaptiveAchievements(UserEntity user) {

@@ -69,9 +69,8 @@ public class OrCombinatorGoalEntity extends GoalEntity{
 
     @Override
     public boolean equalsGoalTargets(GoalEntity other) {
-        OrCombinatorGoalEntity otherOr = (OrCombinatorGoalEntity) other;
         return super.equalsGoalTargets(other)
-                && goal1.equalsGoalTargets(otherOr.getGoal1())
-                && goal2.equalsGoalTargets(otherOr.getGoal2());
+                && goal1.equalsGoalTargets(((OrCombinatorGoalEntity)other).getGoal1())
+                && goal2.equalsGoalTargets(((OrCombinatorGoalEntity)other).getGoal2());
     }
 }

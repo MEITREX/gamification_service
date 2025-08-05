@@ -10,6 +10,7 @@ import de.unistuttgart.iste.meitrex.course_service.client.CourseServiceClient;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.AchievementEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.HasGoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.*;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.UserInventoryEntity;
@@ -23,6 +24,7 @@ import de.unistuttgart.iste.meitrex.generated.dto.ContentType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
@@ -121,7 +123,7 @@ public class GoalProgressService {
 
     @NotNull
     private static CompleteSpecificChapterGoalProgressEvent getCompleteSpecificChapterGoalProgressEvent(UUID userId,
-                                                                                    UUID chapterId, UUID courseId) {
+                                                                                                        UUID chapterId, UUID courseId) {
         CompleteSpecificChapterGoalProgressEvent completeSpecificChapterGoalProgressEvent =
                 new CompleteSpecificChapterGoalProgressEvent();
         completeSpecificChapterGoalProgressEvent.setProgressType(ProgressType.CHAPTER);
@@ -193,7 +195,7 @@ public class GoalProgressService {
         userRepository.saveAndFlush(user);
         List<UserGoalProgressEntity> userGoalProgressEntities = new ArrayList<>();
         for (AchievementEntity achievement : course.getAchievements()) {
-            if(achievement.isAdaptive())
+            if (achievement.isAdaptive())
                 continue; // skip adaptive achievements, they are generated on demand
 
             UserGoalProgressEntity userGoalProgressEntity = achievement.getGoal().generateUserGoalProgress(user);
@@ -214,18 +216,24 @@ public class GoalProgressService {
     }
 
     private void updateGoalProgressEntitiesForUser(UserEntity user,
-                                                          UUID courseId,
-                                                          GoalProgressEvent goalProgressEvent) {
-        Stream<UserGoalProgressEntity> completedGoals = user.getUserGoalProgressEntities().stream()
+                                                   UUID courseId,
+                                                   GoalProgressEvent goalProgressEvent) {
+        List<UserGoalProgressEntity> completedGoals = user.getUserGoalProgressEntities().stream()
                 .filter(userGoalProgressEntity ->
                         checkUserGoalProgressInCourse(courseId, userGoalProgressEntity))
-                .filter(goalProgressEntity -> goalProgressEntity.updateProgress(goalProgressEvent));
+                .filter(goalProgressEntity -> goalProgressEntity.updateProgress(goalProgressEvent))
+                .toList();
 
         completedGoals.forEach(this::onGoalCompleted);
     }
 
     private void onGoalCompleted(UserGoalProgressEntity goalProgressEntity) {
-        if(goalProgressEntity.getGoal().getParentWithGoal() instanceof AchievementEntity achievement) {
+        HasGoalEntity hasGoalEntity = Hibernate.unproxy(
+                goalProgressEntity.getGoal().getParentWithGoal(),
+                HasGoalEntity.class);
+        log.info("onGoalCompleted(): Goal completed: {}", hasGoalEntity);
+        if (hasGoalEntity instanceof AchievementEntity achievement) {
+            log.info("onGoalCompleted(): Goal is an achievement.");
             achievementService.tryGenerateAdaptiveAchievementForUser(
                     goalProgressEntity,
                     achievement.getCourse(),
