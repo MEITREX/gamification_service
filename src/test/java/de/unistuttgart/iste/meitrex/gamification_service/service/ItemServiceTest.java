@@ -44,7 +44,7 @@ public class ItemServiceTest {
     @Test
     void testGetInventoryForUser() {
         UUID userId = UUID.randomUUID();
-        UserEntity user = new UserEntity(userId, new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
+        UserEntity user = new UserEntity(userId, new ArrayList<>(), new UserInventoryEntity());
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
         Inventory inventory = itemService.getInventoryForUser(userId);
@@ -56,7 +56,7 @@ public class ItemServiceTest {
     @Test
     void testGetInventoryForEmptyUser() {
         UUID userId = UUID.randomUUID();
-        UserEntity user = new UserEntity(userId, new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
+        UserEntity user = new UserEntity(userId, new ArrayList<>(), new UserInventoryEntity());
         when(goalProgressService.createUser(userId)).thenReturn(user);
         Inventory inventory = itemService.getInventoryForUser(userId);
         assertThat(inventory.getItems(), hasSize(81));
@@ -67,7 +67,7 @@ public class ItemServiceTest {
     @Test
     void testGetItemsForUser() {
         UUID userId = UUID.randomUUID();
-        UserEntity user = new UserEntity(userId, new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
+        UserEntity user = new UserEntity(userId, new ArrayList<>(), new UserInventoryEntity());
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         List<UserItem> items = itemService.getItemsForUser(userId);
         assertThat(items, hasSize(81));
@@ -76,7 +76,7 @@ public class ItemServiceTest {
     @Test
     void testGetItemsForUserEmptyUser() {
         UUID userId = UUID.randomUUID();
-        UserEntity user = new UserEntity(userId, new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
+        UserEntity user = new UserEntity(userId, new ArrayList<>(), new UserInventoryEntity());
         when(goalProgressService.createUser(userId)).thenReturn(user);
         List<UserItem> items = itemService.getItemsForUser(userId);
         assertThat(items, hasSize(81));

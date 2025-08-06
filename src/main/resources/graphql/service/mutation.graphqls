@@ -2,13 +2,6 @@ type Mutation {
     evaluatePlayerHexadScore(userId: UUID!, input: PlayerAnswerInput!): PlayerHexadScore!
     loginUser(courseId: UUID): UUID
 
-    """
-    Send user feedback regarding recommendation of gamification categories back to the system.
-    """
-    sendRecommendationFeedback(category: GamificationCategory!, feedback: RecommendationUserFeedback!): Boolean!
-
-    setCurrentUserWidgetSettings(settings: WidgetSettingsInput!): WidgetSettings!
-
     buyItem(itemId:UUID!): Inventory
 }
 

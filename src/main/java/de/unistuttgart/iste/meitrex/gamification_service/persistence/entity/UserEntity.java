@@ -1,8 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity;
 
 import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.ItemInstanceEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.UserInventoryEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -12,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Entity
@@ -24,11 +23,14 @@ public class UserEntity implements IWithId<UUID> {
     UUID id;
 
     @OneToMany(cascade = CascadeType.ALL)
-    List<UserGoalProgressEntity> userGoalProgressEntities;
-
-    @ElementCollection
-    List<UUID> courseIds;
+    List<UserCourseDataEntity> courseData;
 
     @OneToOne(cascade = CascadeType.ALL)
     UserInventoryEntity inventory;
+
+    public Optional<UserCourseDataEntity> getCourseData(UUID courseId) {
+        return courseData.stream()
+                .filter(data -> data.getCourseId().equals(courseId))
+                .findFirst();
+    }
 }

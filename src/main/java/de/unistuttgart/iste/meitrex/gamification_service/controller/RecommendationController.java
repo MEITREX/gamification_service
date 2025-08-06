@@ -46,6 +46,7 @@ public class RecommendationController {
         return widgetRecommendationService.getUserWidgetSettings(currentUser.getId());
     }
 
+    @MutationMapping
     public WidgetSettings setCurrentUserWidgetSettings(final WidgetSettingsInput settings,
                                                        @ContextValue final LoggedInUser currentUser) {
         return widgetRecommendationService.setUserWidgetSettings(currentUser.getId(), settings);

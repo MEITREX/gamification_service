@@ -6,17 +6,16 @@ import de.unistuttgart.iste.meitrex.common.testutil.MockTestPublisherConfigurati
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
 import de.unistuttgart.iste.meitrex.course_service.client.CourseServiceClient;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserCourseDataEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.AchievementEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.AchievementRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.CourseRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserGoalProgressRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.test_util.CourseUtil;
 import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
-import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,12 +39,6 @@ import static org.hamcrest.Matchers.is;
 public class QueryAchievementsByCourseIdTest {
     UUID courseId = UUID.randomUUID();
 
-    @Autowired
-    CourseServiceClient courseServiceClient;
-
-    @Autowired
-    ContentServiceClient contentServiceClient;
-
     @InjectCurrentUserHeader
     private final LoggedInUser loggedInUser = userWithMembershipInCourseWithId(courseId, LoggedInUser.UserRoleInCourse.STUDENT);
     @Autowired
@@ -53,15 +46,13 @@ public class QueryAchievementsByCourseIdTest {
     @Autowired
     private CourseRepository courseRepository;
     @Autowired
-    private UserGoalProgressRepository userGoalProgressRepository;
-    @Autowired
     private AchievementRepository achievementRepository;
 
     @Test
     void queryAchievementsByCourseIdEmpty (GraphQlTester tester) {
         UserEntity user = new UserEntity();
         user.setId(loggedInUser.getId());
-        user.setUserGoalProgressEntities(new ArrayList<>());
+        user.setCourseData(new ArrayList<>());
         userRepository.save(user);
 
         CourseEntity courseEntity = CourseUtil.dummyCourseEntity(courseId, achievementRepository);
@@ -92,21 +83,24 @@ public class QueryAchievementsByCourseIdTest {
 
     @Test
     void queryAchievementsByCourseId (GraphQlTester tester) {
-        UserEntity user = new UserEntity();
-        user.setId(loggedInUser.getId());
-        user.setCourseIds(new ArrayList<>(List.of(courseId)));
-        userRepository.save(user);
-
         CourseEntity courseEntity = CourseUtil.dummyCourseEntity(courseId, achievementRepository);
         courseRepository.save(courseEntity);
+
+        UserEntity user = new UserEntity();
+        user.setId(loggedInUser.getId());
 
         List<UserGoalProgressEntity> userGoalProgressEntities = new ArrayList<>();
         for (AchievementEntity achievement : courseEntity.getAchievements()) {
             UserGoalProgressEntity userGoalProgressEntity = achievement.getGoal().generateUserGoalProgress(user);
             userGoalProgressEntities.add(userGoalProgressEntity);
         }
-        userGoalProgressRepository.saveAll(userGoalProgressEntities);
-        user.setUserGoalProgressEntities(userGoalProgressEntities);
+
+        UserCourseDataEntity courseData = UserCourseDataEntity.builder()
+                .courseId(courseId)
+                .goalProgressEntities(userGoalProgressEntities)
+                .build();
+
+        user.setCourseData(List.of(courseData));
         userRepository.save(user);
 
         final String query = """

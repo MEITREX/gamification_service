@@ -2,15 +2,16 @@ package de.unistuttgart.iste.meitrex.gamification_service.service;
 
 import de.unistuttgart.iste.meitrex.gamification_service.achievements.Achievements;
 import de.unistuttgart.iste.meitrex.gamification_service.config.AdaptivityConfiguration;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserCourseDataEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.AchievementEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.HasGoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.CountableGoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.GoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.CountableUserGoalProgressEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.AchievementRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserGoalProgressRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
 import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
 import jakarta.transaction.Transactional;
@@ -19,10 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -31,33 +29,36 @@ import java.util.UUID;
 public class AchievementService {
     private final UserRepository userRepository;
     private final AchievementRepository achievementRepository;
-    private final UserGoalProgressRepository userGoalProgressRepository;
     private final AdaptivityConfiguration adaptivityConfiguration;
 
     private final Achievements achievements = new Achievements();
 
     public List<Achievement> getAchievementsForUserInCourse(UUID userId, UUID courseId) {
         Optional<UserEntity> user = userRepository.findById(userId);
-        if (user.isEmpty()) {
-            return new  ArrayList<>();
-        }
+        if (user.isEmpty())
+            return Collections.emptyList();
+
+        Optional<UserCourseDataEntity> userCourseData = user.get().getCourseData(courseId);
+        if (userCourseData.isEmpty())
+            return Collections.emptyList();
+
         List<Achievement> userAchievements = new ArrayList<>();
-        List<UserGoalProgressEntity> userGoalProgressEntities = user.get().getUserGoalProgressEntities().stream()
-                .filter(userGoalProgressEntity -> {
-                            if (userGoalProgressEntity.getGoal().getParentWithGoal() instanceof AchievementEntity achievement) {
-                                return  achievement.getCourse().getId().equals(courseId);
-                            } else {
-                                return false;
-                            }
-                        }).toList();
-        mapUserGoalProgressToAchievements(userGoalProgressEntities, userAchievements);
+        mapUserGoalProgressToAchievements(userCourseData.get().getGoalProgressEntities(), userAchievements);
         return userAchievements;
     }
 
-    private static void mapUserGoalProgressToAchievements(List<UserGoalProgressEntity> userGoalProgressEntities,
-                                                          List<Achievement> userAchievements) {
+    /**
+     * Maps "UserGoalProgressEntity"s (database types) to "Achievement"s (DTO types). This method also ensures that
+     * only UserGoalProgressEntities that are actually achievements are mapped. Non-achievements are skipped.
+     * @param userGoalProgressEntities the list of UserGoalProgressEntities to map. Can contain any type of goal
+     *                                 progress, but only those that are achievements will be mapped to achievements.
+     * @param userAchievements the list of achievements to which the mapped achievements will be added.
+     */
+    protected static void mapUserGoalProgressToAchievements(List<UserGoalProgressEntity> userGoalProgressEntities,
+                                                            List<Achievement> userAchievements) {
         userGoalProgressEntities.forEach(userGoalProgressEntity -> {
-            if (userGoalProgressEntity.getGoal().getParentWithGoal() instanceof AchievementEntity achievementEntity) {
+            if (Hibernate.unproxy(userGoalProgressEntity.getGoal().getParentWithGoal(), HasGoalEntity.class)
+                    instanceof AchievementEntity achievementEntity) {
                 Achievement achievement = new Achievement();
                 achievement.setId(userGoalProgressEntity.getGoal().getParentWithGoal().getId());
                 achievement.setName(achievementEntity.getName());
@@ -68,6 +69,7 @@ public class AchievementService {
                 achievement.setTrackingEndTime(userGoalProgressEntity.getEndedAt());
                 achievement.setTrackingStartTime(userGoalProgressEntity.getStartedAt());
                 achievement.setCompleted(userGoalProgressEntity.isCompleted());
+                achievement.setUserId(userGoalProgressEntity.getUser().getId());
                 if (userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity) {
                     GoalEntity goal = (GoalEntity)Hibernate.unproxy(countableUserGoalProgressEntity.getGoal());
                     if (goal instanceof CountableGoalEntity countableGoalEntity) {
@@ -86,15 +88,20 @@ public class AchievementService {
     public List<Achievement> getAchievementsForUser(UUID userId) {
         Optional<UserEntity> user = userRepository.findById(userId);
         if (user.isEmpty()) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
         return getAchievementsForUserEntity(user.get());
     }
 
     private List<Achievement> getAchievementsForUserEntity(UserEntity user) {
         log.info("get achievements for user {}", user.getId());
+
+        List<UserGoalProgressEntity> allUserGoalProgress = user.getCourseData().stream()
+                .flatMap(cd -> cd.getGoalProgressEntities().stream())
+                .toList();
+
         List<Achievement> userAchievements = new ArrayList<>();
-        mapUserGoalProgressToAchievements(user.getUserGoalProgressEntities(), userAchievements);
+        mapUserGoalProgressToAchievements(allUserGoalProgress, userAchievements);
         return userAchievements;
     }
 
@@ -110,14 +117,18 @@ public class AchievementService {
                 instanceof CountableUserGoalProgressEntity countableGoalProgress))
             throw new RuntimeException("Goal was countable but user goal progress was not. This should never happen!");
 
-        UserEntity user = goalProgress.getUser();
+        final UserEntity user = goalProgress.getUser();
+
+        final UserCourseDataEntity userCourseData = user.getCourseData(course.getId())
+                .orElseThrow(() -> new RuntimeException("User course data could not be found for course user is a" +
+                        " member of. This should never happen! User: " + user.getId() + " Course: " + course.getId()));
 
         // Only generate new achievement for user if they haven't reached the max num of adaptive achievements yet
         if(hasUserMaxAdaptiveAchievements(user))
             return;
 
         // clone goal of original achievement but increase the number of required completions
-        GoalEntity newGoal = completedAchievement.getGoal().clone();
+        final GoalEntity newGoal = completedAchievement.getGoal().clone();
         if(!(newGoal instanceof CountableGoalEntity newGoalCountable))
             throw new RuntimeException("Cloned goal was not countable even though base goal was countable. This" +
                     " should never happen!");
@@ -125,7 +136,7 @@ public class AchievementService {
 
         // search for an existing achievement with the same goal (maybe another user has already generated this
         // adaptive achievement, we can reuse it)
-        Optional<AchievementEntity> otherUsersAchievement =
+        final Optional<AchievementEntity> otherUsersAchievement =
                 achievementRepository.getAchievementEntitiesByCourse(course).stream()
                 .filter(a -> a.getGoal().equalsGoalTargets(newGoalCountable))
                 .findAny();
@@ -146,10 +157,11 @@ public class AchievementService {
         }
 
         // create a user goal progress for our user
-        UserGoalProgressEntity newGoalProgress = newAchievement.getGoal().generateUserGoalProgress(user);
+        final UserGoalProgressEntity newGoalProgress = newAchievement.getGoal().generateUserGoalProgress(user);
 
-        // do not generate a new goal progress if user already has a goal progress for this achievement
-        if(!userGoalProgressRepository.findAllByUserAndGoal(user, newAchievement.getGoal()).isEmpty())
+        // do not generate a new goal progress if user already has an equal goal progress for this achievement
+        if(userCourseData.getGoalProgressEntities().stream()
+                .anyMatch(gp -> gp.getGoal().getId().equals(newGoalProgress.getId())))
             return;
 
         if(!(newGoalProgress instanceof CountableUserGoalProgressEntity newGoalProgressCountable))
@@ -160,8 +172,7 @@ public class AchievementService {
         // so we also need the progress to include events from before this new achievement was created)
         newGoalProgressCountable.setCompletedCount(countableGoalProgress.getCompletedCount());
 
-        newGoalProgress = userGoalProgressRepository.save(newGoalProgress);
-        user.getUserGoalProgressEntities().add(newGoalProgress);
+        userCourseData.getGoalProgressEntities().add(newGoalProgress);
         userRepository.save(user);
     }
 

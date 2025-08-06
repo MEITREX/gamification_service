@@ -3,16 +3,13 @@ package de.unistuttgart.iste.meitrex.gamification_service.service;
 
 import de.unistuttgart.iste.meitrex.gamification_service.achievements.Achievements;
 import de.unistuttgart.iste.meitrex.gamification_service.config.AdaptivityConfiguration;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserCourseDataEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.AchievementEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.CountableGoalEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.CountableUserGoalProgressEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.AchievementRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserGoalProgressRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.service.AchievementService;
 import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
 import de.unistuttgart.iste.meitrex.generated.dto.Chapter;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static de.unistuttgart.iste.meitrex.gamification_service.service.AchievementService.mapUserGoalProgressToAchievements;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
@@ -30,9 +28,8 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 public class AchievementServiceTest {
-    private final UserRepository userRepository  = mock(UserRepository.class);
+    private final UserRepository userRepository = mock(UserRepository.class);
     private final AchievementRepository achievementRepository = mock(AchievementRepository.class);
-    private final UserGoalProgressRepository userGoalProgressRepository = mock(UserGoalProgressRepository.class);
     private final AdaptivityConfiguration adaptivityConfiguration = mock(AdaptivityConfiguration.class);
 
     private final Achievements achievements = new Achievements();
@@ -42,8 +39,7 @@ public class AchievementServiceTest {
     @BeforeEach
     void setUp() {
         openMocks(this);
-        achievementService = new AchievementService(userRepository, achievementRepository,
-                userGoalProgressRepository, adaptivityConfiguration);
+        achievementService = new AchievementService(userRepository, achievementRepository, adaptivityConfiguration);
         when(adaptivityConfiguration.getMaxAdaptiveAchievementCount()).thenReturn(10);
     }
 
@@ -62,16 +58,25 @@ public class AchievementServiceTest {
                 .build();
         List<AchievementEntity> achievementEntities = achievements.generateAchievements(courseEntity);
         courseEntity.setAchievements(achievementEntities);
+
         UserEntity userEntity = new UserEntity();
         userEntity.setId(userId);
-        userEntity.setCourseIds(new ArrayList<>(List.of(courseId)));
+
         List<UserGoalProgressEntity> userGoalProgress = achievementEntities.stream().map(achievement ->
                 achievement.getGoal().generateUserGoalProgress(userEntity)).toList();
-        userEntity.setUserGoalProgressEntities(userGoalProgress);
+
+        UserCourseDataEntity courseData = UserCourseDataEntity.builder()
+                .courseId(courseId)
+                .goalProgressEntities(userGoalProgress)
+                .build();
+        userEntity.setCourseData(List.of(courseData));
+
         when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
         List<Achievement> achievementResult = achievementService.getAchievementsForUserInCourse(userId, courseId);
         List<Achievement> achievementList = new ArrayList<>();
-        mapUserGoalProgressToAchievements(userEntity.getUserGoalProgressEntities(), achievementList);
+        mapUserGoalProgressToAchievements(
+                userEntity.getCourseData(courseId).orElseThrow().getGoalProgressEntities(),
+                achievementList);
         assertThat(achievementResult, is(achievementList));
     }
 
@@ -92,39 +97,22 @@ public class AchievementServiceTest {
         courseEntity.setAchievements(achievementEntities);
         UserEntity userEntity = new UserEntity();
         userEntity.setId(userId);
-        userEntity.setCourseIds(new ArrayList<>(List.of(courseId)));
+
         List<UserGoalProgressEntity> userGoalProgress = achievementEntities.stream().map(achievement ->
                 achievement.getGoal().generateUserGoalProgress(userEntity)).toList();
-        userEntity.setUserGoalProgressEntities(userGoalProgress);
+
+        UserCourseDataEntity courseData = UserCourseDataEntity.builder()
+                .courseId(courseId)
+                .goalProgressEntities(userGoalProgress)
+                .build();
+        userEntity.setCourseData(List.of(courseData));
+
         when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
         List<Achievement> achievementResult = achievementService.getAchievementsForUser(userId);
         List<Achievement> achievementList = new ArrayList<>();
-        mapUserGoalProgressToAchievements(userEntity.getUserGoalProgressEntities(), achievementList);
+        mapUserGoalProgressToAchievements(
+                userEntity.getCourseData(courseId).orElseThrow().getGoalProgressEntities(),
+                achievementList);
         assertThat(achievementResult, is(achievementList));
-    }
-
-
-    private static void mapUserGoalProgressToAchievements(List<UserGoalProgressEntity> userGoalProgressEntities,
-                                                          List<Achievement> userAchievements) {
-        userGoalProgressEntities.forEach(userGoalProgressEntity -> {
-            if (userGoalProgressEntity.getGoal().getParentWithGoal() instanceof AchievementEntity achievementEntity) {
-                Achievement achievement = new Achievement();
-                achievement.setId(userGoalProgressEntity.getGoal().getParentWithGoal().getId());
-                achievement.setName(achievementEntity.getName());
-                achievement.setDescription(userGoalProgressEntity.getGoal().generateDescription());
-                achievement.setCourseId(achievementEntity.getCourse().getId());
-                achievement.setImageUrl(achievementEntity.getImageUrl());
-                achievement.setTrackingEndTime(userGoalProgressEntity.getEndedAt());
-                achievement.setTrackingStartTime(userGoalProgressEntity.getStartedAt());
-                achievement.setCompleted(userGoalProgressEntity.isCompleted());
-                if (userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity) {
-                    if (countableUserGoalProgressEntity.getGoal() instanceof CountableGoalEntity countableGoalEntity) {
-                        achievement.setRequiredCount(countableGoalEntity.getRequiredCount());
-                        achievement.setCompletedCount(countableUserGoalProgressEntity.getCompletedCount());
-                    }
-                }
-                userAchievements.add(achievement);
-            }
-        });
     }
 }

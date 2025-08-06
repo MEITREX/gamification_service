@@ -7,6 +7,7 @@ import de.unistuttgart.iste.meitrex.common.event.UserProgressUpdatedEvent;
 import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
 import de.unistuttgart.iste.meitrex.content_service.exception.ContentServiceConnectionException;
 import de.unistuttgart.iste.meitrex.course_service.client.CourseServiceClient;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserCourseDataEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.AchievementEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
@@ -15,7 +16,6 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achi
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.UserInventoryEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.CourseRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserGoalProgressRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
 import de.unistuttgart.iste.meitrex.generated.dto.Chapter;
 import de.unistuttgart.iste.meitrex.generated.dto.CompositeProgressInformation;
@@ -30,7 +30,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +41,6 @@ public class GoalProgressService {
     private final CourseServiceClient courseServiceClient;
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
-    private final UserGoalProgressRepository userGoalProgressRepository;
 
     /**
      * Gets user progress according to the given event.
@@ -63,9 +61,7 @@ public class GoalProgressService {
         log.info("Course exists: {}", courseRepository.findById(courseId).isPresent());
         CourseEntity courseEntity = courseRepository.findById(courseId).orElseGet(() -> createCourse(courseId));
         UserEntity user = userRepository.findById(userId).orElseGet(() -> createUser(userId));
-        if (!user.getCourseIds().contains(courseEntity.getId())) {
-            addUserToCourse(courseEntity, user);
-        }
+        addUserToCourseIfNotAlready(courseEntity, user);
         log.info("User {} ", user);
         if (Objects.requireNonNull(content.getMetadata().getType()) == ContentType.QUIZ) {
             quizProgress(contentProgressedEvent, user, courseId);
@@ -104,9 +100,7 @@ public class GoalProgressService {
         UUID userId = userProgressUpdatedEvent.getUserId();
         UUID chapterId = userProgressUpdatedEvent.getChapterId();
         UserEntity user = userRepository.findById(userId).orElseGet(() -> createUser(userId));
-        if (!user.getCourseIds().contains(courseEntity.getId())) {
-            addUserToCourse(courseEntity, user);
-        }
+        addUserToCourseIfNotAlready(courseEntity, user);
         try {
             CompositeProgressInformation progressInformation =
                     contentServiceClient.queryProgressByChapterId(userId, chapterId);
@@ -139,9 +133,7 @@ public class GoalProgressService {
         log.info(courseEntity.toString());
         UUID userId = forumActivityEvent.getUserId();
         UserEntity user = userRepository.findById(userId).orElseGet(() -> createUser(userId));
-        if (!user.getCourseIds().contains(courseEntity.getId())) {
-            addUserToCourse(courseEntity, user);
-        }
+        addUserToCourseIfNotAlready(courseEntity, user);
         if (forumActivityEvent.getActivity() == ForumActivity.ANSWER) {
             forumAnswerProgress(user, courseId);
             userRepository.save(user);
@@ -159,9 +151,7 @@ public class GoalProgressService {
     public UUID loginUser(UUID userId, UUID courseId) {
         CourseEntity courseEntity = courseRepository.findById(courseId).orElseGet(() -> createCourse(courseId));
         UserEntity user = userRepository.findById(userId).orElseGet(() -> createUser(userId));
-        if (!user.getCourseIds().contains(courseEntity.getId())) {
-            addUserToCourse(courseEntity, user);
-        }
+        addUserToCourseIfNotAlready(courseEntity, user);
         LoginStreakGoalProgressEvent loginStreakGoalProgressEvent = getLoginStreakGoalProgressEvent(userId, courseId);
         updateGoalProgressEntitiesForUser(user, courseId, loginStreakGoalProgressEvent);
         userRepository.save(user);
@@ -189,26 +179,37 @@ public class GoalProgressService {
         return courseEntity;
     }
 
-    private void addUserToCourse(final CourseEntity course, UserEntity user) {
-        log.info("add user to course {}", course.getId());
-        user.getCourseIds().add(course.getId());
-        userRepository.saveAndFlush(user);
-        List<UserGoalProgressEntity> userGoalProgressEntities = new ArrayList<>();
-        for (AchievementEntity achievement : course.getAchievements()) {
-            if (achievement.isAdaptive())
-                continue; // skip adaptive achievements, they are generated on demand
+    private UserCourseDataEntity addUserToCourseIfNotAlready(final CourseEntity course, UserEntity user) {
+        Optional<UserCourseDataEntity> userCourseData = user.getCourseData(course.getId());
 
-            UserGoalProgressEntity userGoalProgressEntity = achievement.getGoal().generateUserGoalProgress(user);
-            userGoalProgressEntities.add(userGoalProgressEntity);
+        if(userCourseData.isEmpty()) {
+            log.info("add user to course {}", course.getId());
+
+            List<UserGoalProgressEntity> userGoalProgressEntities = new ArrayList<>();
+            for (AchievementEntity achievement : course.getAchievements()) {
+                if (achievement.isAdaptive())
+                    continue; // skip adaptive achievements, they are generated on demand
+
+                UserGoalProgressEntity userGoalProgressEntity = achievement.getGoal().generateUserGoalProgress(user);
+                userGoalProgressEntities.add(userGoalProgressEntity);
+            }
+
+            userCourseData = Optional.of(UserCourseDataEntity.builder()
+                    .courseId(course.getId())
+                    .goalProgressEntities(userGoalProgressEntities)
+                    .returningUserQuestSets(new ArrayList<>())
+                    .dailyQuestSet(null)
+                    .build());
+
+            user.getCourseData().add(userCourseData.get());
+            user = userRepository.save(user);
         }
-        userGoalProgressRepository.saveAll(userGoalProgressEntities);
-        user.getUserGoalProgressEntities().addAll(userGoalProgressEntities);
-        user = userRepository.save(user);
-        log.info("Added user to course {}", user);
+
+        return userCourseData.get();
     }
 
     public UserEntity createUser(final UUID userId) {
-        UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
+        UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new UserInventoryEntity());
         userEntity = userRepository.save(userEntity);
         log.info("Created user with id {}", userId);
         log.info("Created user {}", userEntity);
@@ -218,9 +219,10 @@ public class GoalProgressService {
     private void updateGoalProgressEntitiesForUser(UserEntity user,
                                                    UUID courseId,
                                                    GoalProgressEvent goalProgressEvent) {
-        List<UserGoalProgressEntity> completedGoals = user.getUserGoalProgressEntities().stream()
-                .filter(userGoalProgressEntity ->
-                        checkUserGoalProgressInCourse(courseId, userGoalProgressEntity))
+        List<UserGoalProgressEntity> completedGoals = user.getCourseData(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("updateGoalProgressEntitiesForUser(): " +
+                        "User is not enrolled in course: " + courseId))
+                .getGoalProgressEntities().stream()
                 .filter(goalProgressEntity -> goalProgressEntity.updateProgress(goalProgressEvent))
                 .toList();
 

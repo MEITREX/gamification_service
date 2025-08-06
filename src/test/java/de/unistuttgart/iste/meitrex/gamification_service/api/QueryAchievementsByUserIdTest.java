@@ -6,6 +6,7 @@ import de.unistuttgart.iste.meitrex.common.testutil.MockTestPublisherConfigurati
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
 import de.unistuttgart.iste.meitrex.course_service.client.CourseServiceClient;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserCourseDataEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.AchievementEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
@@ -13,12 +14,10 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achi
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.UserInventoryEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.AchievementRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.CourseRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserGoalProgressRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.test_util.CourseMembershipUtil;
 import de.unistuttgart.iste.meitrex.gamification_service.test_util.CourseUtil;
 import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
-import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +28,7 @@ import org.springframework.test.context.ContextConfiguration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMemberships;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -59,13 +59,11 @@ public class QueryAchievementsByUserIdTest {
     @Autowired
     private CourseRepository courseRepository;
     @Autowired
-    private UserGoalProgressRepository userGoalProgressRepository;
-    @Autowired
     private AchievementRepository achievementRepository;
 
     @Test
-    void queryAchievementsByUserIdEmpty (GraphQlTester tester) {
-        UserEntity user = new UserEntity(loggedInUser.getId(), new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
+    void queryAchievementsByUserIdEmpty(GraphQlTester tester) {
+        UserEntity user = new UserEntity(loggedInUser.getId(), new ArrayList<>(), new UserInventoryEntity());
         userRepository.save(user);
 
         CourseEntity courseEntity = CourseUtil.dummyCourseEntity(courseId1, achievementRepository);
@@ -95,10 +93,9 @@ public class QueryAchievementsByUserIdTest {
     }
 
     @Test
-    void queryAchievementsByUserId (GraphQlTester tester) {
+    void queryAchievementsByUserId(GraphQlTester tester) {
         UserEntity user = new UserEntity();
         user.setId(loggedInUser.getId());
-        user.setCourseIds(new ArrayList<>(List.of(courseId1)));
         userRepository.save(user);
 
         CourseEntity courseEntity = CourseUtil.dummyCourseEntity(courseId1, achievementRepository);
@@ -109,8 +106,11 @@ public class QueryAchievementsByUserIdTest {
             UserGoalProgressEntity userGoalProgressEntity = achievement.getGoal().generateUserGoalProgress(user);
             userGoalProgressEntities.add(userGoalProgressEntity);
         }
-        userGoalProgressRepository.saveAll(userGoalProgressEntities);
-        user.setUserGoalProgressEntities(userGoalProgressEntities);
+        UserCourseDataEntity courseData = UserCourseDataEntity.builder()
+                .courseId(courseId1)
+                .goalProgressEntities(userGoalProgressEntities)
+                .build();
+        user.setCourseData(List.of(courseData));
         userRepository.save(user);
 
         final String query = """
@@ -137,10 +137,9 @@ public class QueryAchievementsByUserIdTest {
     }
 
     @Test
-    void queryAchievementsByUserIdTwoCourses (GraphQlTester tester) {
+    void queryAchievementsByUserIdTwoCourses(GraphQlTester tester) {
         UserEntity user = new UserEntity();
         user.setId(loggedInUser.getId());
-        user.setCourseIds(new ArrayList<>(List.of(courseId1, courseId2)));
         userRepository.save(user);
 
         CourseEntity courseEntity1 = CourseUtil.dummyCourseEntity(courseId1, achievementRepository);
@@ -148,17 +147,21 @@ public class QueryAchievementsByUserIdTest {
         CourseEntity courseEntity2 = CourseUtil.dummyCourseEntity(courseId2, achievementRepository);
         courseRepository.save(courseEntity2);
 
-        List<UserGoalProgressEntity> userGoalProgressEntities = new ArrayList<>();
-        for (AchievementEntity achievement : courseEntity1.getAchievements()) {
-            UserGoalProgressEntity userGoalProgressEntity = achievement.getGoal().generateUserGoalProgress(user);
-            userGoalProgressEntities.add(userGoalProgressEntity);
-        }
-        for (AchievementEntity achievement : courseEntity2.getAchievements()) {
-            UserGoalProgressEntity userGoalProgressEntity = achievement.getGoal().generateUserGoalProgress(user);
-            userGoalProgressEntities.add(userGoalProgressEntity);
-        }
-        userGoalProgressRepository.saveAll(userGoalProgressEntities);
-        user.setUserGoalProgressEntities(userGoalProgressEntities);
+        List<UserCourseDataEntity> courseData = Stream.of(courseEntity1, courseEntity2).map(course -> {
+                    List<UserGoalProgressEntity> userGoalProgressEntities = new ArrayList<>();
+                    for (AchievementEntity achievement : course.getAchievements()) {
+                        UserGoalProgressEntity userGoalProgressEntity = achievement.getGoal().generateUserGoalProgress(user);
+                        userGoalProgressEntities.add(userGoalProgressEntity);
+                    }
+
+                    return UserCourseDataEntity.builder()
+                            .courseId(course.getId())
+                            .goalProgressEntities(userGoalProgressEntities)
+                            .build();
+                })
+                .toList();
+
+        user.setCourseData(courseData);
         userRepository.save(user);
 
         final String query = """

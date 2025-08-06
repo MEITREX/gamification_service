@@ -1,3 +1,22 @@
+extend type Query {
+    """
+    Gets the widget recommendations for the current user. Number of recommendations depends on the user's widget
+    settings. Recommendations are refreshed on an interval based on the user's widget settings.
+    """
+    _internal_noauth_currentUserWidgetRecommendations(courseId: UUID!): [GamificationCategoryRecommendation!]!
+
+    currentUserWidgetSettings: WidgetSettings!
+}
+
+extend type Mutation {
+    """
+    Send user feedback regarding recommendation of gamification categories back to the system.
+    """
+    sendRecommendationFeedback(category: GamificationCategory!, feedback: RecommendationUserFeedback!): Boolean!
+
+    setCurrentUserWidgetSettings(settings: WidgetSettingsInput!): WidgetSettings!
+}
+
 enum RecommendationUserFeedback {
     JUST_RIGHT,
     MORE_OFTEN,
