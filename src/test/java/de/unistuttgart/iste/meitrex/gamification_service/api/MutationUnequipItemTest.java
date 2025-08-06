@@ -12,6 +12,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.
 import de.unistuttgart.iste.meitrex.gamification_service.service.ItemService;
 import de.unistuttgart.iste.meitrex.gamification_service.test_config.MockContentServiceClientConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.test_config.MockCourseServiceClientConfiguration;
+import de.unistuttgart.iste.meitrex.gamification_service.test_util.ItemUtil;
 import de.unistuttgart.iste.meitrex.generated.dto.Inventory;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
 import jakarta.transaction.Transactional;
@@ -45,7 +46,7 @@ public class MutationUnequipItemTest {
 
     @Test
     void testUnequipItem(final GraphQlTester tester) {
-        UUID itemId = UUID.fromString("6fb8b726-2db2-4992-9e63-f3aa57aa4520");
+        UUID itemId = UUID.fromString(ItemUtil.DEFAULT_TUTOR_ITEM_ID);
         UserEntity user = new UserEntity(loggedInUser.getId(), new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
         ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
         itemInstanceEntity.setPrototypeId(itemId);
@@ -81,7 +82,7 @@ public class MutationUnequipItemTest {
 
     @Test
     void testUnequipTutorItem(final GraphQlTester tester) {
-        UUID itemId = UUID.fromString("d917571b-1dcf-42a5-8416-3b7943ecc95a");
+        UUID itemId = UUID.fromString(ItemUtil.DEFAULT_TUTOR_ITEM_ID);
         UserEntity user = new UserEntity(loggedInUser.getId(), new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
         ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
         itemInstanceEntity.setPrototypeId(itemId);

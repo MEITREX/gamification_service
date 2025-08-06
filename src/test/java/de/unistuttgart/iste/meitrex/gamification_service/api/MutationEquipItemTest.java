@@ -52,7 +52,7 @@ public class MutationEquipItemTest {
 
     @Test
     void testEquipItem(final GraphQlTester tester) {
-        UUID itemId = UUID.fromString("6fb8b726-2db2-4992-9e63-f3aa57aa4520");
+        UUID itemId = UUID.fromString("8b61858a-ec79-4c9e-a3d7-540e5bce6f70");
         UserEntity user = new UserEntity(loggedInUser.getId(), new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
         ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
         itemInstanceEntity.setPrototypeId(itemId);

@@ -5,15 +5,13 @@ import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
 import de.unistuttgart.iste.meitrex.common.testutil.MockTestPublisherConfiguration;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.ItemInstanceEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.ItemType;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.UserInventoryEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.service.ItemService;
 import de.unistuttgart.iste.meitrex.gamification_service.test_config.MockContentServiceClientConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.test_config.MockCourseServiceClientConfiguration;
+import de.unistuttgart.iste.meitrex.gamification_service.test_util.ItemUtil;
 import de.unistuttgart.iste.meitrex.generated.dto.Inventory;
-import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +43,7 @@ public class MutationCurrencyRewardTest {
 
     @Test
     void testCurrencyRewardItem(final GraphQlTester tester) {
-        UUID itemId = UUID.fromString("6fb8b726-2db2-4992-9e63-f3aa57aa4520");
+        UUID itemId = UUID.fromString(ItemUtil.DEFAULT_TUTOR_ITEM_ID);
         UserEntity user = new UserEntity(loggedInUser.getId(), new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
         user.getInventory().setUnspentPoints(0);
         userRepository.save(user);

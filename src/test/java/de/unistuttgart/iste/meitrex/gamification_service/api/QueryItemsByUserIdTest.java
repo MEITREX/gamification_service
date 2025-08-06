@@ -12,7 +12,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.
 import de.unistuttgart.iste.meitrex.gamification_service.service.ItemService;
 import de.unistuttgart.iste.meitrex.gamification_service.test_config.MockContentServiceClientConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.test_config.MockCourseServiceClientConfiguration;
-import de.unistuttgart.iste.meitrex.generated.dto.Inventory;
+import de.unistuttgart.iste.meitrex.gamification_service.test_util.ItemUtil;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
@@ -47,7 +47,7 @@ public class QueryItemsByUserIdTest {
 
     @Test
     void testQueryItemsByUserId(final GraphQlTester tester) {
-        UUID itemId = UUID.fromString("6fb8b726-2db2-4992-9e63-f3aa57aa4520");
+        UUID itemId = UUID.fromString(ItemUtil.DEFAULT_TUTOR_ITEM_ID);
         UserEntity user = new UserEntity(loggedInUser.getId(), new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
         ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
         itemInstanceEntity.setPrototypeId(itemId);
@@ -92,7 +92,7 @@ public class QueryItemsByUserIdTest {
                 }
                 """.formatted(loggedInUser.getId());
 
-        UUID itemId = UUID.fromString("3bafe774-dd8a-487f-9c55-0b23acf52e14");
+        UUID itemId = UUID.fromString(ItemUtil.DEFAULT_TUTOR_ITEM_ID);
 
         List<UserItem> userItemList = tester.document(query)
                 .execute()

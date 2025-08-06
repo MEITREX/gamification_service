@@ -10,6 +10,7 @@ import lombok.EqualsAndHashCode;
 public class Tutor extends ItemParent{
     private String filename;
     private String nickname;
+    private String url;
 
     public ItemInstanceEntity toItemInstance() {
         ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
