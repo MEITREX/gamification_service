@@ -34,10 +34,10 @@ public class ItemService {
 
     private final Random r = new Random();
 
-    private final static double COMMON_PERCENTAGE = 0.6;
-    private final static double UNCOMMON_PERCENTAGE = 0.25;
-    private final static double RARE_PERCENTAGE = 0.11;
-    private final static double ULTRA_RARE_PERCENTAGE = 0.04;
+    private final static double COMMON_PERCENTAGE = 0.65;
+    private final static double UNCOMMON_PERCENTAGE = 0.2;
+    private final static double RARE_PERCENTAGE = 0.12;
+    private final static double ULTRA_RARE_PERCENTAGE = 0.03;
 
     private final List<ItemParent> itemList;
     private List<ItemParent> commonLotteryItemList;
