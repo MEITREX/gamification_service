@@ -6,6 +6,27 @@ type UserItem {
     unlockedTime: DateTime
 }
 
+type UserItemComplete {
+    id: UUID!
+    equipped: Boolean!
+    unlocked: Boolean!
+    unlockedTime: DateTime
+    name: String!
+    description: String!
+    rarity: String!
+    moneyCost: Int!
+    sellCompensation: Int!
+    obtainableInLottery: Boolean!
+    obtainableAsReward: Boolean!
+    obtainableInShop: Boolean!
+    foreColor: String
+    backColor: String
+    url: String
+    filename: String
+    nickname: String
+    sold: Boolean!
+}
+
 type Inventory {
     userId: UUID!
     unspentPoints: Int!

@@ -10,16 +10,16 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.
 import de.unistuttgart.iste.meitrex.gamification_service.utility.ItemParser;
 import de.unistuttgart.iste.meitrex.generated.dto.Inventory;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
+import de.unistuttgart.iste.meitrex.generated.dto.UserItemComplete;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -32,12 +32,26 @@ public class ItemService {
     @Value("${item.file.path}")
     private String FILE_PATH;
 
-    private final List<ItemParent> itemList;
+    private final Random r = new Random();
 
-    public ItemService(UserRepository userRepository, GoalProgressService goalProgressService, ItemInstanceRepository itemInstanceRepository) {
+    private final static double COMMON_PERCENTAGE = 0.6;
+    private final static double UNCOMMON_PERCENTAGE = 0.25;
+    private final static double RARE_PERCENTAGE = 0.11;
+    private final static double ULTRA_RARE_PERCENTAGE = 0.04;
+
+    private final List<ItemParent> itemList;
+    private List<ItemParent> commonLotteryItemList;
+    private List<ItemParent> uncommonLotteryItemList;
+    private List<ItemParent> rareLotteryItemList;
+    private List<ItemParent> ultraRareLotteryItemList;
+
+    public ItemService(UserRepository userRepository, GoalProgressService goalProgressService, ItemInstanceRepository itemInstanceRepository, List<ItemParent> lotteryItemList) {
         this.userRepository = userRepository;
         this.goalProgressService = goalProgressService;
         this.itemInstanceRepository = itemInstanceRepository;
+        if (COMMON_PERCENTAGE + UNCOMMON_PERCENTAGE + RARE_PERCENTAGE + ULTRA_RARE_PERCENTAGE != 1.0) {
+            log.warn("Lottery Percentages do not sum up to 1");
+        }
         itemList = new ArrayList<>();
     }
 
@@ -57,6 +71,14 @@ public class ItemService {
             itemList.addAll(items.getProfilePics());
             itemList.addAll(items.getPatternThemes());
             itemList.addAll(items.getProfilePicFrames());
+            commonLotteryItemList = itemList.stream().filter(ItemParent::isObtainableInLottery)
+                    .filter(itemParent -> itemParent.getRarity().equals(ItemRarity.COMMON)).toList();
+            uncommonLotteryItemList = itemList.stream().filter(ItemParent::isObtainableInLottery)
+                    .filter(itemParent -> itemParent.getRarity().equals(ItemRarity.UNCOMMON)).toList();
+            rareLotteryItemList = itemList.stream().filter(ItemParent::isObtainableInLottery)
+                    .filter(itemParent -> itemParent.getRarity().equals(ItemRarity.RARE)).toList();
+            ultraRareLotteryItemList = itemList.stream().filter(ItemParent::isObtainableInLottery)
+                    .filter(itemParent -> itemParent.getRarity().equals(ItemRarity.ULTRA_RARE)).toList();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -160,6 +182,48 @@ public class ItemService {
         user.getInventory().setUnspentPoints(user.getInventory().getUnspentPoints() + points);
         userRepository.save(user);
         return getInventoryForUser(user);
+    }
+
+    public UserItemComplete lotteryRun(UUID userId) {
+        UserItemComplete userItem = new UserItemComplete();
+        UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
+        if(user.getInventory().getItems().isEmpty()) {
+            addDefaultItems(user);
+        }
+        double randomValue = r.nextDouble();
+        if (randomValue < COMMON_PERCENTAGE) {
+            userItem = addItemToUser(user, commonLotteryItemList);
+        } else if (randomValue < COMMON_PERCENTAGE + UNCOMMON_PERCENTAGE) {
+            userItem = addItemToUser(user, uncommonLotteryItemList);
+        } else if (randomValue < COMMON_PERCENTAGE + UNCOMMON_PERCENTAGE + RARE_PERCENTAGE) {
+            userItem = addItemToUser(user, rareLotteryItemList);
+        } else {
+            userItem = addItemToUser(user, ultraRareLotteryItemList);
+        }
+        return userItem;
+    }
+
+    @NotNull
+    private UserItemComplete addItemToUser(UserEntity user, List<ItemParent> rareLotteryItemList) {
+        UserItemComplete userItem;
+        ItemParent item = rareLotteryItemList.get(r.nextInt(rareLotteryItemList.size()));
+        Optional<ItemInstanceEntity> oldItemInstance = user.getInventory().getItems().stream()
+                .filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId().equals(item.getId())).findFirst();
+        if (oldItemInstance.isPresent()) {
+            user.getInventory().setUnspentPoints(user.getInventory().getUnspentPoints() + item.getSellCompensation());
+            userItem = item.toCompleteUserItemInstance();
+            userItem.setSold(true);
+            userItem.setUnlockedTime(oldItemInstance.get().getCreationTime());
+        } else {
+            ItemInstanceEntity itemInstance = item.toItemInstance();
+            user.getInventory().getItems().add(itemInstance);
+            userItem = item.toCompleteUserItemInstance();
+            userItem.setUnlockedTime(itemInstance.getCreationTime());
+            userItem.setSold(false);
+        }
+        userItem.setEquipped(false);
+        userItem.setUnlocked(true);
+        return userItem;
     }
 
     private Inventory getInventoryForUser(UserEntity user) {

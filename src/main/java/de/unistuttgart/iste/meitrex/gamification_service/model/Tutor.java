@@ -2,6 +2,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.model;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.ItemInstanceEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.ItemType;
+import de.unistuttgart.iste.meitrex.generated.dto.UserItemComplete;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -19,5 +20,13 @@ public class Tutor extends ItemParent{
         itemInstanceEntity.setEquipped(false);
         itemInstanceEntity.setPrototypeId(this.getId());
         return itemInstanceEntity;
+    }
+
+    public UserItemComplete toCompleteUserItemInstance() {
+        UserItemComplete userItemComplete = super.toCompleteUserItemInstance();
+        userItemComplete.setUrl(this.getUrl());
+        userItemComplete.setFilename(this.getFilename());
+        userItemComplete.setNickname(this.getNickname());
+        return userItemComplete;
     }
 }

@@ -4,6 +4,7 @@ import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.gamification_service.service.ItemService;
 import de.unistuttgart.iste.meitrex.generated.dto.Inventory;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
+import de.unistuttgart.iste.meitrex.generated.dto.UserItemComplete;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -62,5 +63,10 @@ public class ItemController {
     public Inventory currencyReward(@Argument Integer points,
                                     @ContextValue final LoggedInUser currentUser) {
         return itemService.addPointsToUser(currentUser.getId(), points);
+    }
+
+    @MutationMapping
+    public UserItemComplete lotteryRun(@ContextValue final LoggedInUser currentUser) {
+        return itemService.lotteryRun(currentUser.getId());
     }
 }
