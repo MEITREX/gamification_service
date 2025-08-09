@@ -1,9 +1,8 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.recommendation;
 
 import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import de.unistuttgart.iste.meitrex.generated.dto.GamificationCategory;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,18 +12,29 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Stores the widget recommendations for a user.
+ */
 @Entity
 @Getter
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class UserWidgetRecommendationsEntity implements IWithId<UUID> {
-
+    /**
+     * The ID of the user for whom the recommendations are generated.
+     */
     @Id
     private UUID userId;
 
-    @OneToMany
+    /**
+     * The user's widget recommendations for the current timeframe.
+     */
+    @ElementCollection(fetch = FetchType.EAGER)
     @Setter
-    private List<UserWidgetRecommendationEntity> recommendations;
+    private List<GamificationCategory> recommendations;
 
+    /**
+     * The time when the recommendations were generated.
+     */
     @Setter
     private LocalDateTime generationTime;
 
