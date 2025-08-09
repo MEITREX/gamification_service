@@ -6,6 +6,10 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Represents the composite key for previous recommendations.
+ * It consists of userId, courseId, and recommendationType.
+ */
 @Data
 public class PreviousRecommendationsId implements Serializable {
     private final UUID userId;

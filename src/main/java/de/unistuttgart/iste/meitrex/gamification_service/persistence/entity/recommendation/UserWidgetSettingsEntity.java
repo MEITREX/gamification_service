@@ -7,6 +7,9 @@ import lombok.*;
 
 import java.util.UUID;
 
+/**
+ * Stores settings pertaining to the widget recommendations for a user.
+ */
 @Data
 @Entity
 @NoArgsConstructor(force = true, access = AccessLevel.PROTECTED)

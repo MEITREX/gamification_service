@@ -36,6 +36,10 @@ public abstract class GoalEntity implements IWithId<UUID> {
     @OneToOne(cascade = CascadeType.ALL)
     HasGoalEntity parentWithGoal;
 
+    /**
+     * Creates a new instance of the GoalEntity, copying all properties.
+     * @return A new instance of the GoalEntity with the same properties as this one.
+     */
     public GoalEntity clone() {
         GoalEntity newGoal = null;
         try {
@@ -52,6 +56,10 @@ public abstract class GoalEntity implements IWithId<UUID> {
         return newGoal;
     }
 
+    /**
+     * Populates the properties of this GoalEntity from another GoalEntity.
+     * @param goal The GoalEntity to copy properties from.
+     */
     protected abstract void populateFromOther(GoalEntity goal);
 
     public abstract boolean updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgress);

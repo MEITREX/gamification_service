@@ -33,6 +33,12 @@ public class AchievementService {
 
     private final Achievements achievements = new Achievements();
 
+    /**
+     * Returns the achievements of the user with the given userId in the course with the given courseId.
+     * @param userId ID of the user to get achievements for.
+     * @param courseId ID of the course to get achievements for.
+     * @return A list of Achievement DTOs representing the user's achievements in the specified course.
+     */
     public List<Achievement> getAchievementsForUserInCourse(UUID userId, UUID courseId) {
         Optional<UserEntity> user = userRepository.findById(userId);
         if (user.isEmpty())
@@ -85,6 +91,12 @@ public class AchievementService {
         });
     }
 
+    /**
+     * Gets all achievements of a user, including adaptive achievements, as DTOs.
+     *
+     * @param userId ID of the user to get achievements for.
+     * @return A list of Achievement DTOs representing the user's achievements.
+     */
     public List<Achievement> getAchievementsForUser(UUID userId) {
         Optional<UserEntity> user = userRepository.findById(userId);
         if (user.isEmpty()) {
@@ -93,6 +105,12 @@ public class AchievementService {
         return getAchievementsForUserEntity(user.get());
     }
 
+    /**
+     * Gets all achievements of a UserEntity, including adaptive achievements, as DTOs.
+     *
+     * @param user The UserEntity to get achievements for.
+     * @return A list of Achievement DTOs representing the user's achievements.
+     */
     private List<Achievement> getAchievementsForUserEntity(UserEntity user) {
         log.info("get achievements for user {}", user.getId());
 
@@ -105,6 +123,10 @@ public class AchievementService {
         return userAchievements;
     }
 
+    /**
+     * Call this method with a user goal progress entity and the AchievementEntity of a completed achievement to
+     * generate an adaptive achievement for the user in the course specified.
+     */
     public void tryGenerateAdaptiveAchievementForUser(UserGoalProgressEntity goalProgress,
                                                       CourseEntity course,
                                                       AchievementEntity completedAchievement) {
@@ -149,7 +171,15 @@ public class AchievementService {
             newAchievement = new AchievementEntity();
             newAchievement.setCourse(course);
             newAchievement.setAdaptive(true);
-            newAchievement.setName(completedAchievement.getName() + "I");
+
+            // TODO: This name generation is a placeholder, we just increase a number for higher-difficulty achievements
+            if(completedAchievement.isAdaptive()) {
+                String[] nameParts = completedAchievement.getName().split(" ");
+                int lastLevel = Integer.parseInt(nameParts[1]);
+                newAchievement.setName(nameParts[0] + " " + (lastLevel + 1));
+            } else {
+                newAchievement.setName(completedAchievement.getName() + " 2");
+            }
             newAchievement.setImageUrl("");
             newAchievement.setGoal(newGoalCountable);
 
@@ -176,16 +206,23 @@ public class AchievementService {
         userRepository.save(user);
     }
 
+    /**
+     * Creates the initial achievements for a course entity and stores them in the course entity.
+     * @param course The course entity to create initial achievements in.
+     */
+    public void createInitialAchievementsInCourseEntity(CourseEntity course) {
+        List<AchievementEntity> achievementEntities = achievements.generateAchievements(course);
+        achievementEntities = achievementRepository.saveAll(achievementEntities);
+        course.setAchievements(achievementEntities);
+    }
+
+    /**
+     * Helper method to check if a user has reached the maximum number of adaptive achievements.
+     */
     private boolean hasUserMaxAdaptiveAchievements(UserEntity user) {
         long userAdaptiveAchievementCount = getAchievementsForUserEntity(user).stream()
                 .filter(Achievement::getAdaptive)
                 .count();
         return userAdaptiveAchievementCount >= adaptivityConfiguration.getMaxAdaptiveAchievementCount();
-    }
-
-    public void createInitialAchievementsInCourseEntity(CourseEntity course) {
-        List<AchievementEntity> achievementEntities = achievements.generateAchievements(course);
-        achievementEntities = achievementRepository.saveAll(achievementEntities);
-        course.setAchievements(achievementEntities);
     }
 }

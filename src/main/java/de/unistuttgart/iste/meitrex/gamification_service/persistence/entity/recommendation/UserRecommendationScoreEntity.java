@@ -21,6 +21,12 @@ public class UserRecommendationScoreEntity implements IWithId<UUID> {
 
     private static final double DEFAULT_SCORE = 1.0 / 8.0;
 
+    /*
+        * The scores for the different recommendation types.
+        * The @AttributeOverrides are necessary because otherwise Hibernate would try to use the same column names
+        * for the fields of all scores, which would lead to conflicts.
+     */
+
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "score", column = @Column(name = "socialization_score")),
@@ -83,19 +89,32 @@ public class UserRecommendationScoreEntity implements IWithId<UUID> {
         return userId;
     }
 
+    /**
+     * @return Gets a score of a specific recommendation category.
+     */
     public double getScore(GamificationCategory category) {
         return getScoreEmbeddable(category).getScore();
     }
 
+    /**
+     * @return Returns how many days after the last adjustment request the next adjustment request for a specific recommendation
+     * category should be shown.
+     */
     public int getNextAdjustmentRequestInDays(GamificationCategory category) {
         return getScoreEmbeddable(category).getNextAdjustmentRequestInDays();
     }
 
+    /**
+     * @return Returns the time when the next adjustment request for a specific recommendation category should be shown.
+     */
     public LocalDateTime getNextAdjustmentRequestTime(GamificationCategory category) {
         RecommendationScoreEmbeddable scoreEmbeddable = getScoreEmbeddable(category);
         return scoreEmbeddable.getLastAdjusted().plusDays(scoreEmbeddable.getNextAdjustmentRequestInDays());
     }
 
+    /**
+     * @return Returns the time when the score for a specific recommendation category was last adjusted.
+     */
     public LocalDateTime getLastAdjusted(GamificationCategory category) {
         return getScoreEmbeddable(category).getLastAdjusted();
     }
@@ -112,6 +131,15 @@ public class UserRecommendationScoreEntity implements IWithId<UUID> {
         normalize();
     }
 
+    /**
+     * Sets the score for a specific recommendation type, including the last adjusted time and
+     * next adjustment request day span.
+     * This method also normalizes the scores after setting the new score.
+     * @param category the type of recommendation for which the score should be set
+     * @param score the new score to set for the specified recommendation type
+     * @param lastAdjusted the last adjusted time for the score
+     * @param nextAdjustmentRequestInDays the number of days until the next adjustment request
+     */
     public void setScore(GamificationCategory category,
                          double score,
                          LocalDateTime lastAdjusted,
@@ -120,6 +148,10 @@ public class UserRecommendationScoreEntity implements IWithId<UUID> {
         normalize();
     }
 
+    /**
+     * Sets the scores for multiple recommendation types at once.
+     * @param scores a map containing the scores for each recommendation type
+     */
     public void setScores(Map<GamificationCategory, Double> scores) {
         scores.forEach(this::setScoreNoNormalize);
         normalize();
@@ -162,6 +194,9 @@ public class UserRecommendationScoreEntity implements IWithId<UUID> {
         setScoreEmbeddable(category, newScore);
     }
 
+    /**
+     * Convenience method to get the scores as a map.
+     */
     public Map<GamificationCategory, Double> asMap() {
         return Arrays.stream(GamificationCategory.values())
                 .collect(Collectors.toMap(

@@ -1,6 +1,5 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service.recommendation;
 
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.recommendation.UserWidgetRecommendationEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.recommendation.UserWidgetRecommendationsEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.recommendation.UserWidgetSettingsEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.recommendation.UserWidgetRecommendationsRepository;
@@ -49,8 +48,7 @@ public class WidgetRecommendationService {
                 recommendationsEntity = Optional.of(new UserWidgetRecommendationsEntity(userId));
 
             var recommendations = IntStream.range(0, settings.getNumberOfRecommendations())
-                    .mapToObj(i -> new UserWidgetRecommendationEntity(
-                            recommendationService.makeRecommendation(userId, courseId, RecommendationType.WIDGET)))
+                    .mapToObj(i -> recommendationService.makeRecommendation(userId, courseId, RecommendationType.WIDGET))
                     .toList();
             recommendationsEntity.get().setRecommendations(recommendations);
 
@@ -71,8 +69,8 @@ public class WidgetRecommendationService {
 
         return recommendationsEntity.get().getRecommendations().stream()
                 .map(x -> new GamificationCategoryRecommendation(
-                        x.getCategory(),
-                        recommendationService.isFeedbackRequestDue(userId, x.getCategory())))
+                        x,
+                        recommendationService.isFeedbackRequestDue(userId, x)))
                 .toList();
     }
 

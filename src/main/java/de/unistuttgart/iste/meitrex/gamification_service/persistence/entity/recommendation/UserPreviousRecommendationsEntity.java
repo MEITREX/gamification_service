@@ -12,6 +12,10 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * Entity to keep track of the number of recommendations given to a user in each gamification category.
+ * This is used to avoid recommending the same category too often.
+ */
 @Entity
 @Data
 @NoArgsConstructor(force = true)
