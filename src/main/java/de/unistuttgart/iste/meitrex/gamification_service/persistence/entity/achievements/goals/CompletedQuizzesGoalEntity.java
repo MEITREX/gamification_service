@@ -46,7 +46,7 @@ public class CompletedQuizzesGoalEntity extends CountableGoalEntity implements I
             UUID contentId = completedQuizzesGoalProgressEvent.getContentId();
             log.info("Updating progress for user goal progress with minimum Score {} with score {} and contentId {}",
                     minimumScore, score, contentId);
-            if (score >= minimumScore /*&& !countableUserGoalProgressEntity.getContentIds().contains(contentId)*/) {
+            if (score >= minimumScore) {
                 countableUserGoalProgressEntity.setCompletedCount(countableUserGoalProgressEntity.getCompletedCount() + 1);
                 countableUserGoalProgressEntity.getContentIds().add(contentId);
             }
