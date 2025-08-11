@@ -1,0 +1,26 @@
+enum Period {
+  WEEKLY
+  MONTHLY
+  ALL_TIME
+}
+
+type Leaderboard {
+    id: ID!
+    title: String
+    startDate: Date
+    period: Period
+    userScores: [UserScore!]
+}
+
+type UserScore {
+    id: ID!
+    score: Float
+    user: User
+}
+
+
+extend type Query {
+  getWeeklyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
+  getMonthlyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
+  getAllTimeCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
+}
