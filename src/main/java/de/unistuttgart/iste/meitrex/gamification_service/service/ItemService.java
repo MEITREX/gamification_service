@@ -12,6 +12,7 @@ import de.unistuttgart.iste.meitrex.generated.dto.Inventory;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItemComplete;
 import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -38,6 +39,7 @@ public class ItemService {
     private final static double UNCOMMON_PERCENTAGE = 0.2;
     private final static double RARE_PERCENTAGE = 0.12;
     private final static double ULTRA_RARE_PERCENTAGE = 0.03;
+    private final static int LOTTERY_COST = 3000;
 
     private final List<ItemParent> itemList;
     private List<ItemParent> commonLotteryItemList;
@@ -187,6 +189,15 @@ public class ItemService {
     public UserItemComplete lotteryRun(UUID userId) {
         UserItemComplete userItem = new UserItemComplete();
         UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
+        if(user.getInventory().getItems().isEmpty()) {
+            addDefaultItems(user);
+        }
+        if (user.getInventory().getUnspentPoints() <= LOTTERY_COST) {
+            userItem.setDescription("Not enough money");
+            return userItem;
+        } else {
+            user.getInventory().setUnspentPoints(user.getInventory().getUnspentPoints() - LOTTERY_COST);
+        }
         if(user.getInventory().getItems().isEmpty()) {
             addDefaultItems(user);
         }
