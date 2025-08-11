@@ -16,6 +16,7 @@ import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItemComplete;
 import jakarta.transaction.Transactional;
 import org.apache.catalina.User;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.test.tester.GraphQlTester;
@@ -29,6 +30,7 @@ import java.util.UUID;
 import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMembershipInCourseWithId;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 
 @ContextConfiguration(classes = {MockTestPublisherConfiguration.class, MockContentServiceClientConfiguration.class, MockCourseServiceClientConfiguration.class})
 @GraphQlApiTest
@@ -37,6 +39,8 @@ import static org.hamcrest.Matchers.is;
 public class MutationLotteryRunTest {
 
     UUID courseId = UUID.randomUUID();
+
+    private final static int LOTTERY_COST = 3000;
 
     @Autowired
     ItemService itemService;
@@ -48,8 +52,9 @@ public class MutationLotteryRunTest {
 
     @Test
     void testRunLottery(final GraphQlTester tester) {
+        int initialUnspentPoints = 4000;
         UserEntity user = new UserEntity(loggedInUser.getId(), new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
-        user.getInventory().setUnspentPoints(1000);
+        user.getInventory().setUnspentPoints(initialUnspentPoints);
         userRepository.save(user);
 
         final String query = """
@@ -85,11 +90,12 @@ public class MutationLotteryRunTest {
         assertThat(userEntity.getInventory().getItems().stream().anyMatch(itemInstanceEntity
                 -> itemInstanceEntity.getPrototypeId().equals(userItemComplete.getId())), is(true));
         assertThat(userItemComplete.getUnlockedTime().toLocalDate().getDayOfMonth(), is(OffsetDateTime.now().getDayOfMonth()));
+        assertThat(userEntity.getInventory().getUnspentPoints(), is(initialUnspentPoints - LOTTERY_COST));
     }
 
     @Test
     void testRunLotteryTillItemSold(final GraphQlTester tester) {
-        int initialUnspentPoints = 1000;
+        int initialUnspentPoints = 4000;
         UserEntity user = new UserEntity(loggedInUser.getId(), new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
         user.getInventory().setUnspentPoints(initialUnspentPoints);
         userRepository.save(user);
@@ -132,6 +138,45 @@ public class MutationLotteryRunTest {
         UUID returnedItemId = userItemComplete.getId();
         assertThat(userEntity.getInventory().getItems().stream().anyMatch(itemInstanceEntity
                 -> itemInstanceEntity.getPrototypeId().equals(returnedItemId)), is(true));
-        assertThat(userEntity.getInventory().getUnspentPoints(), is(initialUnspentPoints + userItemComplete.getSellCompensation()));
+        assertThat(userEntity.getInventory().getUnspentPoints(), is(initialUnspentPoints + userItemComplete.getSellCompensation() - LOTTERY_COST));
+    }
+
+    @Test
+    void testRunLotteryNotEnoughMoney(final GraphQlTester tester) {
+        int initialUnspentPoints = 1000;
+        UserEntity user = new UserEntity(loggedInUser.getId(), new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
+        user.getInventory().setUnspentPoints(initialUnspentPoints);
+        userRepository.save(user);
+
+        final String query = """
+                mutation {
+                    lotteryRun
+                    {
+                       id
+                       equipped
+                       unlocked
+                       unlockedTime
+                       name
+                       description
+                       rarity
+                       moneyCost
+                       sellCompensation
+                       obtainableInLottery
+                       obtainableAsReward
+                       obtainableInShop
+                       foreColor
+                       backColor
+                       url
+                       filename
+                       nickname
+                       sold
+                    }
+                }
+                """;
+
+        tester.document(query)
+                .execute()
+                .path("lotteryRun").valueIsNull();
+        assertThat(userRepository.findById(loggedInUser.getId()).get().getInventory().getUnspentPoints(), is(initialUnspentPoints));
     }
 }

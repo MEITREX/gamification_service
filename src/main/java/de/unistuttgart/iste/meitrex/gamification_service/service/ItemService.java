@@ -88,6 +88,9 @@ public class ItemService {
 
     public Inventory getInventoryForUser(UUID userId) {
         UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
+        if (user.getInventory() == null) {
+            user.setInventory(new UserInventoryEntity());
+        }
         if(user.getInventory().getItems().isEmpty()) {
             addDefaultItems(user);
         }
@@ -101,6 +104,9 @@ public class ItemService {
 
     public List<UserItem> getItemsForUser(UUID userId) {
         UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
+        if (user.getInventory() == null) {
+            user.setInventory(new UserInventoryEntity());
+        }
         if(user.getInventory().getItems().isEmpty()) {
             addDefaultItems(user);
         }
@@ -158,6 +164,9 @@ public class ItemService {
 
     public Inventory addItemRewardToUser(UUID userId, UUID itemId) {
         UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
+        if (user.getInventory() == null) {
+            user.setInventory(new UserInventoryEntity());
+        }
         if(user.getInventory().getItems().isEmpty()) {
             addDefaultItems(user);
         }
@@ -189,6 +198,9 @@ public class ItemService {
     public UserItemComplete lotteryRun(UUID userId) {
         UserItemComplete userItem;
         UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
+        if (user.getInventory() == null) {
+            user.setInventory(new UserInventoryEntity());
+        }
         if(user.getInventory().getItems().isEmpty()) {
             addDefaultItems(user);
         }
