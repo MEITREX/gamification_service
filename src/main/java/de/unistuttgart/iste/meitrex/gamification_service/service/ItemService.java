@@ -187,14 +187,13 @@ public class ItemService {
     }
 
     public UserItemComplete lotteryRun(UUID userId) {
-        UserItemComplete userItem = new UserItemComplete();
+        UserItemComplete userItem;
         UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
         if(user.getInventory().getItems().isEmpty()) {
             addDefaultItems(user);
         }
         if (user.getInventory().getUnspentPoints() <= LOTTERY_COST) {
-            userItem.setDescription("Not enough money");
-            return userItem;
+            return null;
         } else {
             user.getInventory().setUnspentPoints(user.getInventory().getUnspentPoints() - LOTTERY_COST);
         }
