@@ -95,7 +95,7 @@ public class MutationLotteryRunTest {
 
     @Test
     void testRunLotteryTillItemSold(final GraphQlTester tester) {
-        int initialUnspentPoints = 4000;
+        int initialUnspentPoints = 1000000;
         UserEntity user = new UserEntity(loggedInUser.getId(), new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
         user.getInventory().setUnspentPoints(initialUnspentPoints);
         userRepository.save(user);
@@ -128,7 +128,9 @@ public class MutationLotteryRunTest {
 
         boolean sold = false;
         UserItemComplete userItemComplete = new UserItemComplete();
+        int counter = 0;
         while (!sold) {
+            counter++;
             userItemComplete = tester.document(query)
                     .execute()
                     .path("lotteryRun").entity(UserItemComplete.class).get();
@@ -138,7 +140,7 @@ public class MutationLotteryRunTest {
         UUID returnedItemId = userItemComplete.getId();
         assertThat(userEntity.getInventory().getItems().stream().anyMatch(itemInstanceEntity
                 -> itemInstanceEntity.getPrototypeId().equals(returnedItemId)), is(true));
-        assertThat(userEntity.getInventory().getUnspentPoints(), is(initialUnspentPoints + userItemComplete.getSellCompensation() - LOTTERY_COST));
+        assertThat(userEntity.getInventory().getUnspentPoints(), is(initialUnspentPoints + userItemComplete.getSellCompensation() - counter * LOTTERY_COST));
     }
 
     @Test
