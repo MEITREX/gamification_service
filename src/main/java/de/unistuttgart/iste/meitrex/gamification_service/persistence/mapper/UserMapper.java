@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper;
 
 
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

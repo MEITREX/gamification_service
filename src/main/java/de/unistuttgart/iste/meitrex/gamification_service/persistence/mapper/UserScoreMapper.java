@@ -1,5 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper;
 
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserScoreEntity;
+import de.unistuttgart.iste.meitrex.generated.dto.UserScore;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

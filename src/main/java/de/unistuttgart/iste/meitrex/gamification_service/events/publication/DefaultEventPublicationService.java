@@ -87,7 +87,8 @@ class DefaultEventPublicationService implements IEventPublicationService {
 
         PersistentUserProgressUpdatedEvent persistentUserProgressEvent = (PersistentUserProgressUpdatedEvent) persistentEvent;
 
-        final UUID uuid = this.userProgressUpdatedRepository.save(persistentUserProgressEvent)
+        final UUID uuid = this.userProgressUpdatedRepository
+                .save(persistentUserProgressEvent)
                 .getUuid();
 
         return new InternalUserProgressUpdatedEvent(DefaultEventPublicationService.this, uuid);

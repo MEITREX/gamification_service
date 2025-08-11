@@ -1,5 +1,8 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.repository;
 
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserScoreEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.time.Period;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

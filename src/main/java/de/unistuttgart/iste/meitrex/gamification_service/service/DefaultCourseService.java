@@ -1,9 +1,15 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
 
-import de.unistuttgart.iste.meitrex.gamification_service.client.CourseServiceGraphQLClient;
+import de.unistuttgart.iste.meitrex.course_service.client.CourseServiceClient;
+import de.unistuttgart.iste.meitrex.course_service.exception.CourseServiceConnectionException;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.LeaderboardEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.ICourseRepository;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.ILeaderboardRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.time.IPeriodCalculator;
 import de.unistuttgart.iste.meitrex.gamification_service.time.ITimeService;
 import de.unistuttgart.iste.meitrex.gamification_service.time.Period;
+import de.unistuttgart.iste.meitrex.generated.dto.Course;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -32,22 +38,22 @@ class DefaultCourseService {
 
     private final ICourseRepository courseRepository;
 
-    private final CourseServiceGraphQLClient graphQLClient;
-
     private final ITimeService timeService;
 
     private final IPeriodCalculator periodCalculator;
 
+    private final CourseServiceClient courseServiceClient;
+
     public DefaultCourseService(
             @Autowired ICourseRepository courseRepository,
             @Autowired ILeaderboardRepository leaderboardRepository,
-            @Autowired CourseServiceGraphQLClient graphQLClient,
+            @Autowired CourseServiceClient courseServiceClient,
             @Autowired ITimeService timeService,
             @Autowired IPeriodCalculator periodCalculator
     ) {
         this.leaderboardRepository = Objects.requireNonNull(leaderboardRepository);
         this.courseRepository = Objects.requireNonNull(courseRepository);
-        this.graphQLClient = Objects.requireNonNull(graphQLClient);
+        this.courseServiceClient = Objects.requireNonNull(courseServiceClient);
         this.timeService = Objects.requireNonNull(timeService);
         this.periodCalculator = Objects.requireNonNull(periodCalculator);
     }
@@ -72,12 +78,15 @@ class DefaultCourseService {
         while(curAttempt++ <= MAX_ATTEMPT_COUNT) {
             try {
                 final CourseEntity courseEntity = new CourseEntity();
-                this.graphQLClient.findCourseName(uuid).ifPresent(courseEntity::setTitle);
+                final Course course = this.courseServiceClient.queryCourseById(uuid);
+                if(Objects.nonNull(course)) {
+                    courseEntity.setTitle(course.getTitle());
+                }
                 courseEntity.setId(uuid);
                 persistentCourseEntity = this.courseRepository.save(courseEntity);
                 this.initCourseOnCreation(persistentCourseEntity);
                 break;
-            } catch (IOException e0) {
+            } catch (CourseServiceConnectionException  e0) {
                 if(curAttempt == MAX_ATTEMPT_COUNT) {
                     log.error("Final attempt of fetching the course name for {} failed.", uuid, e0);
                     throw new RuntimeException(e0);
