@@ -26,6 +26,7 @@ import de.unistuttgart.iste.meitrex.generated.dto.*;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.internal.matchers.Any;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -369,6 +370,11 @@ public class GoalProgressServiceTest {
         goalProgressService.forumProgress(forumActivityEvent);
         verify(userRepository).findById(userId);
         verify(courseRepository).findById(courseId);
+        GoalProgressEvent goalProgressEvent = new GoalProgressEvent();
+        goalProgressEvent.setUserId(userId);
+        goalProgressEvent.setCourseId(courseId);
+        goalProgressEvent.setProgressType(ProgressType.FORUM);
+        verify(userRepository, times(2)).save(userEntity);
     }
 
     @Test

@@ -2,4 +2,9 @@ type Mutation {
     evaluatePlayerHexadScore(userId: UUID!, input: PlayerAnswerInput!): PlayerHexadScore!
     loginUser(courseId: UUID): UUID
     buyItem(itemId:UUID!): Inventory
+    equipItem(itemId: UUID!): Inventory
+    unequipItem(itemId: UUID!): Inventory
+    itemReward(itemId: UUID!): Inventory
+    currencyReward(points: Int!): Inventory
+    lotteryRun: UserItemComplete
 }
