@@ -137,10 +137,19 @@ public class ItemService {
         if(user.getInventory().getItems().isEmpty()) {
             addDefaultItems(user);
         }
-        user.getInventory().getItems().stream().filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId().equals(itemId)).findFirst().ifPresent(itemInstanceEntity -> {
+        user.getInventory().getItems().stream().filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId()
+                .equals(itemId)).findFirst().ifPresent(itemInstanceEntity -> {
             user.getInventory().getItems().stream().filter(itemInstanceEntity1 ->
                     itemInstanceEntity1.getItemType().equals(itemInstanceEntity.getItemType()))
                     .forEach(itemInstanceEntity1 -> itemInstanceEntity1.setEquipped(false));
+            if (itemInstanceEntity.getItemType() == ItemType.ColorTheme) {
+                user.getInventory().getItems().stream().filter(itemInstanceEntity1 -> itemInstanceEntity1.getItemType()
+                        .equals(ItemType.PatternTheme)).forEach(itemInstanceEntity1 -> {itemInstanceEntity1.setEquipped(false);});
+            }
+            if (itemInstanceEntity.getItemType() == ItemType.PatternTheme) {
+                user.getInventory().getItems().stream().filter(itemInstanceEntity1 -> itemInstanceEntity1.getItemType()
+                        .equals(ItemType.ColorTheme)).forEach(itemInstanceEntity1 -> {itemInstanceEntity1.setEquipped(false);});
+            }
             userRepository.save(user);
             itemInstanceEntity.setEquipped(true);
             itemInstanceRepository.save(itemInstanceEntity);
