@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import java.lang.reflect.InvocationTargetException;
-import java.time.OffsetDateTime;
+import java.time.*;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -97,6 +97,14 @@ public abstract class GoalEntity implements IWithId<UUID> {
 
         return Objects.equals(trackingStartTime, other.trackingStartTime)
                 && Objects.equals(trackingEndTime, other.trackingEndTime);
+    }
+
+    public void setTrackingTimeToToday() {
+        ZoneId zoneId = ZoneId.systemDefault();
+        ZoneOffset offset = zoneId.getRules().getOffset(Instant.now());
+
+        setTrackingStartTime(LocalDate.now().atStartOfDay().atOffset(offset));
+        setTrackingEndTime(LocalDate.now().atTime(LocalTime.MAX).atOffset(offset));
     }
 
     @Override

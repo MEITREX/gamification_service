@@ -1,7 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.CompleteSpecificChapterGoalProgressEvent;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.CompletedSpecificChapterGoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.GoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
 import jakarta.persistence.Column;
@@ -42,8 +42,8 @@ public class CompleteSpecificChapterGoalEntity extends GoalEntity {
 
     @Override
     public boolean updateProgress(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgress) {
-        if (progressEvent instanceof CompleteSpecificChapterGoalProgressEvent completeSpecificChapterGoalProgressEvent) {
-            UUID eventChapterId = completeSpecificChapterGoalProgressEvent.getChapterId();
+        if (progressEvent instanceof CompletedSpecificChapterGoalProgressEvent completedSpecificChapterGoalProgressEvent) {
+            UUID eventChapterId = completedSpecificChapterGoalProgressEvent.getChapterId();
             if (eventChapterId.equals(this.chapterId)
                     && !userGoalProgress.isCompleted()) {
                 userGoalProgress.setCompleted(true);

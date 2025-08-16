@@ -1,24 +1,33 @@
-package de.unistuttgart.iste.meitrex.gamification_service.quests;
+package de.unistuttgart.iste.meitrex.gamification_service.service.quests.quest_generation;
 
+import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
+import de.unistuttgart.iste.meitrex.content_service.exception.ContentServiceConnectionException;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.CompleteSpecificAssessmentGoalEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.GoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.quests.QuestEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.quests.DailyQuestType;
 import de.unistuttgart.iste.meitrex.generated.dto.Assessment;
 import de.unistuttgart.iste.meitrex.generated.dto.Content;
 import de.unistuttgart.iste.meitrex.generated.dto.ProgressLogItem;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.util.*;
 import java.util.stream.Stream;
 
+@Service
 @RequiredArgsConstructor
-public class ExerciseDailyQuestGenerator {
-    private final CourseEntity courseEntity;
+public class ExerciseDailyQuestGeneratorService implements IQuestGenerator {
+    private final ContentServiceClient contentService;
+
     private Map<AssessmentMapKey, Assessment> foundAssessments;
 
-    public Optional<QuestEntity> generateExerciseDailyQuest(final List<Content> courseContents) {
+    public Optional<QuestEntity> generateQuest(final CourseEntity courseEntity,
+                                               final UserEntity userEntity) throws ContentServiceConnectionException {
+        List<Content> courseContents = contentService.queryContentsOfCourse(userEntity.getId(), courseEntity.getId());
+
         // assessments for which the suggested date has passed and which the user has already unlocked
         // i.e. these need to be completed
         Stream<Assessment> assessmentsToDo = courseContents.stream()
@@ -40,12 +49,8 @@ public class ExerciseDailyQuestGenerator {
         quest.setImageUrl("");
         quest.setCourse(courseEntity);
 
-        ZoneId zoneId = ZoneId.systemDefault();
-        ZoneOffset offset = zoneId.getRules().getOffset(Instant.now());
-
         CompleteSpecificAssessmentGoalEntity goal = new CompleteSpecificAssessmentGoalEntity();
-        goal.setTrackingStartTime(LocalDate.now().atStartOfDay().atOffset(offset));
-        goal.setTrackingEndTime(LocalDate.now().atTime(LocalTime.MAX).atOffset(offset));
+        goal.setTrackingTimeToToday();
         goal.setParentWithGoal(quest);
         goal.setAssessmentId(assessmentForQuest.get().getId());
         goal.setAssessmentName(assessmentForQuest.get().getMetadata().getName());
@@ -53,6 +58,11 @@ public class ExerciseDailyQuestGenerator {
         quest.setGoal(goal);
 
         return Optional.of(quest);
+    }
+
+    @Override
+    public DailyQuestType generatesQuestType() {
+        return DailyQuestType.EXERCISE;
     }
 
     private Optional<Assessment> decideMostImportantAssessment() {

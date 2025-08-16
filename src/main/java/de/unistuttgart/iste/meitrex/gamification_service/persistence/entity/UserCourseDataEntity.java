@@ -33,8 +33,4 @@ public class UserCourseDataEntity implements IWithId<UUID> {
     @OneToOne(cascade = CascadeType.ALL)
     @Nullable
     private QuestSetEntity dailyQuestSet;
-
-    @OneToMany(cascade = CascadeType.ALL)
-    @NotNull
-    private List<QuestSetEntity> returningUserQuestSets;
 }

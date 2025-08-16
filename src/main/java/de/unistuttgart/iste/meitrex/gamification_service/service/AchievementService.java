@@ -1,5 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
 
+import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
+import de.unistuttgart.iste.meitrex.common.event.AchievementCompletedEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.achievements.Achievements;
 import de.unistuttgart.iste.meitrex.gamification_service.config.AdaptivityConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserCourseDataEntity;
@@ -30,12 +32,14 @@ public class AchievementService {
     private final UserRepository userRepository;
     private final AchievementRepository achievementRepository;
     private final AdaptivityConfiguration adaptivityConfiguration;
+    private final TopicPublisher topicPublisher;
 
     private final Achievements achievements = new Achievements();
 
     /**
      * Returns the achievements of the user with the given userId in the course with the given courseId.
-     * @param userId ID of the user to get achievements for.
+     *
+     * @param userId   ID of the user to get achievements for.
      * @param courseId ID of the course to get achievements for.
      * @return A list of Achievement DTOs representing the user's achievements in the specified course.
      */
@@ -56,9 +60,10 @@ public class AchievementService {
     /**
      * Maps "UserGoalProgressEntity"s (database types) to "Achievement"s (DTO types). This method also ensures that
      * only UserGoalProgressEntities that are actually achievements are mapped. Non-achievements are skipped.
+     *
      * @param userGoalProgressEntities the list of UserGoalProgressEntities to map. Can contain any type of goal
      *                                 progress, but only those that are achievements will be mapped to achievements.
-     * @param userAchievements the list of achievements to which the mapped achievements will be added.
+     * @param userAchievements         the list of achievements to which the mapped achievements will be added.
      */
     protected static void mapUserGoalProgressToAchievements(List<UserGoalProgressEntity> userGoalProgressEntities,
                                                             List<Achievement> userAchievements) {
@@ -77,7 +82,7 @@ public class AchievementService {
                 achievement.setCompleted(userGoalProgressEntity.isCompleted());
                 achievement.setUserId(userGoalProgressEntity.getUser().getId());
                 if (userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity) {
-                    GoalEntity goal = (GoalEntity)Hibernate.unproxy(countableUserGoalProgressEntity.getGoal());
+                    GoalEntity goal = (GoalEntity) Hibernate.unproxy(countableUserGoalProgressEntity.getGoal());
                     if (goal instanceof CountableGoalEntity countableGoalEntity) {
                         achievement.setRequiredCount(countableGoalEntity.getRequiredCount());
                         achievement.setCompletedCount(countableUserGoalProgressEntity.getCompletedCount());
@@ -131,11 +136,11 @@ public class AchievementService {
                                                       CourseEntity course,
                                                       AchievementEntity completedAchievement) {
         // we can only create adaptive achievements based on countable achievements (e.g. "complete 5 quizzes")
-        if(!(Hibernate.unproxy(completedAchievement.getGoal(), GoalEntity.class)
+        if (!(Hibernate.unproxy(completedAchievement.getGoal(), GoalEntity.class)
                 instanceof CountableGoalEntity countableGoal))
             return;
 
-        if(!(Hibernate.unproxy(goalProgress, UserGoalProgressEntity.class)
+        if (!(Hibernate.unproxy(goalProgress, UserGoalProgressEntity.class)
                 instanceof CountableUserGoalProgressEntity countableGoalProgress))
             throw new RuntimeException("Goal was countable but user goal progress was not. This should never happen!");
 
@@ -146,12 +151,12 @@ public class AchievementService {
                         " member of. This should never happen! User: " + user.getId() + " Course: " + course.getId()));
 
         // Only generate new achievement for user if they haven't reached the max num of adaptive achievements yet
-        if(hasUserMaxAdaptiveAchievements(user))
+        if (hasUserMaxAdaptiveAchievements(user))
             return;
 
         // clone goal of original achievement but increase the number of required completions
         final GoalEntity newGoal = completedAchievement.getGoal().clone();
-        if(!(newGoal instanceof CountableGoalEntity newGoalCountable))
+        if (!(newGoal instanceof CountableGoalEntity newGoalCountable))
             throw new RuntimeException("Cloned goal was not countable even though base goal was countable. This" +
                     " should never happen!");
         newGoalCountable.setRequiredCount(countableGoal.getRequiredCount() * 3);
@@ -160,8 +165,8 @@ public class AchievementService {
         // adaptive achievement, we can reuse it)
         final Optional<AchievementEntity> otherUsersAchievement =
                 achievementRepository.getAchievementEntitiesByCourse(course).stream()
-                .filter(a -> a.getGoal().equalsGoalTargets(newGoalCountable))
-                .findAny();
+                        .filter(a -> a.getGoal().equalsGoalTargets(newGoalCountable))
+                        .findAny();
 
         // create the new adaptive achievement if no user has reached it before or reuse another user's
         AchievementEntity newAchievement;
@@ -173,7 +178,7 @@ public class AchievementService {
             newAchievement.setAdaptive(true);
 
             // TODO: This name generation is a placeholder, we just increase a number for higher-difficulty achievements
-            if(completedAchievement.isAdaptive()) {
+            if (completedAchievement.isAdaptive()) {
                 String[] nameParts = completedAchievement.getName().split(" ");
                 int lastLevel = Integer.parseInt(nameParts[1]);
                 newAchievement.setName(nameParts[0] + " " + (lastLevel + 1));
@@ -190,11 +195,11 @@ public class AchievementService {
         final UserGoalProgressEntity newGoalProgress = newAchievement.getGoal().generateUserGoalProgress(user);
 
         // do not generate a new goal progress if user already has an equal goal progress for this achievement
-        if(userCourseData.getGoalProgressEntities().stream()
+        if (userCourseData.getGoalProgressEntities().stream()
                 .anyMatch(gp -> gp.getGoal().getId().equals(newGoalProgress.getId())))
             return;
 
-        if(!(newGoalProgress instanceof CountableUserGoalProgressEntity newGoalProgressCountable))
+        if (!(newGoalProgress instanceof CountableUserGoalProgressEntity newGoalProgressCountable))
             throw new RuntimeException("Goal is countable but created goal progress is not. This should never happen!");
 
         // transfer num of completions from goal progress of old achievement to goal progress of new achievement
@@ -206,8 +211,23 @@ public class AchievementService {
         userRepository.save(user);
     }
 
+    public void onAchievementCompleted(AchievementEntity achievement, UserGoalProgressEntity goalProgressEntity) {
+        AchievementCompletedEvent event = AchievementCompletedEvent.builder()
+                .userId(goalProgressEntity.getUser().getId())
+                .achievementId(achievement.getId())
+                .courseId(achievement.getCourse().getId())
+                .build();
+        topicPublisher.notifyAchievementCompleted(event);
+
+        tryGenerateAdaptiveAchievementForUser(
+                goalProgressEntity,
+                achievement.getCourse(),
+                achievement);
+    }
+
     /**
      * Creates the initial achievements for a course entity and stores them in the course entity.
+     *
      * @param course The course entity to create initial achievements in.
      */
     public void createInitialAchievementsInCourseEntity(CourseEntity course) {

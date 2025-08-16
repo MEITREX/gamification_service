@@ -70,6 +70,13 @@ public class GoalProgressService {
                             .assessmentId(content.getId())
                             .build();
             updateGoalProgressEntitiesForUser(user, courseId, completedSpecificAssessmentGoalProgressEvent);
+        } else if(content instanceof MediaContent) {
+            CompletedSpecificMediaContentGoalProgressEvent completedSpecificMediaContentGoalProgressEvent
+                    = CompletedSpecificMediaContentGoalProgressEvent.builder()
+                            .userId(userId)
+                            .mediaContentId(content.getId())
+                            .build();
+            updateGoalProgressEntitiesForUser(user, courseId, completedSpecificMediaContentGoalProgressEvent);
         }
         userRepository.save(user);
     }
@@ -108,9 +115,9 @@ public class GoalProgressService {
             CompositeProgressInformation progressInformation =
                     contentServiceClient.queryProgressByChapterId(userId, chapterId);
             if (progressInformation.getCompletedContents() == progressInformation.getTotalContents()) {
-                CompleteSpecificChapterGoalProgressEvent completeSpecificChapterGoalProgressEvent =
+                CompletedSpecificChapterGoalProgressEvent completedSpecificChapterGoalProgressEvent =
                         getCompleteSpecificChapterGoalProgressEvent(userId, chapterId, courseId);
-                updateGoalProgressEntitiesForUser(user, courseId, completeSpecificChapterGoalProgressEvent);
+                updateGoalProgressEntitiesForUser(user, courseId, completedSpecificChapterGoalProgressEvent);
                 userRepository.save(user);
             }
         } catch (ContentServiceConnectionException e) {
@@ -119,9 +126,9 @@ public class GoalProgressService {
     }
 
     @NotNull
-    private static CompleteSpecificChapterGoalProgressEvent getCompleteSpecificChapterGoalProgressEvent(UUID userId,
-                                                                                                        UUID chapterId, UUID courseId) {
-        return CompleteSpecificChapterGoalProgressEvent.builder()
+    private static CompletedSpecificChapterGoalProgressEvent getCompleteSpecificChapterGoalProgressEvent(UUID userId,
+                                                                                                         UUID chapterId, UUID courseId) {
+        return CompletedSpecificChapterGoalProgressEvent.builder()
                 .userId(userId)
                 .chapterId(chapterId)
                 .build();
@@ -194,7 +201,6 @@ public class GoalProgressService {
             userCourseData = Optional.of(UserCourseDataEntity.builder()
                     .courseId(course.getId())
                     .goalProgressEntities(userGoalProgressEntities)
-                    .returningUserQuestSets(new ArrayList<>())
                     .dailyQuestSet(null)
                     .build());
 
@@ -232,11 +238,7 @@ public class GoalProgressService {
                 HasGoalEntity.class);
         log.info("onGoalCompleted(): Goal completed: {}", hasGoalEntity);
         if (hasGoalEntity instanceof AchievementEntity achievement) {
-            log.info("onGoalCompleted(): Goal is an achievement.");
-            achievementService.tryGenerateAdaptiveAchievementForUser(
-                    goalProgressEntity,
-                    achievement.getCourse(),
-                    achievement);
+            achievementService.onAchievementCompleted(achievement, goalProgressEntity);
         }
     }
 }
