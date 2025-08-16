@@ -17,10 +17,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achi
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.UserInventoryEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.CourseRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
-import de.unistuttgart.iste.meitrex.generated.dto.Chapter;
-import de.unistuttgart.iste.meitrex.generated.dto.CompositeProgressInformation;
-import de.unistuttgart.iste.meitrex.generated.dto.Content;
-import de.unistuttgart.iste.meitrex.generated.dto.ContentType;
+import de.unistuttgart.iste.meitrex.generated.dto.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,8 +62,16 @@ public class GoalProgressService {
         log.info("User {} ", user);
         if (Objects.requireNonNull(content.getMetadata().getType()) == ContentType.QUIZ) {
             quizProgress(contentProgressedEvent, user, courseId);
-            userRepository.save(user);
         }
+        if(content instanceof Assessment) {
+            CompletedSpecificAssessmentGoalProgressEvent completedSpecificAssessmentGoalProgressEvent
+                    = CompletedSpecificAssessmentGoalProgressEvent.builder()
+                            .userId(userId)
+                            .assessmentId(content.getId())
+                            .build();
+            updateGoalProgressEntitiesForUser(user, courseId, completedSpecificAssessmentGoalProgressEvent);
+        }
+        userRepository.save(user);
     }
 
     private void quizProgress(final ContentProgressedEvent contentProgressedEvent, UserEntity user, UUID courseId) {
@@ -85,13 +90,11 @@ public class GoalProgressService {
             ContentProgressedEvent contentProgressedEvent, UserEntity user) {
         UUID contendId = contentProgressedEvent.getContentId();
         float correctness = (float) contentProgressedEvent.getCorrectness();
-        CompletedQuizzesGoalProgressEvent completedQuizzesGoalProgressEvent = new CompletedQuizzesGoalProgressEvent();
-        completedQuizzesGoalProgressEvent.setProgressType(ProgressType.QUIZ);
-        completedQuizzesGoalProgressEvent.setUserId(user.getId());
-        completedQuizzesGoalProgressEvent.setCourseId(contendId);
-        completedQuizzesGoalProgressEvent.setScore(correctness);
-        completedQuizzesGoalProgressEvent.setContentId(contendId);
-        return completedQuizzesGoalProgressEvent;
+        return CompletedQuizzesGoalProgressEvent.builder()
+                .userId(user.getId())
+                .score(correctness)
+                .contentId(contendId)
+                .build();
     }
 
     public void chapterProgress(final UserProgressUpdatedEvent userProgressUpdatedEvent) {
@@ -118,13 +121,10 @@ public class GoalProgressService {
     @NotNull
     private static CompleteSpecificChapterGoalProgressEvent getCompleteSpecificChapterGoalProgressEvent(UUID userId,
                                                                                                         UUID chapterId, UUID courseId) {
-        CompleteSpecificChapterGoalProgressEvent completeSpecificChapterGoalProgressEvent =
-                new CompleteSpecificChapterGoalProgressEvent();
-        completeSpecificChapterGoalProgressEvent.setProgressType(ProgressType.CHAPTER);
-        completeSpecificChapterGoalProgressEvent.setUserId(userId);
-        completeSpecificChapterGoalProgressEvent.setChapterId(chapterId);
-        completeSpecificChapterGoalProgressEvent.setCourseId(courseId);
-        return completeSpecificChapterGoalProgressEvent;
+        return CompleteSpecificChapterGoalProgressEvent.builder()
+                .userId(userId)
+                .chapterId(chapterId)
+                .build();
     }
 
     public void forumProgress(final ForumActivityEvent forumActivityEvent) {
@@ -141,10 +141,9 @@ public class GoalProgressService {
     }
 
     private void forumAnswerProgress(UserEntity user, UUID courseId) {
-        GoalProgressEvent goalProgressEvent = new GoalProgressEvent();
-        goalProgressEvent.setUserId(user.getId());
-        goalProgressEvent.setCourseId(courseId);
-        goalProgressEvent.setProgressType(ProgressType.FORUM);
+        GoalProgressEvent goalProgressEvent = AnswerForumGoalProgressEvent.builder()
+                .userId(user.getId())
+                .build();
         updateGoalProgressEntitiesForUser(user, courseId, goalProgressEvent);
     }
 
@@ -160,12 +159,10 @@ public class GoalProgressService {
 
     @NotNull
     private static LoginStreakGoalProgressEvent getLoginStreakGoalProgressEvent(UUID userId, UUID courseId) {
-        LoginStreakGoalProgressEvent loginStreakGoalProgressEvent = new LoginStreakGoalProgressEvent();
-        loginStreakGoalProgressEvent.setUserId(userId);
-        loginStreakGoalProgressEvent.setCourseId(courseId);
-        loginStreakGoalProgressEvent.setProgressType(ProgressType.LOGIN);
-        loginStreakGoalProgressEvent.setLoginTime(OffsetDateTime.now());
-        return loginStreakGoalProgressEvent;
+        return LoginStreakGoalProgressEvent.builder()
+                .userId(userId)
+                .loginTime(OffsetDateTime.now())
+                .build();
     }
 
     protected CourseEntity createCourse(final UUID courseId) {

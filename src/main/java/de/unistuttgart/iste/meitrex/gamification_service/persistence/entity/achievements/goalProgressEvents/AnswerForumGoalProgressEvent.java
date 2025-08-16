@@ -1,10 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents;
 
-import lombok.AccessLevel;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
 import java.util.UUID;
@@ -12,6 +9,8 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @Value
 @SuperBuilder
-public class CompleteSpecificChapterGoalProgressEvent extends GoalProgressEvent{
-    UUID chapterId;
+public class AnswerForumGoalProgressEvent extends GoalProgressEvent{
+    public AnswerForumGoalProgressEvent(UUID userId) {
+        super(userId);
+    }
 }
