@@ -1,9 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
 
-import de.unistuttgart.iste.meitrex.common.event.ContentProgressedEvent;
-import de.unistuttgart.iste.meitrex.common.event.ForumActivity;
-import de.unistuttgart.iste.meitrex.common.event.ForumActivityEvent;
-import de.unistuttgart.iste.meitrex.common.event.UserProgressUpdatedEvent;
+import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
+import de.unistuttgart.iste.meitrex.common.event.*;
 import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
 import de.unistuttgart.iste.meitrex.content_service.exception.ContentServiceConnectionException;
 import de.unistuttgart.iste.meitrex.course_service.client.CourseServiceClient;
@@ -18,10 +16,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.CourseRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserGoalProgressRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
-import de.unistuttgart.iste.meitrex.generated.dto.Chapter;
-import de.unistuttgart.iste.meitrex.generated.dto.CompositeProgressInformation;
-import de.unistuttgart.iste.meitrex.generated.dto.Content;
-import de.unistuttgart.iste.meitrex.generated.dto.ContentType;
+import de.unistuttgart.iste.meitrex.generated.dto.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +41,7 @@ public class GoalProgressService {
     private final Achievements achievements = new Achievements();
     private final UserRepository userRepository;
     private final UserGoalProgressRepository userGoalProgressRepository;
+    private final TopicPublisher topicPublisher;
 
     /**
      * Gets user progress according to the given event.
@@ -79,11 +75,26 @@ public class GoalProgressService {
         log.info("Quiz progress");
         CompletedQuizzesGoalProgressEvent completedQuizzesGoalProgressEvent =
                 getCompletedQuizzesGoalProgressEvent(contentProgressedEvent, user);
+        updateProgress(user, courseId, completedQuizzesGoalProgressEvent);
+    }
+
+    private void updateProgress(UserEntity user, UUID courseId, GoalProgressEvent goalProgressEvent) {
         user.getUserGoalProgressEntities().stream()
                 .filter(userGoalProgressEntity ->
                         checkUserGoalProgressInCourse(courseId, userGoalProgressEntity))
                 .forEach(goalProgressEntity -> {
-                    goalProgressEntity.updateProgress(completedQuizzesGoalProgressEvent);
+                    boolean completed = goalProgressEntity.isCompleted();
+                    goalProgressEntity.updateProgress(goalProgressEvent);
+                    if (!completed && goalProgressEntity.isCompleted()) {
+                        AchievementEntity achievement = (AchievementEntity) goalProgressEntity.getGoal().getParentWithGoal();
+                        AchievementCompletedEvent achievementCompletedEvent = AchievementCompletedEvent.builder()
+                                .achievementId(achievement.getId())
+                                .courseId(achievement.getCourse().getId())
+                                .userId(user.getId())
+                                .build();
+                        topicPublisher.notifyAchievementCompleted(achievementCompletedEvent);
+                        log.info("Published AchievementCompletedEvent {}", achievementCompletedEvent);
+                    }
                 });
         userRepository.save(user);
     }
@@ -125,13 +136,7 @@ public class GoalProgressService {
             if (progressInformation.getCompletedContents() == progressInformation.getTotalContents()) {
                 CompleteSpecificChapterGoalProgressEvent completeSpecificChapterGoalProgressEvent =
                         getCompleteSpecificChapterGoalProgressEvent(userId, chapterId, courseId);
-                user.getUserGoalProgressEntities().stream()
-                        .filter(userGoalProgressEntity ->
-                                checkUserGoalProgressInCourse(courseId, userGoalProgressEntity))
-                        .forEach(goalProgressEntity -> {
-                            goalProgressEntity.updateProgress(completeSpecificChapterGoalProgressEvent);
-                        });
-                userRepository.save(user);
+                updateProgress(user, courseId, completeSpecificChapterGoalProgressEvent);
             }
         } catch (ContentServiceConnectionException e) {
             throw new RuntimeException(e);
@@ -169,13 +174,7 @@ public class GoalProgressService {
         goalProgressEvent.setUserId(user.getId());
         goalProgressEvent.setCourseId(courseId);
         goalProgressEvent.setProgressType(ProgressType.FORUM);
-        user.getUserGoalProgressEntities().stream()
-                .filter(userGoalProgressEntity ->
-                        checkUserGoalProgressInCourse(courseId, userGoalProgressEntity))
-                .forEach(userGoalProgressEntity -> {
-                    userGoalProgressEntity.updateProgress(goalProgressEvent);
-                });
-        userRepository.save(user);
+        updateProgress(user, courseId, goalProgressEvent);
     }
 
     public UUID loginUser(UUID userId, UUID courseId) {
@@ -185,13 +184,7 @@ public class GoalProgressService {
             addUserToCourse(courseEntity, user);
         }
         LoginStreakGoalProgressEvent loginStreakGoalProgressEvent = getLoginStreakGoalProgressEvent(userId, courseId);
-        user.getUserGoalProgressEntities().stream()
-                .filter(userGoalProgressEntity ->
-                        checkUserGoalProgressInCourse(courseId, userGoalProgressEntity))
-                .forEach(userGoalProgressEntity -> {
-                    userGoalProgressEntity.updateProgress(loginStreakGoalProgressEvent);
-                });
-        userRepository.save(user);
+        updateProgress(user, courseId, loginStreakGoalProgressEvent);
         return userId;
     }
 

@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
 
+import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
 import de.unistuttgart.iste.meitrex.common.event.ContentProgressedEvent;
 import de.unistuttgart.iste.meitrex.common.event.ForumActivity;
 import de.unistuttgart.iste.meitrex.common.event.ForumActivityEvent;
@@ -47,6 +48,7 @@ public class GoalProgressServiceTest {
     private final CourseRepository courseRepository  = mock(CourseRepository.class);
     private final UserRepository userRepository  = mock(UserRepository.class);
     private final UserGoalProgressRepository userGoalProgressRepository  = mock(UserGoalProgressRepository.class);
+    private final TopicPublisher topicPublisher = mock(TopicPublisher.class);
 
     private final Achievements achievements = new Achievements();
 
@@ -56,7 +58,7 @@ public class GoalProgressServiceTest {
     void setUp() {
         openMocks(this);
         goalProgressService = new GoalProgressService(achievementRepository, contentServiceClient, courseServiceClient,
-                courseRepository, userRepository, userGoalProgressRepository);
+                courseRepository, userRepository, userGoalProgressRepository, topicPublisher);
     }
 
     @Test
