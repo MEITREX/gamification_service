@@ -37,7 +37,7 @@ public class GoalProgressService {
     private final ContentServiceClient contentServiceClient;
     private final CourseServiceClient courseServiceClient;
     private final CourseRepository courseRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     /**
      * Gets user progress according to the given event.
@@ -57,28 +57,18 @@ public class GoalProgressService {
         UUID courseId = content.getMetadata().getCourseId();
         log.info("Course exists: {}", courseRepository.findById(courseId).isPresent());
         CourseEntity courseEntity = courseRepository.findById(courseId).orElseGet(() -> createCourse(courseId));
-        UserEntity user = userRepository.findById(userId).orElseGet(() -> createUser(userId));
+        UserEntity user = userService.getOrCreateUser(userId);
         addUserToCourseIfNotAlready(courseEntity, user);
         log.info("User {} ", user);
         if (Objects.requireNonNull(content.getMetadata().getType()) == ContentType.QUIZ) {
             quizProgress(contentProgressedEvent, user, courseId);
         }
-        if(content instanceof Assessment) {
-            CompletedSpecificAssessmentGoalProgressEvent completedSpecificAssessmentGoalProgressEvent
-                    = CompletedSpecificAssessmentGoalProgressEvent.builder()
-                            .userId(userId)
-                            .assessmentId(content.getId())
-                            .build();
-            updateGoalProgressEntitiesForUser(user, courseId, completedSpecificAssessmentGoalProgressEvent);
-        } else if(content instanceof MediaContent) {
-            CompletedSpecificMediaContentGoalProgressEvent completedSpecificMediaContentGoalProgressEvent
-                    = CompletedSpecificMediaContentGoalProgressEvent.builder()
-                            .userId(userId)
-                            .mediaContentId(content.getId())
-                            .build();
-            updateGoalProgressEntitiesForUser(user, courseId, completedSpecificMediaContentGoalProgressEvent);
-        }
-        userRepository.save(user);
+        final CompletedSpecificContentGoalProgressEvent gpe = CompletedSpecificContentGoalProgressEvent.builder()
+                .userId(userId)
+                .contentId(content.getId())
+                .build();
+        updateGoalProgressEntitiesForUser(user, courseId, gpe);
+        userService.upsertUser(user);
     }
 
     private void quizProgress(final ContentProgressedEvent contentProgressedEvent, UserEntity user, UUID courseId) {
@@ -109,7 +99,7 @@ public class GoalProgressService {
         CourseEntity courseEntity = courseRepository.findById(courseId).orElseGet(() -> createCourse(courseId));
         UUID userId = userProgressUpdatedEvent.getUserId();
         UUID chapterId = userProgressUpdatedEvent.getChapterId();
-        UserEntity user = userRepository.findById(userId).orElseGet(() -> createUser(userId));
+        UserEntity user = userService.getOrCreateUser(userId);
         addUserToCourseIfNotAlready(courseEntity, user);
         try {
             CompositeProgressInformation progressInformation =
@@ -118,7 +108,7 @@ public class GoalProgressService {
                 CompletedSpecificChapterGoalProgressEvent completedSpecificChapterGoalProgressEvent =
                         getCompleteSpecificChapterGoalProgressEvent(userId, chapterId, courseId);
                 updateGoalProgressEntitiesForUser(user, courseId, completedSpecificChapterGoalProgressEvent);
-                userRepository.save(user);
+                userService.upsertUser(user);
             }
         } catch (ContentServiceConnectionException e) {
             throw new RuntimeException(e);
@@ -139,11 +129,11 @@ public class GoalProgressService {
         CourseEntity courseEntity = courseRepository.findById(courseId).orElseGet(() -> createCourse(courseId));
         log.info(courseEntity.toString());
         UUID userId = forumActivityEvent.getUserId();
-        UserEntity user = userRepository.findById(userId).orElseGet(() -> createUser(userId));
+        UserEntity user = userService.getOrCreateUser(userId);
         addUserToCourseIfNotAlready(courseEntity, user);
         if (forumActivityEvent.getActivity() == ForumActivity.ANSWER) {
             forumAnswerProgress(user, courseId);
-            userRepository.save(user);
+            userService.upsertUser(user);
         }
     }
 
@@ -156,11 +146,11 @@ public class GoalProgressService {
 
     public UUID loginUser(UUID userId, UUID courseId) {
         CourseEntity courseEntity = courseRepository.findById(courseId).orElseGet(() -> createCourse(courseId));
-        UserEntity user = userRepository.findById(userId).orElseGet(() -> createUser(userId));
+        UserEntity user = userService.getOrCreateUser(userId);
         addUserToCourseIfNotAlready(courseEntity, user);
         LoginStreakGoalProgressEvent loginStreakGoalProgressEvent = getLoginStreakGoalProgressEvent(userId, courseId);
         updateGoalProgressEntitiesForUser(user, courseId, loginStreakGoalProgressEvent);
-        userRepository.save(user);
+        userService.upsertUser(user);
         return userId;
     }
 
@@ -205,18 +195,10 @@ public class GoalProgressService {
                     .build());
 
             user.getCourseData().add(userCourseData.get());
-            user = userRepository.save(user);
+            user = userService.upsertUser(user);
         }
 
         return userCourseData.get();
-    }
-
-    public UserEntity createUser(final UUID userId) {
-        UserEntity userEntity = new UserEntity(userId, new ArrayList<>(), new UserInventoryEntity());
-        userEntity = userRepository.save(userEntity);
-        log.info("Created user with id {}", userId);
-        log.info("Created user {}", userEntity);
-        return userEntity;
     }
 
     private void updateGoalProgressEntitiesForUser(UserEntity user,

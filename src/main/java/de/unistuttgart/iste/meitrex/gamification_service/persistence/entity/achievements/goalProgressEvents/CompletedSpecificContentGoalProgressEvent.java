@@ -9,11 +9,11 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @Value
 @SuperBuilder
-public class CompletedSpecificAssessmentGoalProgressEvent extends GoalProgressEvent {
-    UUID assessmentId;
+public class CompletedSpecificContentGoalProgressEvent extends GoalProgressEvent {
+    UUID contentId;
 
-    public CompletedSpecificAssessmentGoalProgressEvent(UUID userId, UUID assessmentId) {
+    public CompletedSpecificContentGoalProgressEvent(UUID userId, UUID contentId) {
         super(userId);
-        this.assessmentId = assessmentId;
+        this.contentId = contentId;
     }
 }

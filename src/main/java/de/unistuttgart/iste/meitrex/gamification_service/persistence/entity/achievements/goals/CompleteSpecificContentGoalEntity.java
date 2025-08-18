@@ -1,9 +1,10 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.CompletedSpecificAssessmentGoalProgressEvent;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.CompletedSpecificContentGoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.GoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
+import de.unistuttgart.iste.meitrex.generated.dto.ContentType;
 import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,31 +18,32 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class CompleteSpecificAssessmentGoalEntity extends GoalEntity {
+public class CompleteSpecificContentGoalEntity extends GoalEntity {
 
-    private UUID assessmentId;
-
-    private String assessmentName;
+    private UUID contentId;
+    private String contentName;
+    private ContentType contentType;
 
     @Override
     public String generateDescription() {
-        return "Successfully complete the assessment " + assessmentName + ".";
+        return "Successfully complete the content " + contentName + ".";
     }
 
     @Override
     protected void populateFromOther(GoalEntity goal) {
-        if (!(goal instanceof CompleteSpecificAssessmentGoalEntity assessmentGoal))
-            throw new IllegalArgumentException("Passed goal must be of type CompleteSpecificChapterGoalEntity.");
+        if (!(goal instanceof CompleteSpecificContentGoalEntity assessmentGoal))
+            throw new IllegalArgumentException("Passed goal must be of type CompleteSpecificContentGoalEntity.");
 
-        assessmentId = assessmentGoal.assessmentId;
-        assessmentName = assessmentGoal.assessmentName;
+        contentId = assessmentGoal.contentId;
+        contentName = assessmentGoal.contentName;
+        contentType = assessmentGoal.contentType;
     }
 
     @Override
     public boolean updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgress) {
-        if(goalProgressEvent instanceof CompletedSpecificAssessmentGoalProgressEvent assGoalProgress) {
-            UUID eventAssessmentId = assGoalProgress.getAssessmentId();
-            if (eventAssessmentId.equals(this.assessmentId)
+        if(goalProgressEvent instanceof CompletedSpecificContentGoalProgressEvent contentGoalProgress) {
+            UUID eventContentId = contentGoalProgress.getContentId();
+            if (eventContentId.equals(this.contentId)
                     && !userGoalProgress.isCompleted()) {
                 userGoalProgress.setCompleted(true);
                 return true;
@@ -54,7 +56,7 @@ public class CompleteSpecificAssessmentGoalEntity extends GoalEntity {
     @Override
     public boolean equalsGoalTargets(GoalEntity other) {
         return super.equalsGoalTargets(other)
-                && this.assessmentId.equals(((CompleteSpecificAssessmentGoalEntity) other).assessmentId);
+                && this.contentId.equals(((CompleteSpecificContentGoalEntity) other).contentId);
     }
 
     @Override

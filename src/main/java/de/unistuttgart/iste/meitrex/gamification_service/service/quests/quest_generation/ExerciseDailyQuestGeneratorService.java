@@ -4,7 +4,7 @@ import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
 import de.unistuttgart.iste.meitrex.content_service.exception.ContentServiceConnectionException;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.CompleteSpecificAssessmentGoalEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.CompleteSpecificContentGoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.quests.QuestEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.quests.DailyQuestType;
 import de.unistuttgart.iste.meitrex.generated.dto.Assessment;
@@ -25,8 +25,11 @@ public class ExerciseDailyQuestGeneratorService implements IQuestGenerator {
     private Map<AssessmentMapKey, Assessment> foundAssessments;
 
     public Optional<QuestEntity> generateQuest(final CourseEntity courseEntity,
-                                               final UserEntity userEntity) throws ContentServiceConnectionException {
-        List<Content> courseContents = contentService.queryContentsOfCourse(userEntity.getId(), courseEntity.getId());
+                                               final UserEntity userEntity,
+                                               final List<QuestEntity> otherQuests)
+            throws ContentServiceConnectionException {
+        List<Content> courseContents = IQuestGenerator.getContentsOfCourseNotInOtherQuests(
+                contentService, courseEntity, userEntity, otherQuests);
 
         // assessments for which the suggested date has passed and which the user has already unlocked
         // i.e. these need to be completed
@@ -49,11 +52,11 @@ public class ExerciseDailyQuestGeneratorService implements IQuestGenerator {
         quest.setImageUrl("");
         quest.setCourse(courseEntity);
 
-        CompleteSpecificAssessmentGoalEntity goal = new CompleteSpecificAssessmentGoalEntity();
+        CompleteSpecificContentGoalEntity goal = new CompleteSpecificContentGoalEntity();
         goal.setTrackingTimeToToday();
         goal.setParentWithGoal(quest);
-        goal.setAssessmentId(assessmentForQuest.get().getId());
-        goal.setAssessmentName(assessmentForQuest.get().getMetadata().getName());
+        goal.setContentId(assessmentForQuest.get().getId());
+        goal.setContentName(assessmentForQuest.get().getMetadata().getName());
 
         quest.setGoal(goal);
 

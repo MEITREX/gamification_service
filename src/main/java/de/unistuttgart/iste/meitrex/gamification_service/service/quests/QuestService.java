@@ -73,7 +73,7 @@ public class QuestService {
             DailyQuestType questType = questTypeCandidates.removeLast();
             try {
                 Optional<QuestEntity> generatedQuestEntity = questGeneratorServiceFactory.getQuestGenerator(questType)
-                        .generateQuest(courseEntity, user);
+                        .generateQuest(courseEntity, user, Collections.unmodifiableList(quests));
 
                 generatedQuestEntity.ifPresent(quests::add);
             } catch (ContentServiceConnectionException e) {

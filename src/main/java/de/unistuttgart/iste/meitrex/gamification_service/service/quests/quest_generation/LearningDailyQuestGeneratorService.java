@@ -4,7 +4,7 @@ import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
 import de.unistuttgart.iste.meitrex.content_service.exception.ContentServiceConnectionException;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.CompleteSpecificMediaContentGoalEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.CompleteSpecificContentGoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.quests.QuestEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.quests.DailyQuestType;
 import de.unistuttgart.iste.meitrex.generated.dto.Content;
@@ -14,9 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
@@ -26,8 +24,12 @@ public class LearningDailyQuestGeneratorService implements IQuestGenerator {
 
     @Override
     public Optional<QuestEntity> generateQuest(final CourseEntity courseEntity,
-                                               final UserEntity userEntity) throws ContentServiceConnectionException {
-        List<Content> courseContents = contentService.queryContentsOfCourse(userEntity.getId(), courseEntity.getId());
+                                               final UserEntity userEntity,
+                                               final List<QuestEntity> otherQuests)
+            throws ContentServiceConnectionException {
+        List<Content> courseContents = IQuestGenerator.getContentsOfCourseNotInOtherQuests(
+                contentService, courseEntity, userEntity, otherQuests);
+
         Optional<MediaContent> contentToGenerateQuestFor = getContentToGenerateQuestFor(courseContents);
 
         if (contentToGenerateQuestFor.isEmpty())
@@ -38,11 +40,12 @@ public class LearningDailyQuestGeneratorService implements IQuestGenerator {
         quest.setImageUrl("");
         quest.setCourse(courseEntity);
 
-        CompleteSpecificMediaContentGoalEntity goal = new CompleteSpecificMediaContentGoalEntity();
+        CompleteSpecificContentGoalEntity goal = new CompleteSpecificContentGoalEntity();
         goal.setTrackingTimeToToday();
         goal.setParentWithGoal(quest);
-        goal.setMediaContentId(contentToGenerateQuestFor.get().getId());
-        goal.setMediaContentName(contentToGenerateQuestFor.get().getMetadata().getName());
+        goal.setContentId(contentToGenerateQuestFor.get().getId());
+        goal.setContentName(contentToGenerateQuestFor.get().getMetadata().getName());
+        goal.setContentType(contentToGenerateQuestFor.get().getMetadata().getType());
 
         quest.setGoal(goal);
         return Optional.of(quest);

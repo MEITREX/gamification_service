@@ -25,15 +25,17 @@ import java.util.UUID;
 public class ItemService {
     private final UserRepository userRepository;
     private final GoalProgressService goalProgressService;
+    private final UserService userService;
 
     @Value("${item.file.path}")
     private String FILE_PATH;
 
     private ItemData items;
 
-    public ItemService(UserRepository userRepository, GoalProgressService goalProgressService) {
+    public ItemService(UserRepository userRepository, GoalProgressService goalProgressService, UserService userService) {
         this.userRepository = userRepository;
         this.goalProgressService = goalProgressService;
+        this.userService = userService;
     }
 
     @PostConstruct
@@ -53,7 +55,7 @@ public class ItemService {
     }
 
     public Inventory getInventoryForUser(UUID userId) {
-        UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
+        UserEntity user = userService.getOrCreateUser(userId);
         List<UserItem> userItems = getItemsForUser(userId);
         Inventory inventory = new Inventory();
         inventory.setItems(userItems);
@@ -64,7 +66,7 @@ public class ItemService {
 
     public List<UserItem> getItemsForUser(UUID userId) {
         List<UserItem> userItems = new ArrayList<>();
-        UserEntity user = userRepository.findById(userId).orElseGet(() -> goalProgressService.createUser(userId));
+        UserEntity user = userService.getOrCreateUser(userId);
         getProfilePictureFrames(user, userItems);
         getProfilePictures(user, userItems);
         getTutorCharacters(user, userItems);

@@ -14,7 +14,6 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achi
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.CountableUserGoalProgressEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.AchievementRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
 import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +28,7 @@ import java.util.*;
 @Slf4j
 @Transactional
 public class AchievementService {
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final AchievementRepository achievementRepository;
     private final AdaptivityConfiguration adaptivityConfiguration;
     private final TopicPublisher topicPublisher;
@@ -44,7 +43,7 @@ public class AchievementService {
      * @return A list of Achievement DTOs representing the user's achievements in the specified course.
      */
     public List<Achievement> getAchievementsForUserInCourse(UUID userId, UUID courseId) {
-        Optional<UserEntity> user = userRepository.findById(userId);
+        Optional<UserEntity> user = userService.getUser(userId);
         if (user.isEmpty())
             return Collections.emptyList();
 
@@ -103,7 +102,7 @@ public class AchievementService {
      * @return A list of Achievement DTOs representing the user's achievements.
      */
     public List<Achievement> getAchievementsForUser(UUID userId) {
-        Optional<UserEntity> user = userRepository.findById(userId);
+        Optional<UserEntity> user = userService.getUser(userId);
         if (user.isEmpty()) {
             return Collections.emptyList();
         }
@@ -208,7 +207,7 @@ public class AchievementService {
         newGoalProgressCountable.setCompletedCount(countableGoalProgress.getCompletedCount());
 
         userCourseData.getGoalProgressEntities().add(newGoalProgress);
-        userRepository.save(user);
+        userService.upsertUser(user);
     }
 
     public void onAchievementCompleted(AchievementEntity achievement, UserGoalProgressEntity goalProgressEntity) {

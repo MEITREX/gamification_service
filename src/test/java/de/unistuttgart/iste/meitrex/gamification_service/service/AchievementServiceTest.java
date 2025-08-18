@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
 
 
+import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
 import de.unistuttgart.iste.meitrex.gamification_service.achievements.Achievements;
 import de.unistuttgart.iste.meitrex.gamification_service.config.AdaptivityConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserCourseDataEntity;
@@ -28,9 +29,10 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 public class AchievementServiceTest {
-    private final UserRepository userRepository = mock(UserRepository.class);
+    private final UserService userService = mock(UserService.class);
     private final AchievementRepository achievementRepository = mock(AchievementRepository.class);
     private final AdaptivityConfiguration adaptivityConfiguration = mock(AdaptivityConfiguration.class);
+    private final TopicPublisher topicPublisher = mock(TopicPublisher.class);
 
     private final Achievements achievements = new Achievements();
 
@@ -39,7 +41,8 @@ public class AchievementServiceTest {
     @BeforeEach
     void setUp() {
         openMocks(this);
-        achievementService = new AchievementService(userRepository, achievementRepository, adaptivityConfiguration);
+        achievementService = new AchievementService(userService, achievementRepository,
+                adaptivityConfiguration, topicPublisher);
         when(adaptivityConfiguration.getMaxAdaptiveAchievementCount()).thenReturn(10);
     }
 
@@ -71,7 +74,7 @@ public class AchievementServiceTest {
                 .build();
         userEntity.setCourseData(List.of(courseData));
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
+        when(userService.getUser(userId)).thenReturn(Optional.of(userEntity));
         List<Achievement> achievementResult = achievementService.getAchievementsForUserInCourse(userId, courseId);
         List<Achievement> achievementList = new ArrayList<>();
         mapUserGoalProgressToAchievements(
@@ -107,7 +110,7 @@ public class AchievementServiceTest {
                 .build();
         userEntity.setCourseData(List.of(courseData));
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
+        when(userService.getUser(userId)).thenReturn(Optional.of(userEntity));
         List<Achievement> achievementResult = achievementService.getAchievementsForUser(userId);
         List<Achievement> achievementList = new ArrayList<>();
         mapUserGoalProgressToAchievements(

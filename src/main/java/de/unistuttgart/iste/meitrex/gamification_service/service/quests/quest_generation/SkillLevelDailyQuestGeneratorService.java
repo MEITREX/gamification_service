@@ -5,10 +5,11 @@ import de.unistuttgart.iste.meitrex.content_service.exception.ContentServiceConn
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.quests.QuestEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.skilllevels.SkillLevelsEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.quests.DailyQuestType;
+import de.unistuttgart.iste.meitrex.gamification_service.service.SkillService;
 import de.unistuttgart.iste.meitrex.generated.dto.Assessment;
 import de.unistuttgart.iste.meitrex.generated.dto.Content;
-import de.unistuttgart.iste.meitrex.generated.dto.Item;
 import de.unistuttgart.iste.meitrex.generated.dto.Skill;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,11 +21,15 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class SkillLevelDailyQuestGeneratorService implements IQuestGenerator {
     private final ContentServiceClient contentService;
+    private final SkillService skillService;
 
     @Override
-    public Optional<QuestEntity> generateQuest(final CourseEntity courseEntity, final UserEntity userEntity)
+    public Optional<QuestEntity> generateQuest(final CourseEntity courseEntity,
+                                               final UserEntity userEntity,
+                                               final List<QuestEntity> otherQuests)
             throws ContentServiceConnectionException {
-        List<Content> courseContents = contentService.queryContentsOfCourse(userEntity.getId(), courseEntity.getId());
+        List<Content> courseContents = IQuestGenerator.getContentsOfCourseNotInOtherQuests(
+                contentService, courseEntity, userEntity, otherQuests);
 
         List<Assessment> assessments = courseContents.stream()
                 .filter(c -> c instanceof Assessment)
@@ -36,7 +41,13 @@ public class SkillLevelDailyQuestGeneratorService implements IQuestGenerator {
                 .flatMap(i -> i.getAssociatedSkills().stream())
                 .toList();
 
-        skills.forEach(skill -> skill.)
+        List<SkillLevelsEntity> skillLevels = skills.stream()
+                .flatMap(sk -> userEntity.getSkillLevelsForSkill(sk.getId()).stream())
+                .toList();
+
+
+
+        return Optional.empty();
     }
 
     @Override

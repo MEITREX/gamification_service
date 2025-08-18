@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -39,25 +40,12 @@ public class ItemServiceTest {
     @MockitoBean
     private GoalProgressService goalProgressService = mock(GoalProgressService.class);
 
-
-
     @Test
     void testGetInventoryForUser() {
         UUID userId = UUID.randomUUID();
-        UserEntity user = new UserEntity(userId, new ArrayList<>(), new UserInventoryEntity());
+        UserEntity user = new UserEntity(userId, new ArrayList<>(), new UserInventoryEntity(), new ArrayList<>());
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
-        Inventory inventory = itemService.getInventoryForUser(userId);
-        assertThat(inventory.getItems(), hasSize(81));
-        assertThat(inventory.getUserId(), is(userId));
-        assertThat(inventory.getUnspentPoints(), is(0));
-    }
-
-    @Test
-    void testGetInventoryForEmptyUser() {
-        UUID userId = UUID.randomUUID();
-        UserEntity user = new UserEntity(userId, new ArrayList<>(), new UserInventoryEntity());
-        when(goalProgressService.createUser(userId)).thenReturn(user);
         Inventory inventory = itemService.getInventoryForUser(userId);
         assertThat(inventory.getItems(), hasSize(81));
         assertThat(inventory.getUserId(), is(userId));
@@ -67,17 +55,8 @@ public class ItemServiceTest {
     @Test
     void testGetItemsForUser() {
         UUID userId = UUID.randomUUID();
-        UserEntity user = new UserEntity(userId, new ArrayList<>(), new UserInventoryEntity());
+        UserEntity user = new UserEntity(userId, new ArrayList<>(), new UserInventoryEntity(), new ArrayList<>());
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        List<UserItem> items = itemService.getItemsForUser(userId);
-        assertThat(items, hasSize(81));
-    }
-
-    @Test
-    void testGetItemsForUserEmptyUser() {
-        UUID userId = UUID.randomUUID();
-        UserEntity user = new UserEntity(userId, new ArrayList<>(), new UserInventoryEntity());
-        when(goalProgressService.createUser(userId)).thenReturn(user);
         List<UserItem> items = itemService.getItemsForUser(userId);
         assertThat(items, hasSize(81));
     }

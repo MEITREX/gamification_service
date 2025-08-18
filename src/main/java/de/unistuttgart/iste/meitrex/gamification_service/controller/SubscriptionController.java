@@ -1,9 +1,13 @@
 package de.unistuttgart.iste.meitrex.gamification_service.controller;
 
+import de.unistuttgart.iste.meitrex.common.dapr.DaprTopic;
 import de.unistuttgart.iste.meitrex.common.event.ContentProgressedEvent;
 import de.unistuttgart.iste.meitrex.common.event.ForumActivityEvent;
 import de.unistuttgart.iste.meitrex.common.event.UserProgressUpdatedEvent;
+import de.unistuttgart.iste.meitrex.common.event.skilllevels.SkillEntityChangedEvent;
+import de.unistuttgart.iste.meitrex.common.event.skilllevels.UserSkillLevelChangedEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.service.GoalProgressService;
+import de.unistuttgart.iste.meitrex.gamification_service.service.SkillService;
 import io.dapr.Topic;
 import io.dapr.client.domain.CloudEvent;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +23,7 @@ import reactor.core.scheduler.Schedulers;
 @RequiredArgsConstructor
 public class SubscriptionController {
     private final GoalProgressService goalProgressService;
+    private final SkillService skillService;
 
     /**
      * Listens to the content-progressed topic and processes the user progress.
@@ -64,5 +69,24 @@ public class SubscriptionController {
             }
         })
         .subscribeOn(Schedulers.boundedElastic()).then();
+    }
+
+    @Topic(name = "user-skill-level-changed", pubsubName = "meitrex")
+    @PostMapping(path = "/user-skill-level-changed")
+    public Mono<Void> onUserSkillLevelChanged(@RequestBody final CloudEvent<UserSkillLevelChangedEvent> cloudEvent) {
+        return Mono.fromRunnable(() -> {
+            log.info("Received user-skill-level-changed event: {}", cloudEvent.getData());
+            skillService.updateUserSkillLevelsFromEvent(cloudEvent.getData());
+        })
+        .subscribeOn(Schedulers.boundedElastic()).then();
+    }
+
+    @Topic(name = "skill-entity-changed", pubsubName = "meitrex")
+    @PostMapping(path = "/skill-entity-changed")
+    public Mono<Void> onSkillEntityChanged(@RequestBody final CloudEvent<SkillEntityChangedEvent> cloudEvent) {
+        return Mono.fromRunnable(() -> {
+            log.info("Received skill-entity-changed event: {}", cloudEvent.getData());
+            skillService.updateSkillFromEvent(cloudEvent.getData());
+        });
     }
 }
