@@ -26,7 +26,13 @@ public class CompleteSpecificContentGoalEntity extends GoalEntity {
 
     @Override
     public String generateDescription() {
-        return "Successfully complete the content " + contentName + ".";
+        return switch (contentType) {
+            case ContentType.MEDIA -> "Read/watch the lecture '" + contentName + "'.";
+            case ContentType.QUIZ -> "Complete the quiz '" + contentName + "'.";
+            case ContentType.ASSIGNMENT -> "Complete the assignment '" + contentName + "'.";
+            case ContentType.FLASHCARDS -> "Complete the flashcard set '" + contentName + "'.";
+            default -> "Complete the content '" + contentName + "'.";
+        };
     }
 
     @Override
@@ -41,7 +47,7 @@ public class CompleteSpecificContentGoalEntity extends GoalEntity {
 
     @Override
     public boolean updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgress) {
-        if(goalProgressEvent instanceof CompletedSpecificContentGoalProgressEvent contentGoalProgress) {
+        if (goalProgressEvent instanceof CompletedSpecificContentGoalProgressEvent contentGoalProgress) {
             UUID eventContentId = contentGoalProgress.getContentId();
             if (eventContentId.equals(this.contentId)
                     && !userGoalProgress.isCompleted()) {

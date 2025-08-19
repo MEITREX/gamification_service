@@ -9,4 +9,5 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AdaptivityConfiguration {
     private int maxAdaptiveAchievementCount;
+    private float skillLevelQuestMinBloomScore;
 }
