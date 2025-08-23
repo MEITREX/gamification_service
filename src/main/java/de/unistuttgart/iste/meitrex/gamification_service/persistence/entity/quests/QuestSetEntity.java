@@ -35,6 +35,8 @@ public class QuestSetEntity implements IWithId<UUID> {
      */
     private LocalDate forDay;
 
+    private float rewardMultiplier;
+
     @OneToMany(cascade = CascadeType.ALL)
     private List<QuestEntity> quests;
 }

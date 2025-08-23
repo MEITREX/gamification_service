@@ -41,7 +41,7 @@ public class CompleteSpecificChapterGoalEntity extends GoalEntity {
     }
 
     @Override
-    public boolean updateProgress(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgress) {
+    public boolean updateProgressInternal(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgress) {
         if (progressEvent instanceof CompletedSpecificChapterGoalProgressEvent completedSpecificChapterGoalProgressEvent) {
             UUID eventChapterId = completedSpecificChapterGoalProgressEvent.getChapterId();
             if (eventChapterId.equals(this.chapterId)

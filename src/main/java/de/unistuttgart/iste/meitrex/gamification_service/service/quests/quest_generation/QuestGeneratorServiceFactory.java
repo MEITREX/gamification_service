@@ -9,17 +9,17 @@ import java.util.Map;
 
 @Component
 public class QuestGeneratorServiceFactory {
-    private final Map<DailyQuestType, IQuestGenerator> questGenerators = new EnumMap<>(DailyQuestType.class);
+    private final Map<DailyQuestType, IDailyQuestGenerator> questGenerators = new EnumMap<>(DailyQuestType.class);
 
-    public QuestGeneratorServiceFactory(final List<IQuestGenerator> services) {
-        for (final IQuestGenerator generator : services) {
+    public QuestGeneratorServiceFactory(final List<IDailyQuestGenerator> services) {
+        for (final IDailyQuestGenerator generator : services) {
             if (generator.generatesQuestType() != null) {
                 questGenerators.put(generator.generatesQuestType(), generator);
             }
         }
     }
 
-    public IQuestGenerator getQuestGenerator(final DailyQuestType questType) {
+    public IDailyQuestGenerator getQuestGenerator(final DailyQuestType questType) {
         return questGenerators.get(questType);
     }
 }

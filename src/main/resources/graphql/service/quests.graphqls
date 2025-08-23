@@ -16,9 +16,25 @@ A quest set is a collection of quests that a user can complete in a day.
 """
 type QuestSet {
     id: UUID!
+    """
+    Name of the quest set.
+    """
     name: String!
+    """
+    For which day these daily quests are intended.
+    """
     forDay: Date
+    """
+    The quests of the quest set.
+    """
     quests: [Quest!]!
+    """
+    Indicates how much the extra reward the user is getting because they have a quest streak (all quests completed for
+    consecutive days). Note that the extra reward is already included automatically in the reward associated with the
+    quests by the backend. This field is only provided in order to indicate to the user in the UI what their multiplier
+    is.
+    """
+    rewardMultiplier: Float!
 }
 
 type Quest implements HasGoal {

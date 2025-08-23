@@ -46,7 +46,7 @@ public class CompleteSpecificContentGoalEntity extends GoalEntity {
     }
 
     @Override
-    public boolean updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgress) {
+    public boolean updateProgressInternal(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgress) {
         if (goalProgressEvent instanceof CompletedSpecificContentGoalProgressEvent contentGoalProgress) {
             UUID eventContentId = contentGoalProgress.getContentId();
             if (eventContentId.equals(this.contentId)

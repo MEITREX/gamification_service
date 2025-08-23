@@ -35,8 +35,7 @@ public class SkillService {
             return;
         }
 
-        SkillEntity skillEntity = skillRepository.findById(event.getSkillId())
-                .orElseGet(() -> new SkillEntity(event.getSkillId(), null));
+        SkillEntity skillEntity = getOrCreateSkill(event.getSkillId());
 
         if(event.getSkillName() != null) {
             skillEntity.setName(event.getSkillName());

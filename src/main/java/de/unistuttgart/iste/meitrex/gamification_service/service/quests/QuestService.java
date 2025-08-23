@@ -1,7 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service.quests;
 
-import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
 import de.unistuttgart.iste.meitrex.content_service.exception.ContentServiceConnectionException;
+import de.unistuttgart.iste.meitrex.gamification_service.config.AdaptivityConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserCourseDataEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;
@@ -10,14 +10,13 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.ques
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.CourseRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.quests.DailyQuestType;
-import de.unistuttgart.iste.meitrex.gamification_service.service.quests.quest_generation.ExerciseDailyQuestGeneratorService;
-import de.unistuttgart.iste.meitrex.gamification_service.service.quests.quest_generation.IQuestGenerator;
 import de.unistuttgart.iste.meitrex.gamification_service.service.quests.quest_generation.QuestGeneratorServiceFactory;
-import de.unistuttgart.iste.meitrex.generated.dto.Content;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -27,8 +26,7 @@ import java.util.*;
 public class QuestService {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
-
-    private final ContentServiceClient contentService;
+    private final AdaptivityConfiguration adaptivityConfiguration;
 
     private final QuestGeneratorServiceFactory questGeneratorServiceFactory;
 
@@ -47,25 +45,32 @@ public class QuestService {
         // if user has no daily quest set, or if it outdated, generate a new one
         if (courseData.getDailyQuestSet() == null
                 || courseData.getDailyQuestSet().getForDay().isBefore(LocalDate.now())) {
-            courseData.setDailyQuestSet(generateDailyQuestSet(courseId, user));
+            courseData.setDailyQuestSet(generateDailyQuestSet(courseId, user, courseData.getDailyQuestSet()));
             userRepository.save(user); // Save the updated user with the new quest set
         }
 
         return courseData.getDailyQuestSet();
     }
 
-    private QuestSetEntity generateDailyQuestSet(final UUID courseId, final UserEntity user) {
+    private QuestSetEntity generateDailyQuestSet(@NotNull final UUID courseId,
+                                                 @NotNull final UserEntity user,
+                                                 @Nullable final QuestSetEntity previousQuestSet) {
         log.info("Generating new daily quest set for user {} in course {}", user, courseId);
 
         CourseEntity courseEntity = courseRepository.findByIdOrThrow(courseId);
 
-        LocalDate now = LocalDate.now();
+        float rewardMultiplier = previousQuestSet == null
+                ? 1
+                : (previousQuestSet.getRewardMultiplier() + 0.5f);
+
+        int rewardPoints = (int)(adaptivityConfiguration.getQuestBaseRewardPoints() * rewardMultiplier);
+
+        // TODO: Assign reward points to quests
 
         List<DailyQuestType> questTypeCandidates = Arrays.asList(DailyQuestType.values());
         Collections.shuffle(questTypeCandidates);
 
         List<QuestEntity> quests = new ArrayList<>();
-
         while (quests.size() < DAILY_QUEST_COUNT) {
             if (questTypeCandidates.isEmpty())
                 break;
@@ -81,10 +86,12 @@ public class QuestService {
             }
         }
 
+        LocalDate now = LocalDate.now();
         return QuestSetEntity.builder()
                 .name("Daily Quest Set for " + now)
                 .forDay(now)
                 .quests(quests)
+                .rewardMultiplier(rewardMultiplier)
                 .build();
     }
 }

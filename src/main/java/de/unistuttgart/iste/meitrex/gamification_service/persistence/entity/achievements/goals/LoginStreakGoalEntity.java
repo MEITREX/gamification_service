@@ -29,7 +29,7 @@ public class LoginStreakGoalEntity extends CountableGoalEntity{
     }
 
     @Override
-    public boolean updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgressEntity){
+    public boolean updateProgressInternal(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgressEntity){
         if (goalProgressEvent instanceof LoginStreakGoalProgressEvent loginStreakGoalProgressEvent) {
             if (userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity) {
                 return countableUserGoalProgressEntity.updateProgress(loginStreakGoalProgressEvent.getLoginTime());

@@ -19,7 +19,6 @@ import java.util.UUID;
 
 @Entity(name = "Goal")
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public abstract class GoalEntity implements IWithId<UUID> {
@@ -35,6 +34,14 @@ public abstract class GoalEntity implements IWithId<UUID> {
 
     @OneToOne(cascade = CascadeType.ALL)
     HasGoalEntity parentWithGoal;
+
+    public GoalEntity() {
+        // most ugly way to ensure that by default we have an "infinite" tracking time (I hope this system will not be
+        // used anymore in 500 years). Simply using OffsetDateTime.MAX/MIN doesn't work because postgres timestamps seem
+        // to have a smaller date range than Java's OffsetDateTime so we couldn't persist those values
+        trackingStartTime = OffsetDateTime.now().minusYears(500);
+        trackingEndTime = OffsetDateTime.now().plusYears(500);
+    }
 
     /**
      * Creates a new instance of the GoalEntity, copying all properties.
@@ -62,7 +69,34 @@ public abstract class GoalEntity implements IWithId<UUID> {
      */
     protected abstract void populateFromOther(GoalEntity goal);
 
-    public abstract boolean updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgress);
+    /**
+     * Called in order to update the given UserGoalProgressEntity of this GoalEntity when a GoalProgressEvent happens.
+     * This method checks that the GoalProgressEvent is of relevance etc. and only updates the user's progress if
+     * the user has truly made progress based on the GoalProgressEvent.
+     * @param goalProgressEvent The goal progress event which was raised.
+     * @param userGoalProgress The user's goal progress.
+     * @return True if the user completed the goal, false otherwise. If the goal was already completed previously this
+     * will also return false.
+     */
+    public final boolean updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgress) {
+        if(trackingStartTime.isAfter(OffsetDateTime.now()) || trackingEndTime.isBefore(OffsetDateTime.now()))
+            return false;
+
+        if(!goalProgressEvent.getUserId().equals(userGoalProgress.getUser().getId()))
+            return false;
+
+        return updateProgressInternal(goalProgressEvent, userGoalProgress);
+    }
+
+    /**
+     * Helper method called by the GoalEntity.updateProgress() method. Implementing classes need to implement this
+     * method in order to update the passed userGoalProgress if the passed goalProgressEvent indicates that the user
+     * has made progress on the goal. The method should update the passed userGoalProgress entity accordingly.
+     * The method should return true if and only if the goal was completed by the user in this invocation of the method.
+     * Otherwise, it should return false, including when the goal was already finished by the user previously.
+     */
+    protected abstract boolean updateProgressInternal(GoalProgressEvent goalProgressEvent,
+                                                      UserGoalProgressEntity userGoalProgress);
 
     public abstract UserGoalProgressEntity generateUserGoalProgress(UserEntity user);
 

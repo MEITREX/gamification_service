@@ -39,7 +39,7 @@ public class CompletedQuizzesGoalEntity extends CountableGoalEntity implements I
     }
 
     @Override
-    public boolean updateProgress(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgressEntity) {
+    public boolean updateProgressInternal(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgressEntity) {
         if (progressEvent instanceof CompletedQuizzesGoalProgressEvent completedQuizzesGoalProgressEvent &&
                 userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity) {
             float score = completedQuizzesGoalProgressEvent.getScore();

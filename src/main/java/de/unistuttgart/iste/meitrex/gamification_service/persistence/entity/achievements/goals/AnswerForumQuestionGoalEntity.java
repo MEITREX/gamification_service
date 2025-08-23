@@ -27,7 +27,7 @@ public class AnswerForumQuestionGoalEntity extends CountableGoalEntity {
     }
 
     @Override
-    public boolean updateProgress(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgressEntity) {
+    public boolean updateProgressInternal(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgressEntity) {
         if (goalProgressEvent instanceof AnswerForumGoalProgressEvent) {
             if (userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity) {
                 countableUserGoalProgressEntity.setCompletedCount(countableUserGoalProgressEntity.getCompletedCount() + 1);

@@ -4,10 +4,7 @@ import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.generated.dto.BloomLevel;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.UUID;
 
@@ -24,6 +21,7 @@ public class SkillLevelsEntity implements IWithId<UUID> {
     @ManyToOne(fetch = FetchType.LAZY)
     private SkillEntity skill;
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     private UserEntity user;
 

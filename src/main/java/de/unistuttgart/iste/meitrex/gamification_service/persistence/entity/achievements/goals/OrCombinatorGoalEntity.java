@@ -44,7 +44,7 @@ public class OrCombinatorGoalEntity extends GoalEntity{
     }
 
     @Override
-    public boolean updateProgress(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgress) {
+    public boolean updateProgressInternal(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgress) {
         if (userGoalProgress instanceof CombineUserGoalProgressEntity combineUserGoalProgress) {
             combineUserGoalProgress.getUserGoalProgressEntity1().updateProgress(progressEvent);
             combineUserGoalProgress.getUserGoalProgressEntity2().updateProgress(progressEvent);

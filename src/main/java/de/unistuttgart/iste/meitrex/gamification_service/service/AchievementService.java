@@ -179,8 +179,9 @@ public class AchievementService {
             // TODO: This name generation is a placeholder, we just increase a number for higher-difficulty achievements
             if (completedAchievement.isAdaptive()) {
                 String[] nameParts = completedAchievement.getName().split(" ");
-                int lastLevel = Integer.parseInt(nameParts[1]);
-                newAchievement.setName(nameParts[0] + " " + (lastLevel + 1));
+                int lastLevel = Integer.parseInt(nameParts[nameParts.length - 1]);
+                String baseName = String.join(" ", Arrays.copyOf(nameParts, nameParts.length - 1));
+                newAchievement.setName(baseName + " " + (lastLevel + 1));
             } else {
                 newAchievement.setName(completedAchievement.getName() + " 2");
             }

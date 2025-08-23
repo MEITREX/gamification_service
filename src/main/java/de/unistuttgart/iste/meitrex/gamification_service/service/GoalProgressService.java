@@ -124,10 +124,22 @@ public class GoalProgressService {
                 .build();
     }
 
+    public void moveLeaderboardProgress(UUID userId, UUID courseId, int newPosition, int oldPosition) {
+        CourseEntity courseEntity = courseRepository.findById(courseId).orElseGet(() -> createCourse(courseId));
+        UserEntity user = userService.getOrCreateUser(userId);
+        addUserToCourseIfNotAlready(courseEntity, user);
+        GoalProgressEvent goalProgressEvent = MoveLeaderboardGoalProgressEvent.builder()
+                .userId(user.getId())
+                .newRank(newPosition)
+                .oldRank(oldPosition)
+                .build();
+        updateGoalProgressEntitiesForUser(user, courseId, goalProgressEvent);
+        userService.upsertUser(user);
+    }
+
     public void forumProgress(final ForumActivityEvent forumActivityEvent) {
         UUID courseId = forumActivityEvent.getCourseId();
         CourseEntity courseEntity = courseRepository.findById(courseId).orElseGet(() -> createCourse(courseId));
-        log.info(courseEntity.toString());
         UUID userId = forumActivityEvent.getUserId();
         UserEntity user = userService.getOrCreateUser(userId);
         addUserToCourseIfNotAlready(courseEntity, user);
@@ -169,7 +181,6 @@ public class GoalProgressService {
         achievementService.createInitialAchievementsInCourseEntity(courseEntity);
         courseEntity = courseRepository.save(courseEntity);
         log.info("Created course with id {}", courseId);
-        log.info("Created course {}", courseEntity);
         return courseEntity;
     }
 
