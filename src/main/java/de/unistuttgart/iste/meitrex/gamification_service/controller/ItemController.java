@@ -4,6 +4,7 @@ import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.gamification_service.service.ItemService;
 import de.unistuttgart.iste.meitrex.generated.dto.Inventory;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
+import de.unistuttgart.iste.meitrex.generated.dto.UserItemComplete;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -36,7 +37,36 @@ public class ItemController {
 
     @MutationMapping
     public Inventory buyItem(@Argument UUID itemId,
-                             @ContextValue final LoggedInUser loggedInUser) {
-        return new Inventory();
+                             @ContextValue final LoggedInUser currentUser) {
+        return itemService.buyItem(currentUser.getId(), itemId);
+    }
+
+    @MutationMapping
+    public Inventory equipItem(@Argument UUID itemId,
+                               @ContextValue final LoggedInUser currentUser) {
+        return itemService.equipItem(currentUser.getId(), itemId);
+    }
+
+    @MutationMapping
+    public Inventory unequipItem(@Argument UUID itemId,
+                               @ContextValue final LoggedInUser currentUser) {
+        return itemService.unequipItem(currentUser.getId(), itemId);
+    }
+
+    @MutationMapping
+    public Inventory itemReward(@Argument UUID itemId,
+                                @ContextValue final LoggedInUser currentUser) {
+        return itemService.addItemRewardToUser(currentUser.getId(), itemId);
+    }
+
+    @MutationMapping
+    public Inventory currencyReward(@Argument Integer points,
+                                    @ContextValue final LoggedInUser currentUser) {
+        return itemService.addPointsToUser(currentUser.getId(), points);
+    }
+
+    @MutationMapping
+    public UserItemComplete lotteryRun(@ContextValue final LoggedInUser currentUser) {
+        return itemService.lotteryRun(currentUser.getId());
     }
 }

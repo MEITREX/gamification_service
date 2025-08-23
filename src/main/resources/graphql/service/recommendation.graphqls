@@ -17,6 +17,11 @@ extend type Mutation {
     setCurrentUserWidgetSettings(settings: WidgetSettingsInput!): WidgetSettings!
 }
 
+input WidgetSettingsInput {
+    numberOfRecommendations: Int!
+    recommendationRefreshInterval: Int! # in hours
+}
+
 enum RecommendationUserFeedback {
     JUST_RIGHT,
     MORE_OFTEN,

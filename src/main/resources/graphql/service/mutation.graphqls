@@ -3,9 +3,9 @@ type Mutation {
     loginUser(courseId: UUID): UUID
 
     buyItem(itemId:UUID!): Inventory
-}
-
-input WidgetSettingsInput {
-    numberOfRecommendations: Int!
-    recommendationRefreshInterval: Int! # in hours
+    equipItem(itemId: UUID!): Inventory
+    unequipItem(itemId: UUID!): Inventory
+    itemReward(itemId: UUID!): Inventory
+    currencyReward(points: Int!): Inventory
+    lotteryRun: UserItemComplete
 }
