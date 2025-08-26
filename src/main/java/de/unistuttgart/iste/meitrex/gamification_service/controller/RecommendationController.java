@@ -11,6 +11,7 @@ import de.unistuttgart.iste.meitrex.generated.dto.WidgetSettingsInput;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.ContextValue;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -28,14 +29,14 @@ public class RecommendationController {
 
     @QueryMapping("_internal_noauth_currentUserWidgetRecommendations")
     public List<GamificationCategoryRecommendation> currentUserWidgetRecommendations(
-            @NotNull final UUID courseId,
+            @NotNull @Argument final UUID courseId,
             @ContextValue final LoggedInUser currentUser) {
         return widgetRecommendationService.getUserWidgetRecommendations(currentUser.getId(), courseId);
     }
 
     @MutationMapping
-    public boolean sendRecommendationFeedback(final GamificationCategory category,
-                                              final RecommendationUserFeedback feedback,
+    public boolean sendRecommendationFeedback(@Argument final GamificationCategory category,
+                                              @Argument final RecommendationUserFeedback feedback,
                                               @ContextValue final LoggedInUser currentUser) {
         recommendationService.adjustFromUserFeedback(currentUser.getId(), category, feedback);
         return true;
@@ -47,7 +48,7 @@ public class RecommendationController {
     }
 
     @MutationMapping
-    public WidgetSettings setCurrentUserWidgetSettings(final WidgetSettingsInput settings,
+    public WidgetSettings setCurrentUserWidgetSettings(@Argument final WidgetSettingsInput settings,
                                                        @ContextValue final LoggedInUser currentUser) {
         return widgetRecommendationService.setUserWidgetSettings(currentUser.getId(), settings);
     }
