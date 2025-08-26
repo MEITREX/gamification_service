@@ -89,6 +89,7 @@ public abstract class PersistentEvent {
     private Long receivedTimestamp;
 
     @OneToMany(mappedBy = "persistentEvent")
+    @Builder.Default
     private List<PersistentEventStatus> persistentEventStatusList = new ArrayList<>();
 
 }

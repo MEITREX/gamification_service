@@ -35,5 +35,6 @@ public class PersistentUserProgressUpdatedEvent extends PersistentEvent {
     private Double correctness;
 
     @Column(name="assessment_attempt")
+    @Builder.Default
     private int assessmentAttempt = 0;
 }

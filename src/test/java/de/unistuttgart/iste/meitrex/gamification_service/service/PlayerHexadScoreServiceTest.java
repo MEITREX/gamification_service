@@ -29,7 +29,10 @@ public class PlayerHexadScoreServiceTest {
     @Mock
     private PlayerHexadScoreMapper playerHexadScoreMapper;
 
-    private PlayerHexadScoreService playerHexadScoreService;  
+    private PlayerHexadScoreService playerHexadScoreService;
+
+    @Mock
+    private DefaultUserService userCreator;
 
     @Mock
     private PlayerAnswerInput input; 
@@ -38,7 +41,7 @@ public class PlayerHexadScoreServiceTest {
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        playerHexadScoreService = new PlayerHexadScoreService(playerHexadScoreRepository, playerHexadScoreMapper);
+        playerHexadScoreService = new PlayerHexadScoreService(playerHexadScoreRepository, playerHexadScoreMapper, userCreator);
     }
 
     @Test

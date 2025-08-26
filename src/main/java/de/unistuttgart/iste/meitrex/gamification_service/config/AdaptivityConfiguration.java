@@ -13,4 +13,7 @@ public class AdaptivityConfiguration {
     private float exerciseQuestRandomPickProbability;
     private float learningQuestRandomPickProbability;
     private int questBaseRewardPoints;
+    private String immersiveTutorOllamaModel;
+    private int immersiveTutorSpeechRefreshIntervalMinutes;
+    private String immersiveTutorSpeechGeneric;
 }

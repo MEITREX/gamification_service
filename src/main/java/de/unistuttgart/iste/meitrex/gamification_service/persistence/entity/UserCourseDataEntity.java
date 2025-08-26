@@ -26,6 +26,10 @@ public class UserCourseDataEntity implements IWithId<UUID> {
 
     private UUID courseId;
 
+    @Embedded
+    @Nullable
+    private TutorImmersiveSpeechEmbeddable tutorImmersiveSpeech;
+
     @OneToMany(cascade = CascadeType.ALL)
     @NotNull
     private List<UserGoalProgressEntity> goalProgressEntities;

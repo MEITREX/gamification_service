@@ -63,6 +63,7 @@ public class PersistentContentProgressedEvent extends PersistentEvent {
     private Integer timeToComplete;
 
     @OneToMany(mappedBy = "event")
+    @Builder.Default
     private List<PersistentResponse> responses = new ArrayList<>();
 
 }

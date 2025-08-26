@@ -11,4 +11,10 @@ type Query {
     getMonthlyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
     getAllTimeCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
 
+
+    """
+    Returns a string which the tutor in the immersive widget should say.
+    🔒 The user must have access to the courses with the given ids to access their contents, otherwise an error is thrown.
+    """
+    tutorImmersiveWidgetSpeechContent(courseId: UUID!): String!
 }
