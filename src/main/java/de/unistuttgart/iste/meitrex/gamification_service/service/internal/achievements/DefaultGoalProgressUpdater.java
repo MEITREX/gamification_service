@@ -6,13 +6,21 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achi
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.GoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
 import org.hibernate.Hibernate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Component
 class DefaultGoalProgressUpdater implements IGoalProgressUpdater {
+
+    private final IAchievementCompletionHandler achievementCompletionHandler;
+
+    public DefaultGoalProgressUpdater(@Autowired IAchievementCompletionHandler achievementCompletionHandler) {
+        this.achievementCompletionHandler = Objects.requireNonNull(achievementCompletionHandler);
+    }
 
     public void updateGoalProgressEntitiesForUser(UserEntity user, UUID courseId, GoalProgressEvent goalProgressEvent) {
         List<UserGoalProgressEntity> completedGoals = user.getCourseData(courseId)
@@ -26,8 +34,7 @@ class DefaultGoalProgressUpdater implements IGoalProgressUpdater {
     private void onGoalCompleted(UserGoalProgressEntity goalProgressEntity) {
         HasGoalEntity hasGoalEntity = Hibernate.unproxy(goalProgressEntity.getGoal().getParentWithGoal(), HasGoalEntity.class);
         if (hasGoalEntity instanceof AchievementEntity achievement) {
-            // TODO Replace by internal event.
-            //   achievementService.onAchievementCompleted(achievement, goalProgressEntity);
+             achievementCompletionHandler.onAchievementCompleted(achievement, goalProgressEntity);
         }
     }
 }
