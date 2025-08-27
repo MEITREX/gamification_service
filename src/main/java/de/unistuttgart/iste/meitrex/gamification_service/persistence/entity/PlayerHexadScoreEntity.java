@@ -18,10 +18,7 @@ import lombok.*;
 @Entity(name = "PlayerHexadScoreEntity")
 public class PlayerHexadScoreEntity  implements IWithId<UUID> {
 
-    /*Modified Review Required*/
-
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @OneToOne

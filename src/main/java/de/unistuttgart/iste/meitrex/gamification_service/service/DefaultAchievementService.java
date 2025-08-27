@@ -89,12 +89,7 @@ public class DefaultAchievementService implements IAchievementService {
 
     // Attributes
 
-    private IUserRepository userRepository;
-
-    public DefaultAchievementService(@Autowired IUserRepository userRepository) {
-        this.userRepository = Objects.requireNonNull(userRepository);
-    }
-
+    private final IUserRepository userRepository;
 
     @Override
     public List<Achievement> getAchievementsForUserInCourse(UUID userId, UUID courseId) {

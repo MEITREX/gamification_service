@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerHexadScoreEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper.PlayerHexadScoreMapper;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.PlayerHexadScoreRepository;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -22,8 +21,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional 
 public class PlayerHexadScoreService implements IPlayerHexadScoreService {
-
-    private final PlayerHexadScoreRepository playerHexadScoreRepository;
 
     private final PlayerHexadScoreMapper playerHexadScoreMapper;
 
@@ -46,9 +43,8 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
         }
         final PlayerHexadScore playerHexadScore = input.getQuestions().isEmpty() ? calculateDefault(): calculateFromInput(input);
         playerHexadScoreEntity = playerHexadScoreMapper.dtoToEntity(playerHexadScore.getScores(), userId);
-        playerHexadScoreEntity.setUser(user);
         user.setPlayerHexadScore(playerHexadScoreEntity);
-        playerHexadScoreRepository.save(playerHexadScoreEntity);
+        playerHexadScoreEntity.setUser(user);
         return playerHexadScore;
     }
 
@@ -122,9 +118,8 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
      * @return users player hexad score 
      */
     public PlayerHexadScore getById(UUID userId) {
-        PlayerHexadScoreEntity entity = playerHexadScoreRepository.findByUserId(userId)
-            .orElseThrow(() -> new EntityNotFoundException("No score found for user " + userId));
-        return playerHexadScoreMapper.entityToDto(entity);
+        UserEntity user = userCreator.fetchOrCreate(userId);
+        return playerHexadScoreMapper.entityToDto(user.getPlayerHexadScore());
     }
 
     /*Modified Review Required*/
@@ -135,9 +130,8 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
      * @return true if a hexad score exists otherwise false
      */
     public Boolean hasHexadScore(UUID userId) {
-        return playerHexadScoreRepository
-                .findByUserId(userId)
-                .isPresent();
+        UserEntity user = userCreator.fetchOrCreate(userId);
+        return user.getPlayerHexadScore() != null;
     }
 
 

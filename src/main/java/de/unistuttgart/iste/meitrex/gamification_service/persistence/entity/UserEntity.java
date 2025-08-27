@@ -45,7 +45,7 @@ public class UserEntity implements IWithId<UUID> {
     @NotNull
     private List<SkillLevelsEntity> skillLevels;
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private PlayerHexadScoreEntity playerHexadScore;
 
     @Builder.Default
