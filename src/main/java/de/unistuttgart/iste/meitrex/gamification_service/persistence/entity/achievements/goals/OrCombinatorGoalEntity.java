@@ -35,14 +35,28 @@ public class OrCombinatorGoalEntity extends GoalEntity{
     }
 
     @Override
-    public void updateProgress(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgress) {
+    protected void populateFromOther(GoalEntity goal) {
+        if(!(goal instanceof OrCombinatorGoalEntity orGoal))
+            throw new IllegalArgumentException("Passed goal needs to be of type OrCombinatorGoalEntity.");
+
+        goal1 = orGoal.getGoal1().clone();
+        goal2 = orGoal.getGoal2().clone();
+    }
+
+    @Override
+    public boolean updateProgressInternal(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgress) {
         if (userGoalProgress instanceof CombineUserGoalProgressEntity combineUserGoalProgress) {
             combineUserGoalProgress.getUserGoalProgressEntity1().updateProgress(progressEvent);
             combineUserGoalProgress.getUserGoalProgressEntity2().updateProgress(progressEvent);
-            if (combineUserGoalProgress.getUserGoalProgressEntity1().isCompleted() || combineUserGoalProgress.getUserGoalProgressEntity2().isCompleted()){
+            if ((combineUserGoalProgress.getUserGoalProgressEntity1().isCompleted()
+                    || combineUserGoalProgress.getUserGoalProgressEntity2().isCompleted())
+                    && !combineUserGoalProgress.isCompleted()){
                 combineUserGoalProgress.setCompleted(true);
+                return true;
             }
         }
+
+        return false;
     }
 
     //@Override
@@ -51,5 +65,12 @@ public class OrCombinatorGoalEntity extends GoalEntity{
         return new CombineUserGoalProgressEntity(user, this,
                 goal1.generateUserGoalProgress(user),
                 goal2.generateUserGoalProgress(user));
+    }
+
+    @Override
+    public boolean equalsGoalTargets(GoalEntity other) {
+        return super.equalsGoalTargets(other)
+                && goal1.equalsGoalTargets(((OrCombinatorGoalEntity)other).getGoal1())
+                && goal2.equalsGoalTargets(((OrCombinatorGoalEntity)other).getGoal2());
     }
 }

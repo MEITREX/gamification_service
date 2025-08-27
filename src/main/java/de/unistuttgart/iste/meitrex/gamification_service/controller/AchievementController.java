@@ -1,8 +1,8 @@
 package de.unistuttgart.iste.meitrex.gamification_service.controller;
 
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
-import de.unistuttgart.iste.meitrex.gamification_service.service.AchievementService;
-import de.unistuttgart.iste.meitrex.gamification_service.service.GoalProgressService;
+import de.unistuttgart.iste.meitrex.gamification_service.service.IAchievementService;
+import de.unistuttgart.iste.meitrex.gamification_service.service.IGoalProgressService;
 import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,12 +21,13 @@ import static de.unistuttgart.iste.meitrex.common.user_handling.UserCourseAccess
 @Controller
 @RequiredArgsConstructor
 public class AchievementController {
-    private final AchievementService achievementService;
-    private final GoalProgressService goalProgressService;
+    private final IAchievementService achievementService;
+
+    private final IGoalProgressService goalProgressService;
 
     @QueryMapping
     public List<Achievement> achievementsByCourseId(@Argument UUID courseId,
-                                               @ContextValue final LoggedInUser currentUser) {
+                                                    @ContextValue final LoggedInUser currentUser) {
         validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT, courseId);
         return achievementService.getAchievementsForUserInCourse(currentUser.getId(), courseId);
     }

@@ -17,11 +17,29 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Slf4j
-public abstract class CountableGoalEntity extends GoalEntity{
+public abstract class CountableGoalEntity extends GoalEntity {
     @Column
     int requiredCount;
 
     public abstract String generateDescription();
+
+    @Override
+    public GoalEntity clone() {
+        GoalEntity goal = super.clone();
+
+        if(!(goal instanceof CountableGoalEntity countableGoal))
+            throw new RuntimeException("Cloned goal is not a CountableGoalEntity. This should never happen!");
+
+        countableGoal.requiredCount = requiredCount;
+
+        return countableGoal;
+    }
+
+    @Override
+    public boolean equalsGoalTargets(GoalEntity other) {
+        return super.equalsGoalTargets(other)
+                && requiredCount == ((CountableGoalEntity)other).requiredCount;
+    }
 
     @Override
     public UserGoalProgressEntity generateUserGoalProgress(UserEntity user) {

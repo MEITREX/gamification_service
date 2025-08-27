@@ -1,7 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.controller;
 
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
-import de.unistuttgart.iste.meitrex.gamification_service.service.ItemService;
+import de.unistuttgart.iste.meitrex.gamification_service.service.IItemService;
 import de.unistuttgart.iste.meitrex.generated.dto.Inventory;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItemComplete;
@@ -22,7 +22,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ItemController {
 
-    private final ItemService itemService;
+    private final IItemService itemService;
 
     @QueryMapping
     public List<UserItem> itemsByUserId(@Argument UUID userId,

@@ -3,6 +3,12 @@ type Query {
     PlayerHexadScoreExists(userId: UUID!): Boolean!
     achievementsByCourseId(courseId: UUID!): [Achievement!]!
     achievementsByUserId(userId: UUID): [Achievement!]!
+
     itemsByUserId(userId: UUID!): [UserItem!]!
     inventoryForUser: Inventory!
+
+    getWeeklyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
+    getMonthlyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
+    getAllTimeCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
+
 }

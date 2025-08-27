@@ -1,15 +1,15 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerHexadScoreEntity;
 import de.unistuttgart.iste.meitrex.generated.dto.PlayerHexadScore;
 import de.unistuttgart.iste.meitrex.generated.dto.PlayerType;
 import de.unistuttgart.iste.meitrex.generated.dto.PlayerTypeScore;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
@@ -17,7 +17,7 @@ public class PlayerHexadScoreMapper {
     public PlayerHexadScoreEntity dtoToEntity(List<PlayerTypeScore> scores, UUID userId) {
         
         PlayerHexadScoreEntity entity = new PlayerHexadScoreEntity();
-        entity.setUserId(userId);
+        entity.setId(userId);
         for (PlayerTypeScore score : scores) {
             switch (score.getType()) {
                 case PHILANTHROPIST -> entity.setPhilanthropist(score.getValue());

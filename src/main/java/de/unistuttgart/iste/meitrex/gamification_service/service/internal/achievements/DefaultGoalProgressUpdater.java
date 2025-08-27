@@ -1,0 +1,33 @@
+package de.unistuttgart.iste.meitrex.gamification_service.service.internal.achievements;
+
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.AchievementEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.HasGoalEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.GoalProgressEvent;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
+import org.hibernate.Hibernate;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.UUID;
+
+@Component
+class DefaultGoalProgressUpdater implements IGoalProgressUpdater {
+
+    public void updateGoalProgressEntitiesForUser(UserEntity user, UUID courseId, GoalProgressEvent goalProgressEvent) {
+        List<UserGoalProgressEntity> completedGoals = user.getCourseData(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("updateGoalProgressEntitiesForUser(): User is not enrolled in course: " + courseId))
+                .getGoalProgressEntities().stream()
+                .filter(goalProgressEntity -> goalProgressEntity.updateProgress(goalProgressEvent))
+                .toList();
+        completedGoals.forEach(this::onGoalCompleted);
+    }
+
+    private void onGoalCompleted(UserGoalProgressEntity goalProgressEntity) {
+        HasGoalEntity hasGoalEntity = Hibernate.unproxy(goalProgressEntity.getGoal().getParentWithGoal(), HasGoalEntity.class);
+        if (hasGoalEntity instanceof AchievementEntity achievement) {
+            // TODO Replace by internal event.
+            //   achievementService.onAchievementCompleted(achievement, goalProgressEntity);
+        }
+    }
+}

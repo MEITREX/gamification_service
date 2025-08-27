@@ -11,10 +11,10 @@ import org.springframework.graphql.execution.RuntimeWiringConfigurer;
 /**
  * This class sets up the validation rules for the GraphQL schema and the scalar types.
  */
-@Configuration
+//@Configuration
 public class GraphQlScalarsAndValidationConfiguration {
 
-    @Bean
+    //@Bean
     public RuntimeWiringConfigurer runtimeWiringConfigurer() {
 
         ValidationRules validationRules = ValidationRules.newValidationRules()

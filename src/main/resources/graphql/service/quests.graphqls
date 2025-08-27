@@ -1,0 +1,53 @@
+extend type Query {
+    """
+    Returns the current user's daily quest set. If the user does not have a quest set for today, it will return null.
+    """
+    _internal_noauth_currentUserDailyQuestSet(courseId: UUID!): QuestSet!
+    """
+    If a user hasn't logged in for a while, they will receive a "book" of special quests to complete. The book is
+    organized into a quest set for each concurrent day. Quest sets can only be started on once the day they are meant
+    for "forDay" has arrived. Quest sets of previous days can also be completed.
+    """
+    _internal_noauth_currentUserReturningQuestSets(courseId: UUID!): [QuestSet!]!
+}
+
+"""
+A quest set is a collection of quests that a user can complete in a day.
+"""
+type QuestSet {
+    id: UUID!
+    """
+    Name of the quest set.
+    """
+    name: String!
+    """
+    For which day these daily quests are intended.
+    """
+    forDay: Date
+    """
+    The quests of the quest set.
+    """
+    quests: [Quest!]!
+    """
+    Indicates how much the extra reward the user is getting because they have a quest streak (all quests completed for
+    consecutive days). Note that the extra reward is already included automatically in the reward associated with the
+    quests by the backend. This field is only provided in order to indicate to the user in the UI what their multiplier
+    is.
+    """
+    rewardMultiplier: Float!
+}
+
+type Quest implements HasGoal {
+    name: String!
+
+    # HasGoal fields
+
+    courseId: UUID!
+    userId: UUID!
+    trackingStartTime: DateTime
+    trackingEndTime: DateTime
+    requiredCount: Int
+    completedCount: Int
+    completed: Boolean!
+    description: String!
+}

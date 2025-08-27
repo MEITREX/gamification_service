@@ -26,28 +26,44 @@ public class CompletedQuizzesGoalEntity extends CountableGoalEntity implements I
     float minimumScore;
 
     @Override
-    public String generateDescription(){
+    public String generateDescription() {
         return "Complete " + super.getRequiredCount() + " quizzes.";
     }
 
     @Override
-    public void updateProgress(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgressEntity){
+    protected void populateFromOther(GoalEntity goal) {
+        if (!(goal instanceof CompletedQuizzesGoalEntity quizzesGoal))
+            throw new IllegalArgumentException("Passed goal must be of type CompletedQuizzesGoalEntity.");
+
+        minimumScore = quizzesGoal.getMinimumScore();
+    }
+
+    @Override
+    public boolean updateProgressInternal(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgressEntity) {
         if (progressEvent instanceof CompletedQuizzesGoalProgressEvent completedQuizzesGoalProgressEvent &&
-        userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity) {
+                userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity) {
             float score = completedQuizzesGoalProgressEvent.getScore();
             UUID contentId = completedQuizzesGoalProgressEvent.getContentId();
             log.info("Updating progress for user goal progress with minimum Score {} with score {} and contentId {}",
                     minimumScore, score, contentId);
-            if (score >= minimumScore && !countableUserGoalProgressEntity.getContentIds().contains(contentId)) {
+            if (score >= minimumScore) {
                 countableUserGoalProgressEntity.setCompletedCount(countableUserGoalProgressEntity.getCompletedCount() + 1);
                 countableUserGoalProgressEntity.getContentIds().add(contentId);
             }
-            if (countableUserGoalProgressEntity.getCompletedCount()>= getRequiredCount()) {
+            if (countableUserGoalProgressEntity.getCompletedCount() >= getRequiredCount()
+                    && !countableUserGoalProgressEntity.isCompleted()) {
                 countableUserGoalProgressEntity.setCompleted(true);
+                return true;
             }
         }
 
+        return false;
+    }
 
+    @Override
+    public boolean equalsGoalTargets(GoalEntity other) {
+        return super.equalsGoalTargets(other)
+                && minimumScore == ((CompletedQuizzesGoalEntity)other).minimumScore;
     }
 
     @Override
