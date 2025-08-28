@@ -14,7 +14,6 @@ import de.unistuttgart.iste.meitrex.gamification_service.service.internal.IUserC
 import de.unistuttgart.iste.meitrex.generated.dto.Inventory;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItemComplete;
-import org.checkerframework.checker.units.qual.A;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -248,22 +247,22 @@ public class DefaultItemService implements IItemService {
         }
         double randomValue = r.nextDouble();
         if (randomValue < COMMON_PERCENTAGE) {
-            userItem = addItemToUser(user, commonLotteryItemList);
+            userItem = addRandomItemToUser(user, commonLotteryItemList);
         } else if (randomValue < COMMON_PERCENTAGE + UNCOMMON_PERCENTAGE) {
-            userItem = addItemToUser(user, uncommonLotteryItemList);
+            userItem = addRandomItemToUser(user, uncommonLotteryItemList);
         } else if (randomValue < COMMON_PERCENTAGE + UNCOMMON_PERCENTAGE + RARE_PERCENTAGE) {
-            userItem = addItemToUser(user, rareLotteryItemList);
+            userItem = addRandomItemToUser(user, rareLotteryItemList);
         } else {
-            userItem = addItemToUser(user, ultraRareLotteryItemList);
+            userItem = addRandomItemToUser(user, ultraRareLotteryItemList);
         }
         return userItem;
     }
 
 
     @NotNull
-    private UserItemComplete addItemToUser(UserEntity user, List<ItemParent> rareLotteryItemList) {
+    private UserItemComplete addRandomItemToUser(UserEntity user, List<ItemParent> lotteryItemList) {
         UserItemComplete userItem;
-        ItemParent item = rareLotteryItemList.get(r.nextInt(rareLotteryItemList.size()));
+        ItemParent item = lotteryItemList.get(r.nextInt(lotteryItemList.size()));
         Optional<ItemInstanceEntity> oldItemInstance = user.getInventory().getItems().stream()
                 .filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId().equals(item.getId())).findFirst();
         if (oldItemInstance.isPresent()) {
@@ -278,6 +277,7 @@ public class DefaultItemService implements IItemService {
             userItem.setUnlockedTime(itemInstance.getCreationTime());
             userItem.setSold(false);
         }
+        userRepository.save(user);
         userItem.setEquipped(false);
         userItem.setUnlocked(true);
         return userItem;
