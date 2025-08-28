@@ -24,6 +24,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.events.internal.*;
 
 
 @Component
+@Transactional
 class DefaultLeaderboardService implements ILeaderboardService {
 
     private static final String ERR_MSG_NO_SUCH_PERSISTENT_USER_PROGRESS_UPDATED_EVENT

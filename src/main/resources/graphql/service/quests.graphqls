@@ -3,12 +3,6 @@ extend type Query {
     Returns the current user's daily quest set. If the user does not have a quest set for today, it will return null.
     """
     _internal_noauth_currentUserDailyQuestSet(courseId: UUID!): QuestSet!
-    """
-    If a user hasn't logged in for a while, they will receive a "book" of special quests to complete. The book is
-    organized into a quest set for each concurrent day. Quest sets can only be started on once the day they are meant
-    for "forDay" has arrived. Quest sets of previous days can also be completed.
-    """
-    _internal_noauth_currentUserReturningQuestSets(courseId: UUID!): [QuestSet!]!
 }
 
 """

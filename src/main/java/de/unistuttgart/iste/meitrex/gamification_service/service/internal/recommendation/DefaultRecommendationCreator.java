@@ -1,37 +1,32 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service.internal.recommendation;
 
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.recommendation.UserPreviousRecommendationsEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.recommendation.UserRecommendationScoreEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.recommendation.RecommendationScoreRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.recommendation.UserPreviousRecommendationsRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.recommendation.PreviousRecommendationsId;
 import de.unistuttgart.iste.meitrex.gamification_service.recommendation.RecommendationType;
+import de.unistuttgart.iste.meitrex.gamification_service.service.internal.IUserCreator;
 import de.unistuttgart.iste.meitrex.generated.dto.GamificationCategory;
+import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 class DefaultRecommendationCreator implements IRecommendationCreator {
 
     // Dependencies
 
     private final RecommendationScoreRepository recommendationScoreRepository;
-
     private final UserPreviousRecommendationsRepository userPreviousRecommendationsRepository;
+    private final IRecommendationInitializer recommendationInitializer;
+    private final IUserCreator userCreator;
 
-    // Constructors
-
-    public DefaultRecommendationCreator(@Autowired RecommendationScoreRepository recommendationScoreRepository, @Autowired UserPreviousRecommendationsRepository userPreviousRecommendationsRepository) {
-        this.recommendationScoreRepository = recommendationScoreRepository;
-        this.userPreviousRecommendationsRepository = userPreviousRecommendationsRepository;
-    }
 
     // Interface Implementation
 
@@ -42,9 +37,10 @@ class DefaultRecommendationCreator implements IRecommendationCreator {
 
     @Override
     public GamificationCategory makeRecommendation(@NotNull UUID userId, @NotNull UUID courseId, RecommendationType recommendationType, boolean peek) {
+        final UserEntity userEntity = userCreator.fetchOrCreate(userId);
+
         final UserRecommendationScoreEntity userRecommendationScore = recommendationScoreRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User with ID " + userId
-                        + " does not have a recommendation score."));
+                .orElseGet(() -> recommendationInitializer.initializeRecommendationScoreForUser(userEntity));
 
         final UserPreviousRecommendationsEntity userPreviousRecommendations =
                 getOrCreateUserPreviousRecommendations(userId, courseId, recommendationType);

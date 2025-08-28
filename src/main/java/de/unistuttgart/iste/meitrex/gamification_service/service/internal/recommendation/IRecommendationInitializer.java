@@ -3,12 +3,10 @@ package de.unistuttgart.iste.meitrex.gamification_service.service.internal.recom
 import java.util.*;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.*;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.recommendation.UserRecommendationScoreEntity;
 
 
 public interface IRecommendationInitializer {
 
-    void initializeUserRecommendationScoreEmpty(final UUID userId);
-
-    void initializeUserRecommendationScoreFromHexadScore(final PlayerHexadScoreEntity playerHexadScore);
-
+    UserRecommendationScoreEntity initializeRecommendationScoreForUser(final UserEntity userEntity);
 }

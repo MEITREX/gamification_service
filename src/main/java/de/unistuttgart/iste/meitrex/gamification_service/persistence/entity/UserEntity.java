@@ -3,6 +3,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity;
 import java.util.*;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.UserInventoryEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.skilllevels.SkillEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.skilllevels.SkillLevelsEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;

@@ -7,21 +7,25 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.Cour
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.CompleteSpecificContentGoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.quests.QuestEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.skilllevels.SkillEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.skilllevels.SkillLevelsEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.quests.DailyQuestType;
+import de.unistuttgart.iste.meitrex.gamification_service.service.internal.ISkillCreator;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SkillLevelDailyQuestGeneratorService implements IDailyQuestGenerator {
 
     private final ContentServiceClient contentService;
-
     private final AdaptivityConfiguration adaptivityConfiguration;
+    private final ISkillCreator skillCreator;
 
     @Override
     public Optional<QuestEntity> generateQuest(final CourseEntity courseEntity,
@@ -66,9 +70,11 @@ public class SkillLevelDailyQuestGeneratorService implements IDailyQuestGenerato
                 .map(Assessment.class::cast)
                 .toList();
         // get which assessments we can actually use for the quest, i.e. those which are not used in any of the
-        // other quests, as it would make no sense to create 2 quests to complete the same assessment
+        // other quests, as it would make no sense to create 2 quests to complete the same assessment, and only
+        // those assessments which are available to be worked on
         List<Assessment> usableCourseAssessments = IDailyQuestGenerator
                 .filterContentsUsedInOtherQuests(courseContents, otherQuests).stream()
+                .filter(Content::getIsAvailableToBeWorkedOn)
                 .filter(c -> c instanceof Assessment)
                 .map(Assessment.class::cast)
                 .toList();
@@ -79,7 +85,11 @@ public class SkillLevelDailyQuestGeneratorService implements IDailyQuestGenerato
                 .toList();
 
         List<SkillLevelsEntity> skillLevels = skills.stream()
-                .flatMap(sk -> userEntity.getSkillLevelsForSkill(sk.getId()).stream())
+                .map(sk -> userEntity.getSkillLevelsForSkill(sk.getId())
+                        .orElseGet(() -> {
+                            SkillEntity skillEntity = skillCreator.fetchOrCreate(sk.getId());
+                            return new SkillLevelsEntity(skillEntity, userEntity);
+                        }))
                 .toList();
 
         // calculate a "total" value for a skill level by averaging the bloom levels, but ignore bloom levels which

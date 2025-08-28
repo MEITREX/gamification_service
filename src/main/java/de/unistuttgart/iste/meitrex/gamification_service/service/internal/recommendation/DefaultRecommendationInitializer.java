@@ -70,18 +70,23 @@ class DefaultRecommendationInitializer implements IRecommendationInitializer {
 
     private final RecommendationScoreRepository recommendationScoreRepository;
 
-
     public DefaultRecommendationInitializer(@Autowired  RecommendationScoreRepository recommendationScoreRepository) {
         this.recommendationScoreRepository = recommendationScoreRepository;
     }
 
     @Override
-    public void initializeUserRecommendationScoreEmpty(UUID userId) {
-        recommendationScoreRepository.save(new UserRecommendationScoreEntity(userId));
+    public UserRecommendationScoreEntity initializeRecommendationScoreForUser(final UserEntity userEntity) {
+        UserRecommendationScoreEntity entity = userEntity.getPlayerHexadScore() == null
+                ? initializeUserRecommendationScoreEmpty(userEntity.getId())
+                : initializeUserRecommendationScoreFromHexadScore(userEntity.getPlayerHexadScore());
+        return recommendationScoreRepository.save(entity);
     }
 
-    @Override
-    public void initializeUserRecommendationScoreFromHexadScore(PlayerHexadScoreEntity playerHexadScore) {
+    private UserRecommendationScoreEntity initializeUserRecommendationScoreEmpty(UUID userId) {
+        return recommendationScoreRepository.save(new UserRecommendationScoreEntity(userId));
+    }
+
+    private UserRecommendationScoreEntity initializeUserRecommendationScoreFromHexadScore(PlayerHexadScoreEntity playerHexadScore) {
         assureHasUser(playerHexadScore);
         final double[] hexadScores = {
                 playerHexadScore.getFreeSpirit(),
@@ -100,6 +105,6 @@ class DefaultRecommendationInitializer implements IRecommendationInitializer {
                         cat -> hexadToRecommendationMapping(cat, hexadScores)
                 ))
         );
-        recommendationScoreRepository.save(recommendationScore);
+        return recommendationScoreRepository.save(recommendationScore);
     }
 }

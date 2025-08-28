@@ -12,9 +12,12 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.IUserRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.quests.DailyQuestType;
 import de.unistuttgart.iste.meitrex.gamification_service.service.quests.quest_generation.QuestGeneratorServiceFactory;
+import de.unistuttgart.iste.meitrex.generated.dto.QuestSet;
+import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -24,6 +27,7 @@ import java.util.*;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 public class QuestService implements IQuestService{
 
     private final IUserRepository userRepository;
@@ -34,9 +38,11 @@ public class QuestService implements IQuestService{
 
     private final QuestGeneratorServiceFactory questGeneratorServiceFactory;
 
+    private final ModelMapper modelMapper;
+
     private final int DAILY_QUEST_COUNT = 3; // Number of quests in a daily quest set
 
-    public QuestSetEntity getDailyQuestSetForUser(final UUID courseId, final UUID userId) {
+    public QuestSet getDailyQuestSetForUser(final UUID courseId, final UUID userId) {
         log.info("Fetching daily quest set for user {} in course {}", userId, courseId);
 
         UserEntity user = userRepository.findById(userId)
@@ -53,7 +59,7 @@ public class QuestService implements IQuestService{
             userRepository.save(user); // Save the updated user with the new quest set
         }
 
-        return courseData.getDailyQuestSet();
+        return modelMapper.map(courseData.getDailyQuestSet(), QuestSet.class);
     }
 
     private QuestSetEntity generateDailyQuestSet(@NotNull final UUID courseId,
@@ -71,7 +77,7 @@ public class QuestService implements IQuestService{
 
         // TODO: Assign reward points to quests
 
-        List<DailyQuestType> questTypeCandidates = Arrays.asList(DailyQuestType.values());
+        List<DailyQuestType> questTypeCandidates = new ArrayList<>(Arrays.stream(DailyQuestType.values()).toList());
         Collections.shuffle(questTypeCandidates);
 
         List<QuestEntity> quests = new ArrayList<>();
@@ -80,15 +86,24 @@ public class QuestService implements IQuestService{
                 break;
 
             DailyQuestType questType = questTypeCandidates.removeLast();
+
+            log.info("Attempting to generate quest of type {} for user {}", questType, user.getId());
+
             try {
                 Optional<QuestEntity> generatedQuestEntity = questGeneratorServiceFactory.getQuestGenerator(questType)
                         .generateQuest(courseEntity, user, Collections.unmodifiableList(quests));
 
-                generatedQuestEntity.ifPresent(quests::add);
+                generatedQuestEntity
+                        .ifPresentOrElse(
+                                quests::add,
+                                () -> log.info("Could not generate a quest of type {} for user {}.", questType, user.getId())
+                        );
             } catch (ContentServiceConnectionException e) {
                 throw new RuntimeException(e);
             }
         }
+
+        log.info("Generated {} quests for user {}", quests.size(), user.getId());
 
         LocalDate now = LocalDate.now();
         return QuestSetEntity.builder()

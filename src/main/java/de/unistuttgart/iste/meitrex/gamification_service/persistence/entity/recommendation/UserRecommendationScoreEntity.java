@@ -243,7 +243,7 @@ public class UserRecommendationScoreEntity implements IWithId<UUID> {
                 .sum();
 
         for(GamificationCategory cat : GamificationCategory.values()) {
-            setScore(cat, getScore(cat) / sum);
+            setScoreNoNormalize(cat, getScore(cat) / sum);
         }
     }
 }

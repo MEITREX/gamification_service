@@ -68,12 +68,12 @@ public class ExerciseDailyQuestGeneratorService implements IDailyQuestGenerator 
         // other assessment categories.
         // This ensures that the assessment with the longest exceeded learning interval is first in the list and is
         // picked first by the assessment picking function
-        foundAssessments.put(new AssessmentMapKey(AssessmentUserStatus.PASSED, true),
-                sortAssessmentsByExceededLearningIntervalDescending(
-                        foundAssessments.get(new AssessmentMapKey(AssessmentUserStatus.PASSED, true))));
-        foundAssessments.put(new AssessmentMapKey(AssessmentUserStatus.PASSED, false),
-                sortAssessmentsByExceededLearningIntervalDescending(
-                        foundAssessments.get(new AssessmentMapKey(AssessmentUserStatus.PASSED, false))));
+        foundAssessments.put(new AssessmentMapKey(AssessmentUserStatus.PASSED_PAST_LEARNING_INTERVAL, true),
+                sortAssessmentsByExceededLearningIntervalDescending(foundAssessments.get(
+                        new AssessmentMapKey(AssessmentUserStatus.PASSED_PAST_LEARNING_INTERVAL, true))));
+        foundAssessments.put(new AssessmentMapKey(AssessmentUserStatus.PASSED_PAST_LEARNING_INTERVAL, false),
+                sortAssessmentsByExceededLearningIntervalDescending(foundAssessments.get(
+                        new AssessmentMapKey(AssessmentUserStatus.PASSED_PAST_LEARNING_INTERVAL, false))));
 
         final Optional<Assessment> assessmentForQuest = decideAssessment(foundAssessments);
         if (assessmentForQuest.isEmpty())
@@ -89,6 +89,7 @@ public class ExerciseDailyQuestGeneratorService implements IDailyQuestGenerator 
         goal.setParentWithGoal(quest);
         goal.setContentId(assessmentForQuest.get().getId());
         goal.setContentName(assessmentForQuest.get().getMetadata().getName());
+        goal.setContentType(assessmentForQuest.get().getMetadata().getType());
 
         quest.setGoal(goal);
 

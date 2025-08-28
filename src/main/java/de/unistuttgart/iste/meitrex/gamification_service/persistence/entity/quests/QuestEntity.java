@@ -22,6 +22,10 @@ public class QuestEntity extends HasGoalEntity implements IWithId<UUID> {
     @Column
     private String imageUrl;
 
+    public String getDescription() {
+        return getGoal().generateDescription();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;

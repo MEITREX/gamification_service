@@ -12,6 +12,8 @@ import de.unistuttgart.iste.meitrex.gamification_service.service.internal.ICours
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.ICourseMembershipHandler;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.IUserCreator;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.achievements.IGoalProgressUpdater;
+import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,6 +22,8 @@ import java.time.OffsetDateTime;
 import java.util.*;
 
 @Component
+@Slf4j
+@Transactional
 class DefaultGoalProgressService implements IGoalProgressService {
 
     private static LoginStreakGoalProgressEvent getLoginStreakGoalProgressEvent(UUID userId, UUID courseId) {
@@ -47,6 +51,7 @@ class DefaultGoalProgressService implements IGoalProgressService {
 
     @Override
     public UUID loginUser(UUID userId, UUID courseId) {
+        log.info("User {} logged in to course {}", userId, courseId);
         final UserEntity userEntity = userCreator.fetchOrCreate(userId);
         final CourseEntity courseEntity = courseCreator.fetchOrCreate(courseId);
         courseMembershipHandler.addUserToCourseIfNotAlready(courseEntity, userEntity);

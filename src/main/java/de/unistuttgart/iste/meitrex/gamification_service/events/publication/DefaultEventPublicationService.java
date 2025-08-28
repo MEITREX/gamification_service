@@ -1,9 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.events.publication;
 
-import de.unistuttgart.iste.meitrex.gamification_service.events.internal.InternalContentProgressedEvent;
-import de.unistuttgart.iste.meitrex.gamification_service.events.internal.InternalEvent;
-import de.unistuttgart.iste.meitrex.gamification_service.events.internal.InternalForumActivityEvent;
-import de.unistuttgart.iste.meitrex.gamification_service.events.internal.InternalUserProgressUpdatedEvent;
+import de.unistuttgart.iste.meitrex.gamification_service.events.internal.*;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.*;
 import de.unistuttgart.iste.meitrex.gamification_service.events.repository.*;
 import lombok.extern.slf4j.Slf4j;
@@ -134,21 +131,21 @@ class DefaultEventPublicationService implements IEventPublicationService {
     }
 
     private InternalEvent saveSkillEntityChangedEvent(PersistentEvent persistentEvent) {
-        PersistentForumActivityEvent persistentForumActivityEvent = (PersistentForumActivityEvent) persistentEvent;
+        PersistentSkillEntityChangedEvent persistentForumActivityEvent = (PersistentSkillEntityChangedEvent) persistentEvent;
 
-        final UUID uuid = this.forumActivityRepository.save(persistentForumActivityEvent)
+        final UUID uuid = this.skillEntityChangedEventRepository.save(persistentForumActivityEvent)
                 .getUuid();
 
-        return new InternalForumActivityEvent(DefaultEventPublicationService.this, uuid);
+        return new InternalSkillEntityChangedEvent(DefaultEventPublicationService.this, uuid);
     }
 
     private InternalEvent saveUserSkillLevelChangedEvent(PersistentEvent persistentEvent) {
-        PersistentForumActivityEvent persistentForumActivityEvent = (PersistentForumActivityEvent) persistentEvent;
+        PersistentUserSkillLevelChangedEvent persistentForumActivityEvent = (PersistentUserSkillLevelChangedEvent) persistentEvent;
 
-        final UUID uuid = this.forumActivityRepository.save(persistentForumActivityEvent)
+        final UUID uuid = this.userSkillLevelChangedEventRepository.save(persistentForumActivityEvent)
                 .getUuid();
 
-        return new InternalForumActivityEvent(DefaultEventPublicationService.this, uuid);
+        return new InternalUserSkillLevelChangedEvent(DefaultEventPublicationService.this, uuid);
     }
 
 }

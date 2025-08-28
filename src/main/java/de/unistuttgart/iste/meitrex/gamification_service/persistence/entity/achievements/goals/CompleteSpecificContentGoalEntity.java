@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
-@Entity
+@Entity(name = "CompleteSpecificContentGoal")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

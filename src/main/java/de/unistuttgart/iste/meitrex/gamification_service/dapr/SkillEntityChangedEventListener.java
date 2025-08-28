@@ -3,6 +3,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.dapr;
 import de.unistuttgart.iste.meitrex.common.event.skilllevels.SkillEntityChangedEvent;
 import de.unistuttgart.iste.meitrex.common.event.skilllevels.UserSkillLevelChangedEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentEvent;
+import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentSkillEntityChangedEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.events.publication.IEventPublicationService;
 import de.unistuttgart.iste.meitrex.gamification_service.time.ITimeService;
 import io.dapr.Topic;
@@ -35,6 +36,11 @@ public class SkillEntityChangedEventListener extends AbstractExternalListener<Sk
 
     @Override
     protected PersistentEvent mapToPersistentEvent(SkillEntityChangedEvent event) {
-        return null;
+        PersistentSkillEntityChangedEvent persistentEvent = new PersistentSkillEntityChangedEvent();
+        persistentEvent.setSkillId(event.getSkillId());
+        persistentEvent.setSkillName(event.getSkillName());
+        persistentEvent.setSkillCategory(event.getSkillCategory());
+        persistentEvent.setOperation(event.getOperation());
+        return persistentEvent;
     }
 }

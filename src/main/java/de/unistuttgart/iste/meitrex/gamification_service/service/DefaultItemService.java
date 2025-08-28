@@ -14,6 +14,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.service.internal.IUserC
 import de.unistuttgart.iste.meitrex.generated.dto.Inventory;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItemComplete;
+import jakarta.transaction.Transactional;
 import org.checkerframework.checker.units.qual.A;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.util.*;
 
 @Component
+@Transactional
 public class DefaultItemService implements IItemService {
 
     // Static Constants

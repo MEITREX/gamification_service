@@ -11,6 +11,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.quests.DailyQuestType;
 import de.unistuttgart.iste.meitrex.generated.dto.Content;
 import de.unistuttgart.iste.meitrex.generated.dto.MediaContent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -21,6 +22,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LearningDailyQuestGeneratorService implements IDailyQuestGenerator {
     private final ContentServiceClient contentService;
     private final AdaptivityConfiguration adaptivityConfiguration;
@@ -32,6 +34,19 @@ public class LearningDailyQuestGeneratorService implements IDailyQuestGenerator 
             throws ContentServiceConnectionException {
         List<Content> courseContents = IDailyQuestGenerator.getContentsOfCourseNotInOtherQuests(
                 contentService, courseEntity, userEntity, otherQuests);
+
+        log.info("Course contents: {}", courseContents.size());
+        for(Content content : courseContents) {
+            if(!(content instanceof MediaContent))
+                continue;
+
+            log.info("Content: {} Suggested Date: {} Is Learned: {} Required: {} Available to work on: {}",
+                    content.getMetadata().getName(),
+                    content.getMetadata().getSuggestedDate(),
+                    content.getUserProgressData().getIsLearned(),
+                    content.getRequired(),
+                    content.getIsAvailableToBeWorkedOn());
+        }
 
         Optional<MediaContent> contentToGenerateQuestFor = getContentToGenerateQuestFor(courseContents);
 
@@ -69,12 +84,17 @@ public class LearningDailyQuestGeneratorService implements IDailyQuestGenerator 
 
         sortContentsIntoRequiredOptional(courseContents, requiredContents, optionalContents);
 
+        log.info("Required contents found: {}", requiredContents.size());
+        log.info("Optional contents found: {}", optionalContents.size());
+
         Optional<MediaContent> pickedContent = pickRequiredOrOptionalContent(
                 requiredContents, optionalContents, adaptivityConfiguration.getLearningQuestRandomPickProbability());
 
         if(pickedContent.isEmpty()) {
             pickedContent = pickRequiredOrOptionalContent(requiredContents, optionalContents, 1);
         }
+
+        log.info("Picked content found: {}", pickedContent.isPresent());
 
         return pickedContent;
     }

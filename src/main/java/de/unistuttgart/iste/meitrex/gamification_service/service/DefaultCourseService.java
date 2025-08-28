@@ -10,6 +10,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.time.ITimeService;
 import de.unistuttgart.iste.meitrex.gamification_service.time.Period;
 import de.unistuttgart.iste.meitrex.generated.dto.Chapter;
 import de.unistuttgart.iste.meitrex.generated.dto.Course;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.*;
 import org.springframework.stereotype.*;
 import org.springframework.beans.factory.annotation.*;
@@ -27,6 +28,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.
  * */
 @Slf4j
 @Component
+@Transactional
 class DefaultCourseService implements ICourseCreator {
 
 
