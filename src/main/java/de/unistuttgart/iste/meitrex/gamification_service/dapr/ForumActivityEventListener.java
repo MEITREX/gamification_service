@@ -48,7 +48,8 @@ public class ForumActivityEventListener extends AbstractExternalListener<ForumAc
     protected PersistentEvent mapToPersistentEvent(ForumActivityEvent event) {
         final PersistentForumActivityEvent persistentForumActivityEvent = new PersistentForumActivityEvent();
         persistentForumActivityEvent.setUserId(event.getUserId());
-        persistentForumActivityEvent.setCourseId(event.getForumId());
+        persistentForumActivityEvent.setForumId(event.getForumId());
+        persistentForumActivityEvent.setCourseId(event.getCourseId());
         persistentForumActivityEvent.setType(mapForumActivity(event.getActivity()));
         return persistentForumActivityEvent;
     }
