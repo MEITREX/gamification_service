@@ -19,6 +19,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.time.*;
 import de.unistuttgart.iste.meitrex.gamification_service.events.internal.*;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.*;
 import de.unistuttgart.iste.meitrex.gamification_service.events.repository.*;
+import org.springframework.context.event.EventListener;
 
 import java.util.List;
 import java.util.Objects;
@@ -55,6 +56,12 @@ class ContentProgressedEventAchievementListener extends AbstractInternalListener
         this.courseMembershipHandler = Objects.requireNonNull(courseMembershipHandler);
         this.contentServiceClient = Objects.requireNonNull(contentServiceClient);
         this.goalProgressUpdater = Objects.requireNonNull(goalProgressUpdater);
+    }
+
+    @Override
+    @EventListener
+    public void process(InternalContentProgressedEvent internalEvent) {
+        super.process(internalEvent);
     }
 
     @Override

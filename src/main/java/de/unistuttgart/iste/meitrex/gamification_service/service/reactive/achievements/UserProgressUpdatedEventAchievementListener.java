@@ -19,6 +19,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.time.ITimeService;
 import de.unistuttgart.iste.meitrex.generated.dto.CompositeProgressInformation;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -54,6 +55,12 @@ class UserProgressUpdatedEventAchievementListener extends AbstractInternalListen
         this.contentServiceClient = Objects.requireNonNull(contentServiceClient);
         this.courseMembershipHandler = Objects.requireNonNull(courseMembershipHandler);
         this.goalProgressUpdater = Objects.requireNonNull(goalProgressUpdater);
+    }
+
+    @Override
+    @EventListener
+    public void process(InternalUserProgressUpdatedEvent internalEvent) {
+        super.process(internalEvent);
     }
 
     @Override
