@@ -1,6 +1,5 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service.reactive.achievements;
 
-import de.unistuttgart.iste.meitrex.common.event.ForumActivity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.AnswerForumGoalProgressEvent;
@@ -16,10 +15,12 @@ import de.unistuttgart.iste.meitrex.gamification_service.time.*;
 import de.unistuttgart.iste.meitrex.gamification_service.events.internal.*;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.*;
 import de.unistuttgart.iste.meitrex.gamification_service.events.repository.*;
+import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 import java.util.UUID;
 
+@Component
 class ForumActivityEventAchievementListener extends AbstractInternalListener<PersistentForumActivityEvent, InternalForumActivityEvent> {
 
     // Do not change to keep unique UUID even in case of refactoring.
@@ -74,7 +75,7 @@ class ForumActivityEventAchievementListener extends AbstractInternalListener<Per
 
         this.courseMembershipHandler.addUserToCourseIfNotAlready(courseEntity, user);
 
-        if (ForumActivity.ANSWER.equals(persistentEvent.getType())) {
+        if (PersistentForumActivityEvent.Type.ANSWER.equals(persistentEvent.getType())) {
             forumAnswerProgress(user, courseId);
         }
     }
