@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.OffsetDateTime;
@@ -48,15 +49,15 @@ public class CountableUserGoalProgressEntity extends UserGoalProgressEntity{
     public boolean updateProgress(OffsetDateTime loginTime) {
         boolean completedNow = false;
 
-        if (super.getGoal() instanceof LoginStreakGoalEntity) {
+        if (Hibernate.unproxy(super.getGoal()) instanceof LoginStreakGoalEntity) {
             if (loginTimes.isEmpty()) {
                 completedCount = 1;
                 loginTimes.add(loginTime);
             }else if (getDifferenceInDays(loginTimes.getLast(), loginTime) > 1) {
-                completedCount = 0;
+                completedCount = 1;
             } else if (getDifferenceInDays(loginTimes.getLast(), loginTime) == 1) {
                 completedCount++;
-                if (completedCount >= ((LoginStreakGoalEntity) super.getGoal()).getRequiredCount()
+                if (completedCount >= ((LoginStreakGoalEntity) Hibernate.unproxy(super.getGoal())).getRequiredCount()
                 && !isCompleted()) {
                     setCompleted(true);
                     completedNow = true;
