@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.quests;
 
 import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +26,9 @@ public class QuestSetEntity implements IWithId<UUID> {
      * The name of the quest set.
      */
     private String name;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private CourseEntity course;
 
     /**
      * For which day is this quest set intended?

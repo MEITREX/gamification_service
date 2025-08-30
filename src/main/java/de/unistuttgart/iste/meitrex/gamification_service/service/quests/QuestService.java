@@ -6,12 +6,16 @@ import de.unistuttgart.iste.meitrex.gamification_service.config.AdaptivityConfig
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserCourseDataEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.CountableGoalEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.CountableUserGoalProgressEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.quests.QuestEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.quests.QuestSetEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.ICourseRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.IUserRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.quests.DailyQuestType;
 import de.unistuttgart.iste.meitrex.gamification_service.service.quests.quest_generation.QuestGeneratorServiceFactory;
+import de.unistuttgart.iste.meitrex.generated.dto.Quest;
 import de.unistuttgart.iste.meitrex.generated.dto.QuestSet;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
@@ -59,7 +63,7 @@ public class QuestService implements IQuestService{
             userRepository.save(user); // Save the updated user with the new quest set
         }
 
-        return modelMapper.map(courseData.getDailyQuestSet(), QuestSet.class);
+        return mapQuestSetEntityToDto(user, courseData.getDailyQuestSet());
     }
 
     private QuestSetEntity generateDailyQuestSet(@NotNull final UUID courseId,
@@ -106,11 +110,62 @@ public class QuestService implements IQuestService{
         log.info("Generated {} quests for user {}", quests.size(), user.getId());
 
         LocalDate now = LocalDate.now();
-        return QuestSetEntity.builder()
+        final QuestSetEntity questSetEntity = QuestSetEntity.builder()
                 .name("Daily Quest Set for " + now)
+                .course(courseEntity)
                 .forDay(now)
                 .quests(quests)
                 .rewardMultiplier(rewardMultiplier)
                 .build();
+
+        generateUserGoalProgressEntitiesForQuestSet(user, questSetEntity);
+
+        return questSetEntity;
+    }
+
+    private void generateUserGoalProgressEntitiesForQuestSet(UserEntity userEntity, QuestSetEntity questSetEntity) {
+        UserCourseDataEntity courseData = userEntity.getCourseData(questSetEntity.getCourse().getId())
+                .orElseThrow(() -> new IllegalArgumentException("No course data found for user " + userEntity.getId()));
+
+        List<UserGoalProgressEntity> newGoalProgressEntities = questSetEntity.getQuests().stream()
+                .map(qu -> qu.getGoal().generateUserGoalProgress(userEntity))
+                .toList();
+
+        courseData.getGoalProgressEntities().addAll(newGoalProgressEntities);
+    }
+
+    private QuestSet mapQuestSetEntityToDto(UserEntity user, QuestSetEntity questSetEntity) {
+        final QuestSet questSet = modelMapper.map(questSetEntity, QuestSet.class);
+
+        // we need to map the quest entities to DTOs manually because they have a completely different structure
+        questSet.setQuests(questSetEntity.getQuests().stream().map(questEntity -> {
+            UserGoalProgressEntity userGoalProgressEntity = user
+                    .getCourseData(questEntity.getCourse().getId()).stream()
+                    .flatMap(cd -> cd.getGoalProgressEntities().stream())
+                    .filter(gp -> gp.getGoal().getId().equals(questEntity.getGoal().getId()))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("No goals found for user " + user.getId()));
+
+            Quest quest = Quest.builder()
+                    .setId(questEntity.getId())
+                    .setName(questEntity.getName())
+                    .setCourseId(questEntity.getCourse().getId())
+                    .setUserId(user.getId())
+                    .setTrackingStartTime(questEntity.getGoal().getTrackingStartTime())
+                    .setTrackingEndTime(questEntity.getGoal().getTrackingEndTime())
+                    .setCompleted(userGoalProgressEntity.isCompleted())
+                    .setDescription(questEntity.getDescription())
+                    .build();
+
+            if(userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableGoalProgress) {
+                quest.setCompletedCount(countableGoalProgress.getCompletedCount());
+                if(questEntity.getGoal() instanceof CountableGoalEntity countableGoal) {
+                    quest.setRequiredCount(countableGoal.getRequiredCount());
+                }
+            }
+            return quest;
+        }).toList());
+
+        return questSet;
     }
 }

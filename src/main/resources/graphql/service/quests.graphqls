@@ -32,6 +32,7 @@ type QuestSet {
 }
 
 type Quest implements HasGoal {
+    id: UUID!
     name: String!
 
     # HasGoal fields
