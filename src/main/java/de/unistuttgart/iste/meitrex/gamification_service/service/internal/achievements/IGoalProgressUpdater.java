@@ -7,4 +7,6 @@ import java.util.UUID;
 
 public interface IGoalProgressUpdater {
     void updateGoalProgressEntitiesForUser(UserEntity user, UUID courseId, GoalProgressEvent goalProgressEvent);
+
+    void updateGoalProgressEntitiesForUser(UserEntity user, GoalProgressEvent goalProgressEvent);
 }

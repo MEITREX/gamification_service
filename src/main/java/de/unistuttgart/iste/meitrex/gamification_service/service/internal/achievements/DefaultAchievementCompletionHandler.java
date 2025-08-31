@@ -16,6 +16,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.service.DefaultAchievem
 import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -24,6 +25,9 @@ import java.util.Optional;
 
 @Component
 class DefaultAchievementCompletionHandler implements IAchievementCompletionHandler {
+
+    @Value("${app.achievements.completion-reward}")
+    private int achievementCompletionReward;
 
     // Dependencies
 
@@ -52,10 +56,20 @@ class DefaultAchievementCompletionHandler implements IAchievementCompletionHandl
                 .build();
         topicPublisher.notifyAchievementCompleted(event);
 
+        addRewardToUser(goalProgressEntity.getUser());
+
         tryGenerateAdaptiveAchievementForUser(
                 goalProgressEntity,
                 achievement.getCourse(),
                 achievement);
+    }
+
+    /**
+     * Adds the achievementCompletionReward to the given user.
+     * @param user userEntity that gets the achievementCompletedReward
+     */
+    private void addRewardToUser(UserEntity user) {
+        user.getInventory().addPoints(achievementCompletionReward);
     }
 
     /**

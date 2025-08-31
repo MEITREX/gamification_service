@@ -27,7 +27,8 @@ public class CompletedQuizzesGoalEntity extends CountableGoalEntity implements I
 
     @Override
     public String generateDescription() {
-        return "Complete " + super.getRequiredCount() + " quizzes.";
+        log.info("Minimum score {}.", minimumScore);
+        return "Complete " + super.getRequiredCount() + " quizzes with a minimum score of " + (int)(minimumScore * 100) + " %.";
     }
 
     @Override
@@ -47,7 +48,7 @@ public class CompletedQuizzesGoalEntity extends CountableGoalEntity implements I
             log.info("Updating progress for user goal progress with minimum Score {} with score {} and contentId {}",
                     minimumScore, score, contentId);
             if (score >= minimumScore) {
-                countableUserGoalProgressEntity.setCompletedCount(countableUserGoalProgressEntity.getCompletedCount() + 1);
+                countableUserGoalProgressEntity.incrementCompletedCount();
                 countableUserGoalProgressEntity.getContentIds().add(contentId);
             }
             if (countableUserGoalProgressEntity.getCompletedCount() >= getRequiredCount()
@@ -56,7 +57,6 @@ public class CompletedQuizzesGoalEntity extends CountableGoalEntity implements I
                 return true;
             }
         }
-
         return false;
     }
 

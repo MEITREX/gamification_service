@@ -37,4 +37,13 @@ class DefaultGoalProgressUpdater implements IGoalProgressUpdater {
              achievementCompletionHandler.onAchievementCompleted(achievement, goalProgressEntity);
         }
     }
+
+    public void updateGoalProgressEntitiesForUser(UserEntity user, GoalProgressEvent goalProgressEvent) {
+        List<UserGoalProgressEntity> completedGoals = user.getCourseData()
+                .stream()
+                .flatMap(userCourseDataEntity -> userCourseDataEntity.getGoalProgressEntities().stream())
+                .filter(goalProgressEntity -> goalProgressEntity.updateProgress(goalProgressEvent))
+                .toList();
+        completedGoals.forEach(this::onGoalCompleted);
+    }
 }

@@ -7,7 +7,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 
 
 @Entity(name = "CountableGoal")
@@ -16,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@SuperBuilder
 @Slf4j
 public abstract class CountableGoalEntity extends GoalEntity {
     @Column

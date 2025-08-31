@@ -1,0 +1,11 @@
+package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents;
+
+import lombok.EqualsAndHashCode;
+import lombok.Value;
+import lombok.experimental.SuperBuilder;
+
+@EqualsAndHashCode(callSuper = true)
+@Value
+@SuperBuilder
+public class ReceiveItemsGoalProgressEvent extends GoalProgressEvent{
+}

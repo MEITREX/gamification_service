@@ -8,8 +8,10 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achi
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 import java.lang.reflect.InvocationTargetException;
 import java.time.*;
@@ -19,6 +21,7 @@ import java.util.UUID;
 @Entity(name = "Goal")
 @Data
 @AllArgsConstructor
+@SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public abstract class GoalEntity implements IWithId<UUID> {
     @Id

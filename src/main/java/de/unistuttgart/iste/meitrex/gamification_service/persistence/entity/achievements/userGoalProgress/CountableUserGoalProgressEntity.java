@@ -11,7 +11,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,7 +27,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Slf4j
 public class CountableUserGoalProgressEntity extends UserGoalProgressEntity{
     @Column
     int completedCount;
@@ -73,6 +71,9 @@ public class CountableUserGoalProgressEntity extends UserGoalProgressEntity{
         return ChronoUnit.DAYS.between(firstTime.toLocalDate(), secondTime.toLocalDate());
     }
 
+    public void incrementCompletedCount() {
+        completedCount++;
+    }
 
     @Override
     public String toString() {

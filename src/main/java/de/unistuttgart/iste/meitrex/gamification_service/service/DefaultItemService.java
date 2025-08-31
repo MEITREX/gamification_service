@@ -79,6 +79,8 @@ public class DefaultItemService implements IItemService {
 
     //private final UserService userService;
 
+    private final IGoalProgressService goalProgressService;
+
     private final IUserCreator userCreator;
 
     private final IUserRepository userRepository;
@@ -102,7 +104,8 @@ public class DefaultItemService implements IItemService {
     private List<ItemParent> ultraRareLotteryItemList;
 
 
-    public DefaultItemService(@Autowired IItemProvider itemProvider, @Autowired IUserCreator userCreator, @Autowired IUserRepository userRepository, @Autowired ItemInstanceRepository itemInstanceRepository) {
+    public DefaultItemService(@Autowired IItemProvider itemProvider, @Autowired IGoalProgressService goalProgressService, @Autowired IUserCreator userCreator, @Autowired IUserRepository userRepository, @Autowired ItemInstanceRepository itemInstanceRepository) {
+        this.goalProgressService = Objects.requireNonNull(goalProgressService);
         this.userCreator = Objects.requireNonNull(userCreator);
         this.userRepository = Objects.requireNonNull(userRepository);
         this.itemInstanceRepository = Objects.requireNonNull(itemInstanceRepository);
@@ -148,10 +151,11 @@ public class DefaultItemService implements IItemService {
             itemList.stream().filter(itemParent -> itemParent.getId().equals(itemId))
                     .findAny().ifPresent(itemParent -> {
                         if (user.getInventory().getUnspentPoints()>= itemParent.getMoneyCost()) {
-                            user.getInventory().setUnspentPoints(user.getInventory().getUnspentPoints() - itemParent.getMoneyCost());
+                            user.getInventory().removePoints(itemParent.getMoneyCost());
                             user.getInventory().getItems().add(itemParent.toItemInstance());
                             // TODO Replaced upsert by save
                             userRepository.save(user);
+                            goalProgressService.itemReceivedProgress(user);
                         }
                     });
         }
@@ -179,6 +183,7 @@ public class DefaultItemService implements IItemService {
             userRepository.save(user);
             itemInstanceEntity.setEquipped(true);
             itemInstanceRepository.save(itemInstanceEntity);
+            goalProgressService.equipItemProgress(user);
         });
         return getInventoryForUser(user);
     }
@@ -211,9 +216,9 @@ public class DefaultItemService implements IItemService {
                     if (user.getInventory().getItems().stream().filter(itemInstanceEntity ->
                             itemInstanceEntity.getPrototypeId().equals(itemId)).findAny().isEmpty()) {
                         user.getInventory().getItems().add(itemParent.toItemInstance());
+                        goalProgressService.itemReceivedProgress(user);
                     } else {
-                        user.getInventory().setUnspentPoints(user.getInventory().getUnspentPoints()
-                                + itemParent.getSellCompensation());
+                        user.getInventory().addPoints(itemParent.getSellCompensation());
                     }
                 });
         userRepository.save(user);
@@ -225,7 +230,7 @@ public class DefaultItemService implements IItemService {
         if(user.getInventory().getItems().isEmpty()) {
             addDefaultItems(user);
         }
-        user.getInventory().setUnspentPoints(user.getInventory().getUnspentPoints() + points);
+        user.getInventory().addPoints(points);
         userRepository.save(user);
         return getInventoryForUser(user);
     }
@@ -242,7 +247,7 @@ public class DefaultItemService implements IItemService {
         if (user.getInventory().getUnspentPoints() <= LOTTERY_COST) {
             return null;
         } else {
-            user.getInventory().setUnspentPoints(user.getInventory().getUnspentPoints() - LOTTERY_COST);
+            user.getInventory().removePoints(LOTTERY_COST);
         }
         if(user.getInventory().getItems().isEmpty()) {
             addDefaultItems(user);
@@ -257,6 +262,7 @@ public class DefaultItemService implements IItemService {
         } else {
             userItem = addRandomItemToUser(user, ultraRareLotteryItemList);
         }
+        goalProgressService.lotteryRunProgress(user);
         return userItem;
     }
 
@@ -268,7 +274,7 @@ public class DefaultItemService implements IItemService {
         Optional<ItemInstanceEntity> oldItemInstance = user.getInventory().getItems().stream()
                 .filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId().equals(item.getId())).findFirst();
         if (oldItemInstance.isPresent()) {
-            user.getInventory().setUnspentPoints(user.getInventory().getUnspentPoints() + item.getSellCompensation());
+            user.getInventory().addPoints(item.getSellCompensation());
             userItem = item.toCompleteUserItemInstance();
             userItem.setSold(true);
             userItem.setUnlockedTime(oldItemInstance.get().getCreationTime());
@@ -278,6 +284,7 @@ public class DefaultItemService implements IItemService {
             userItem = item.toCompleteUserItemInstance();
             userItem.setUnlockedTime(itemInstance.getCreationTime());
             userItem.setSold(false);
+            goalProgressService.itemReceivedProgress(user);
         }
         userRepository.save(user);
         userItem.setEquipped(false);

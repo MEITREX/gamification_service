@@ -5,8 +5,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.User
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.AchievementEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.HasGoalEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.GoalProgressEvent;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.LoginStreakGoalProgressEvent;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.*;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.ICourseCreator;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.ICourseMembershipHandler;
@@ -34,6 +33,27 @@ class DefaultGoalProgressService implements IGoalProgressService {
                 .build();
     }
 
+    private static ReceiveItemsGoalProgressEvent getReceiveItemsGoalProgressEvent(UUID userId) {
+        return ReceiveItemsGoalProgressEvent
+                .builder()
+                .userId(userId)
+                .build();
+    }
+
+    private static LotteryRunGoalProgressEvent getLotteryRunGoalProgressEvent(UUID userId) {
+        return LotteryRunGoalProgressEvent
+                .builder()
+                .userId(userId)
+                .build();
+    }
+
+    private static EquipItemGoalProgressEvent getEquipItemGoalProgressEvent(UUID userId) {
+        return EquipItemGoalProgressEvent
+                .builder()
+                .userId(userId)
+                .build();
+    }
+
     private IUserCreator userCreator;
 
     private ICourseCreator courseCreator;
@@ -58,5 +78,26 @@ class DefaultGoalProgressService implements IGoalProgressService {
         LoginStreakGoalProgressEvent loginStreakGoalProgressEvent = getLoginStreakGoalProgressEvent(userId, courseId);
         this.goalProgressUpdater.updateGoalProgressEntitiesForUser(userEntity, courseId, loginStreakGoalProgressEvent);
         return userId;
+    }
+
+    @Override
+    public void itemReceivedProgress(UserEntity user) {
+        log.info("item received for user {}", user.getId());
+        ReceiveItemsGoalProgressEvent receiveItemsGoalProgressEvent = getReceiveItemsGoalProgressEvent(user.getId());
+        this.goalProgressUpdater.updateGoalProgressEntitiesForUser(user, receiveItemsGoalProgressEvent);
+    }
+
+    @Override
+    public void equipItemProgress(UserEntity user) {
+        log.info("equip item progress for user {}", user.getId());
+        EquipItemGoalProgressEvent equipItemGoalProgressEvent = getEquipItemGoalProgressEvent(user.getId());
+        this.goalProgressUpdater.updateGoalProgressEntitiesForUser(user, equipItemGoalProgressEvent);
+    }
+
+    @Override
+    public void lotteryRunProgress(UserEntity user) {
+        log.info("lottery run progress for user {}", user.getId());
+        LotteryRunGoalProgressEvent lotteryRunGoalProgressEvent = getLotteryRunGoalProgressEvent(user.getId());
+        this.goalProgressUpdater.updateGoalProgressEntitiesForUser(user, lotteryRunGoalProgressEvent);
     }
 }

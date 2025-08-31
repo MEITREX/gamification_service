@@ -30,7 +30,7 @@ public class AnswerForumQuestionGoalEntity extends CountableGoalEntity {
     public boolean updateProgressInternal(GoalProgressEvent goalProgressEvent, UserGoalProgressEntity userGoalProgressEntity) {
         if (goalProgressEvent instanceof AnswerForumGoalProgressEvent) {
             if (userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableUserGoalProgressEntity) {
-                countableUserGoalProgressEntity.setCompletedCount(countableUserGoalProgressEntity.getCompletedCount() + 1);
+                countableUserGoalProgressEntity.incrementCompletedCount();
                 if (countableUserGoalProgressEntity.getCompletedCount() >= super.getRequiredCount()
                         && !countableUserGoalProgressEntity.isCompleted()) {
                     countableUserGoalProgressEntity.setCompleted(true);
