@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service.recommendation;
 
+import de.unistuttgart.iste.meitrex.gamification_service.config.AdaptivityConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerHexadScoreEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.recommendation.UserRecommendationScoreEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.recommendation.RecommendationScoreRepository;
@@ -18,9 +19,12 @@ import java.util.UUID;
 public class DefaultRecommendationService implements IRecommendationService {
 
     private final RecommendationScoreRepository recommendationScoreRepository;
+    private final AdaptivityConfiguration adaptivityConfiguration;
 
-    public DefaultRecommendationService(@Autowired RecommendationScoreRepository recommendationScoreRepository) {
+    public DefaultRecommendationService(@Autowired RecommendationScoreRepository recommendationScoreRepository,
+                                        @Autowired AdaptivityConfiguration adaptivityConfiguration) {
         this.recommendationScoreRepository = Objects.requireNonNull(recommendationScoreRepository);
+        this.adaptivityConfiguration = Objects.requireNonNull(adaptivityConfiguration);
     }
 
     @Override
@@ -36,9 +40,16 @@ public class DefaultRecommendationService implements IRecommendationService {
             case MORE_OFTEN, LESS_OFTEN -> (int) Math.ceil(currentNextAdjustmentInDays / 1.5);
             case JUST_RIGHT -> (int) Math.ceil(currentNextAdjustmentInDays * 1.5);
         };
+
         // clamp the period
-        newNextAdjustmentRequestInDays = Math.max(newNextAdjustmentRequestInDays, 8);
-        newNextAdjustmentRequestInDays = Math.min(newNextAdjustmentRequestInDays, 30);
+        newNextAdjustmentRequestInDays = Math.max(
+                newNextAdjustmentRequestInDays,
+                adaptivityConfiguration.getWidgetRecommendationMinFeedbackRequestIntervalDays());
+
+        newNextAdjustmentRequestInDays = Math.min(
+                newNextAdjustmentRequestInDays,
+                adaptivityConfiguration.getWidgetRecommendationMaxFeedbackRequestIntervalDays());
+
         // adjust the score value
         userRecommendationScore.setScore(
                 recommendationType,

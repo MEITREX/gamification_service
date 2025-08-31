@@ -17,4 +17,6 @@ public class AdaptivityConfiguration {
     private int immersiveTutorSpeechRefreshIntervalMinutes;
     private String immersiveTutorSpeechGeneric;
     private int widgetRecommendationDefaultFeedbackRequestIntervalDays;
+    private int widgetRecommendationMinFeedbackRequestIntervalDays;
+    private int widgetRecommendationMaxFeedbackRequestIntervalDays;
 }
