@@ -17,7 +17,7 @@ import java.util.UUID;
 @Component
 public class DefaultRecommendationService implements IRecommendationService {
 
-    private RecommendationScoreRepository recommendationScoreRepository;
+    private final RecommendationScoreRepository recommendationScoreRepository;
 
     public DefaultRecommendationService(@Autowired RecommendationScoreRepository recommendationScoreRepository) {
         this.recommendationScoreRepository = Objects.requireNonNull(recommendationScoreRepository);

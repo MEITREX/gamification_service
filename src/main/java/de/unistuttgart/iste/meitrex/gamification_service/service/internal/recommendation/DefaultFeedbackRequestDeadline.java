@@ -13,11 +13,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Component
-class DefaultFeedbackDeadline implements IFeedbackRequestDeadline {
+class DefaultFeedbackRequestDeadline implements IFeedbackRequestDeadline {
 
     private final RecommendationScoreRepository recommendationScoreRepository;
 
-    public DefaultFeedbackDeadline(@Autowired  RecommendationScoreRepository recommendationScoreRepository) {
+    public DefaultFeedbackRequestDeadline(@Autowired  RecommendationScoreRepository recommendationScoreRepository) {
         this.recommendationScoreRepository = Objects.requireNonNull(recommendationScoreRepository);
     }
 

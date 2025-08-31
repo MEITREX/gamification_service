@@ -16,4 +16,5 @@ public class AdaptivityConfiguration {
     private String immersiveTutorOllamaModel;
     private int immersiveTutorSpeechRefreshIntervalMinutes;
     private String immersiveTutorSpeechGeneric;
+    private int widgetRecommendationDefaultFeedbackRequestIntervalDays;
 }

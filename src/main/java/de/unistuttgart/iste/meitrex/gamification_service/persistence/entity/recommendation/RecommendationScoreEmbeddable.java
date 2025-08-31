@@ -22,10 +22,6 @@ final class RecommendationScoreEmbeddable {
         this.nextAdjustmentRequestInDays = nextAdjustmentRequestInDays;
     }
 
-    public RecommendationScoreEmbeddable(double score) {
-        this(score, LocalDateTime.now(), 14);
-    }
-
     public LocalDateTime getNextAdjustmentDate() {
         return lastAdjusted.plusDays(nextAdjustmentRequestInDays);
     }
