@@ -2,9 +2,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.service.quests.quest_g
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.AnswerForumQuestionGoalEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.GoalEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.MoveUpLeaderboardGoalEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.*;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.quests.QuestEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.quests.DailyQuestType;
 import de.unistuttgart.iste.meitrex.gamification_service.recommendation.RecommendationType;
@@ -79,34 +77,45 @@ public class SpecialtyDailyQuestGeneratorService implements IDailyQuestGenerator
     }
 
     private Optional<GoalEntity> generateSocializationGoal() {
+        // TODO: Should check if user at top of leaderboard already before generating this
         MoveUpLeaderboardGoalEntity goal = new MoveUpLeaderboardGoalEntity();
         goal.setTrackingTimeToToday();
         return Optional.of(goal);
     }
 
     private Optional<GoalEntity> generateAssistanceGoal() {
-        // TODO: This and following methods
+        // TODO: Implement this
         return Optional.empty();
     }
 
     private Optional<GoalEntity> generateImmersionGoal() {
+        // We have no fitting quest for immersion. This is ok. Intentionally returning empty.
         return Optional.empty();
     }
 
     private Optional<GoalEntity> generateRiskRewardGoal() {
-        return Optional.empty();
+        LotteryRunGoalEntity goal = new LotteryRunGoalEntity();
+        goal.setTrackingTimeToToday();
+        goal.setRequiredCount(1);
+        return Optional.of(goal);
     }
 
     private Optional<GoalEntity> generateCustomizationGoal() {
-        return Optional.empty();
+        EquipItemGoalEntity goal = new EquipItemGoalEntity();
+        goal.setTrackingTimeToToday();
+        return Optional.of(goal);
     }
 
     private Optional<GoalEntity> generateProgressionGoal() {
+        // TODO: Implement this
         return Optional.empty();
     }
 
     private Optional<GoalEntity> generateIncentiveGoal() {
-        return Optional.empty();
+        ReceiveItemsGoalEntity goal = new ReceiveItemsGoalEntity();
+        goal.setTrackingTimeToToday();
+        goal.setRequiredCount(1);
+        return Optional.of(goal);
     }
 
     @Override
