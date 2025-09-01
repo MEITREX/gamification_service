@@ -79,6 +79,10 @@ public class SkillLevelDailyQuestGeneratorService implements IDailyQuestGenerato
                 .map(Assessment.class::cast)
                 .toList();
 
+        // if no usable assessments, we can't generate a quest here
+        if(usableCourseAssessments.isEmpty())
+            return Optional.empty();
+
         List<Skill> skills = courseAssessments.stream()
                 .flatMap(a -> a.getItems().stream())
                 .flatMap(i -> i.getAssociatedSkills().stream())
