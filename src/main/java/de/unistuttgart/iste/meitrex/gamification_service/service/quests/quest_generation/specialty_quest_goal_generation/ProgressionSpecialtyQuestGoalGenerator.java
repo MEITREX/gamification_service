@@ -6,7 +6,6 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.Cour
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.CompleteSpecificStageGoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.GoalEntity;
-import de.unistuttgart.iste.meitrex.generated.dto.Content;
 import de.unistuttgart.iste.meitrex.generated.dto.GamificationCategory;
 import de.unistuttgart.iste.meitrex.generated.dto.Section;
 import de.unistuttgart.iste.meitrex.generated.dto.Stage;
