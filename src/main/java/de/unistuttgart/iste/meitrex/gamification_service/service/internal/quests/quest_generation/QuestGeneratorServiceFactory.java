@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.meitrex.gamification_service.service.quests.quest_generation;
+package de.unistuttgart.iste.meitrex.gamification_service.service.internal.quests.quest_generation;
 
 import de.unistuttgart.iste.meitrex.gamification_service.quests.DailyQuestType;
 import org.springframework.stereotype.Component;

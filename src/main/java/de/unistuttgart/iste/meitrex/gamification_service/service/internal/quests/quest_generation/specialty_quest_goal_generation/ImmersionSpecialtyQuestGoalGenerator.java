@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.meitrex.gamification_service.service.quests.quest_generation.specialty_quest_goal_generation;
+package de.unistuttgart.iste.meitrex.gamification_service.service.internal.quests.quest_generation.specialty_quest_goal_generation;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;

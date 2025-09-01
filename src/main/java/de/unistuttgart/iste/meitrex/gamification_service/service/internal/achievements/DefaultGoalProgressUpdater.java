@@ -5,6 +5,8 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achi
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.HasGoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.GoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.quests.QuestEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.service.internal.quests.IQuestCompletionHandler;
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,9 +19,12 @@ import java.util.UUID;
 class DefaultGoalProgressUpdater implements IGoalProgressUpdater {
 
     private final IAchievementCompletionHandler achievementCompletionHandler;
+    private final IQuestCompletionHandler questCompletionHandler;
 
-    public DefaultGoalProgressUpdater(@Autowired IAchievementCompletionHandler achievementCompletionHandler) {
+    public DefaultGoalProgressUpdater(@Autowired IAchievementCompletionHandler achievementCompletionHandler,
+                                      @Autowired IQuestCompletionHandler questCompletionHandler) {
         this.achievementCompletionHandler = Objects.requireNonNull(achievementCompletionHandler);
+        this.questCompletionHandler = Objects.requireNonNull(questCompletionHandler);
     }
 
     public void updateGoalProgressEntitiesForUser(UserEntity user, UUID courseId, GoalProgressEvent goalProgressEvent) {
@@ -34,7 +39,9 @@ class DefaultGoalProgressUpdater implements IGoalProgressUpdater {
     private void onGoalCompleted(UserGoalProgressEntity goalProgressEntity) {
         HasGoalEntity hasGoalEntity = Hibernate.unproxy(goalProgressEntity.getGoal().getParentWithGoal(), HasGoalEntity.class);
         if (hasGoalEntity instanceof AchievementEntity achievement) {
-             achievementCompletionHandler.onAchievementCompleted(achievement, goalProgressEntity);
+            achievementCompletionHandler.onAchievementCompleted(achievement, goalProgressEntity);
+        } else if(hasGoalEntity instanceof QuestEntity quest) {
+            questCompletionHandler.onQuestCompleted(quest, goalProgressEntity);
         }
     }
 

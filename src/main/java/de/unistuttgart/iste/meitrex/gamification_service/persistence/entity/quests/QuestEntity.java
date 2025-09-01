@@ -22,6 +22,10 @@ public class QuestEntity extends HasGoalEntity implements IWithId<UUID> {
     @Column
     private String imageUrl;
 
+    @Column
+    private int rewardPoints;
+
+
     public String getDescription() {
         return getGoal().generateDescription();
     }

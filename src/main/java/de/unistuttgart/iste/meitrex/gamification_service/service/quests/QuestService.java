@@ -1,7 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service.quests;
 
 import de.unistuttgart.iste.meitrex.content_service.exception.ContentServiceConnectionException;
-import de.unistuttgart.iste.meitrex.course_service.persistence.repository.CourseRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.config.AdaptivityConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserCourseDataEntity;
@@ -14,7 +13,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.ques
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.ICourseRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.IUserRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.quests.DailyQuestType;
-import de.unistuttgart.iste.meitrex.gamification_service.service.quests.quest_generation.QuestGeneratorServiceFactory;
+import de.unistuttgart.iste.meitrex.gamification_service.service.internal.quests.quest_generation.QuestGeneratorServiceFactory;
 import de.unistuttgart.iste.meitrex.generated.dto.Quest;
 import de.unistuttgart.iste.meitrex.generated.dto.QuestSet;
 import jakarta.transaction.Transactional;
@@ -79,8 +78,6 @@ public class QuestService implements IQuestService{
 
         int rewardPoints = (int)(adaptivityConfiguration.getQuestBaseRewardPoints() * rewardMultiplier);
 
-        // TODO: Assign reward points to quests
-
         List<DailyQuestType> questTypeCandidates = new ArrayList<>(Arrays.stream(DailyQuestType.values()).toList());
         Collections.shuffle(questTypeCandidates);
 
@@ -99,7 +96,10 @@ public class QuestService implements IQuestService{
 
                 generatedQuestEntity
                         .ifPresentOrElse(
-                                quests::add,
+                                qu -> {
+                                    qu.setRewardPoints(rewardPoints);
+                                    quests.add(qu);
+                                },
                                 () -> log.info("Could not generate a quest of type {} for user {}.", questType, user.getId())
                         );
             } catch (ContentServiceConnectionException e) {
@@ -155,6 +155,7 @@ public class QuestService implements IQuestService{
                     .setTrackingEndTime(questEntity.getGoal().getTrackingEndTime())
                     .setCompleted(userGoalProgressEntity.isCompleted())
                     .setDescription(questEntity.getDescription())
+                    .setRewardPoints(questEntity.getRewardPoints())
                     .build();
 
             if(userGoalProgressEntity instanceof CountableUserGoalProgressEntity countableGoalProgress) {
