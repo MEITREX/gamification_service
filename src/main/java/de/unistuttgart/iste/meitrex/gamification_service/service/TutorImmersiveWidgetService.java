@@ -100,7 +100,9 @@ public class TutorImmersiveWidgetService {
         final LocalDate yesterday = OffsetDateTime.now().minusDays(1).toLocalDate();
 
         final Map<LocalDate, List<Content>> contentsWorkedOnRecently = groupDateTimeItemsIntoDays(
-                courseContents,
+                courseContents.stream()
+                        .filter(c -> c.getUserProgressData().getLastLearnDate() != null)
+                        .toList(),
                 List.of(yesterday, today),
                 c -> c.getUserProgressData().getLastLearnDate());
 
