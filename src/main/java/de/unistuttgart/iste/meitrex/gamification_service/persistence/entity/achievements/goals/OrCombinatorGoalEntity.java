@@ -30,7 +30,7 @@ public class OrCombinatorGoalEntity extends GoalEntity{
 
     @Override
     public String generateDescription() {
-        return goal1.generateDescription().substring(0, goal1.generateDescription().length() - 1)+ " and " +
+        return goal1.generateDescription().substring(0, goal1.generateDescription().length() - 1)+ " or " +
                 goal2.generateDescription().substring(0, 1).toLowerCase() + goal2.generateDescription().substring(1);
     }
 
