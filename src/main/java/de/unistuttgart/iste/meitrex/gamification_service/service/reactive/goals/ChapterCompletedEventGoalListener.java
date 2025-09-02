@@ -1,19 +1,19 @@
-package de.unistuttgart.iste.meitrex.gamification_service.service.reactive.achievements;
+package de.unistuttgart.iste.meitrex.gamification_service.service.reactive.goals;
 
 import de.unistuttgart.iste.meitrex.gamification_service.events.internal.*;
-import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentForumActivityEvent;
-import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentStageCompletedEvent;
+import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentChapterCompletedEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPersistentEventRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPersistentEventStatusRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.CompletedSpecificStageGoalProgressEvent;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.CompletedSpecificChapterGoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.GoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.ICourseCreator;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.ICourseMembershipHandler;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.IUserCreator;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.achievements.IGoalProgressUpdater;
 import de.unistuttgart.iste.meitrex.gamification_service.time.ITimeService;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -21,53 +21,53 @@ import org.springframework.stereotype.Component;
 import java.util.UUID;
 
 @Component
-public class StageCompletedEventAchievementListener extends AbstractInternalListener<PersistentStageCompletedEvent, InternalStageCompletedEvent> {
+public class ChapterCompletedEventGoalListener extends AbstractInternalListener<PersistentChapterCompletedEvent, InternalChapterCompletedEvent> {
 
     private final ICourseCreator courseCreator;
     private final IUserCreator userCreator;
     private final ICourseMembershipHandler courseMembershipHandler;
     private final IGoalProgressUpdater goalProgressUpdater;
 
-    public StageCompletedEventAchievementListener(
-            @Autowired IPersistentEventRepository<PersistentStageCompletedEvent> persistentEventRepository,
+    @Override
+    protected String getName() {
+        return "ChapterCompletedEventGoalListener";
+    }
+
+    public ChapterCompletedEventGoalListener(
+            @Autowired IPersistentEventRepository<PersistentChapterCompletedEvent> persistentEventRepository,
             @Autowired IPersistentEventStatusRepository eventStatusRepository,
-            @Autowired ITimeService timeService, ICourseCreator courseCreator,
-            @Autowired IUserCreator userCreator,
+            @Autowired ITimeService timeService,
+            @Autowired ICourseCreator courseCreator,
             @Autowired ICourseMembershipHandler courseMembershipHandler,
+            @Autowired IUserCreator userCreator,
             @Autowired IGoalProgressUpdater goalProgressUpdater) {
         super(persistentEventRepository, eventStatusRepository, timeService);
         this.courseCreator = courseCreator;
-        this.userCreator = userCreator;
         this.courseMembershipHandler = courseMembershipHandler;
+        this.userCreator = userCreator;
         this.goalProgressUpdater = goalProgressUpdater;
     }
 
-    @EventListener
     @Override
-    public void process(InternalStageCompletedEvent internalEvent) {
+    @EventListener
+    public void process(InternalChapterCompletedEvent internalEvent) {
         super.process(internalEvent);
     }
 
     @Override
-    protected String getName() {
-        return "StageCompletedListener";
-    }
-
-    @Override
-    protected void doProcess(PersistentStageCompletedEvent persistentEvent)
-            throws TransientEventListenerException, NonTransientEventListenerException {
-
-        UUID courseId = persistentEvent.getCourseId();
-        CourseEntity courseEntity = courseCreator.fetchOrCreate(courseId);
-
+    protected void doProcess(PersistentChapterCompletedEvent persistentEvent) throws TransientEventListenerException, NonTransientEventListenerException {
         UUID userId = persistentEvent.getUserId();
-        UserEntity user = userCreator.fetchOrCreate(userId);
 
-        this.courseMembershipHandler.addUserToCourseIfNotAlready(courseEntity, user);
+        CourseEntity courseEntity = courseCreator.fetchOrCreate(persistentEvent.getCourseId());
+        UserEntity userEntity = userCreator.fetchOrCreate(persistentEvent.getUserId());
 
-        GoalProgressEvent goalProgressEvent = CompletedSpecificStageGoalProgressEvent.builder()
-                .stageId(persistentEvent.getStageId())
+        courseMembershipHandler.addUserToCourseIfNotAlready(courseEntity, userEntity);
+
+        GoalProgressEvent goalProgressEvent = CompletedSpecificChapterGoalProgressEvent
+                .builder()
+                .userId(userId)
+                .chapterId(persistentEvent.getChapterId())
                 .build();
-        this.goalProgressUpdater.updateGoalProgressEntitiesForUser(user, courseId, goalProgressEvent);
+        this.goalProgressUpdater.updateGoalProgressEntitiesForUser(userEntity, courseEntity.getId(), goalProgressEvent);
     }
 }

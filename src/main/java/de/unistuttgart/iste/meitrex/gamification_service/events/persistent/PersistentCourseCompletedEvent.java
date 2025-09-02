@@ -14,10 +14,8 @@ import java.util.UUID;
 @ToString (callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@DiscriminatorValue("STAGE_COMPLETED_EVENT")
-public class PersistentStageCompletedEvent extends PersistentEvent {
+@DiscriminatorValue("COURSE_COMPLETED_EVENT")
+public class PersistentCourseCompletedEvent extends PersistentEvent {
     private UUID courseId;
-    private UUID chapterId;
-    private UUID stageId;
     private UUID userId;
 }

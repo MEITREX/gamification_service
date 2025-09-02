@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.meitrex.gamification_service.service.reactive.achievements;
+package de.unistuttgart.iste.meitrex.gamification_service.service.reactive.goals;
 
 import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
 import de.unistuttgart.iste.meitrex.content_service.exception.ContentServiceConnectionException;
@@ -27,7 +27,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Component
-class ContentProgressedEventAchievementListener extends AbstractInternalListener<PersistentContentProgressedEvent, InternalContentProgressedEvent>   {
+class ContentProgressedEventGoalListener extends AbstractInternalListener<PersistentContentProgressedEvent, InternalContentProgressedEvent>   {
 
     // Do not change to keep unique UUID even in case of refactoring.
     private static final String name = "ContentProgressedAchievementListener";
@@ -42,7 +42,7 @@ class ContentProgressedEventAchievementListener extends AbstractInternalListener
 
     private IGoalProgressUpdater goalProgressUpdater;
 
-    public ContentProgressedEventAchievementListener(
+    public ContentProgressedEventGoalListener(
             @Autowired IPersistentContentProgressedRepository persistentEventRepository,
             @Autowired  IPersistentEventStatusRepository eventStatusRepository,
             @Autowired  ITimeService timeService,

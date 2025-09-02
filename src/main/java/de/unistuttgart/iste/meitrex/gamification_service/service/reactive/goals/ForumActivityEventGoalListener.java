@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.meitrex.gamification_service.service.reactive.achievements;
+package de.unistuttgart.iste.meitrex.gamification_service.service.reactive.goals;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
@@ -21,7 +21,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Component
-class ForumActivityEventAchievementListener extends AbstractInternalListener<PersistentForumActivityEvent, InternalForumActivityEvent> {
+class ForumActivityEventGoalListener extends AbstractInternalListener<PersistentForumActivityEvent, InternalForumActivityEvent> {
 
     // Do not change to keep unique UUID even in case of refactoring.
     private static final String name = "ForumActivityListener";
@@ -35,7 +35,7 @@ class ForumActivityEventAchievementListener extends AbstractInternalListener<Per
 
     private final IGoalProgressUpdater goalProgressUpdater;
 
-    public ForumActivityEventAchievementListener(
+    public ForumActivityEventGoalListener(
             @Autowired IPersistentForumActivityRepository persistentEventRepository,
             @Autowired  IPersistentEventStatusRepository eventStatusRepository,
             @Autowired  ITimeService timeService,

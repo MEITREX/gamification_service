@@ -45,7 +45,6 @@ public class StageCompletedEventListener extends AbstractExternalListener<StageC
         final PersistentStageCompletedEvent persistentStageCompletedEvent = new PersistentStageCompletedEvent();
         persistentStageCompletedEvent.setCourseId(event.getCourseId());
         persistentStageCompletedEvent.setChapterId(event.getChapterId());
-        persistentStageCompletedEvent.setSectionId(event.getSectionId());
         persistentStageCompletedEvent.setStageId(event.getStageId());
         persistentStageCompletedEvent.setUserId(event.getUserId());
         return persistentStageCompletedEvent;
