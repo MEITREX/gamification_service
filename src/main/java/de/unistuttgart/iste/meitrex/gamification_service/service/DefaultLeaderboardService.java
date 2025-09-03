@@ -34,7 +34,6 @@ class DefaultLeaderboardService implements ILeaderboardService {
             = "Can not create a new leader board starting in the future.";
 
 
-
     private static void assureUpdateCourseLeaderboardPreconditionsAreMet(CourseEntity courseEntity, LeaderboardEntity leaderboardEntity, LocalDate now, Period period)  {
         Objects.requireNonNull(courseEntity);
         Objects.requireNonNull(leaderboardEntity);

@@ -18,7 +18,7 @@ import java.util.UUID;
 public class PersistentForumActivityEvent extends PersistentEvent {
 
     public enum Type {
-        THREAD, QUESTION, ANSWER, INFO;
+        THREAD, QUESTION, ANSWER, INFO, ANSWER_ACCEPTED;
     }
 
     @Column(name="fk_user_id")

@@ -74,7 +74,6 @@ class ForumActivityEventGoalListener extends AbstractInternalListener<Persistent
         UserEntity user = userCreator.fetchOrCreate(userId);
 
         this.courseMembershipHandler.addUserToCourseIfNotAlready(courseEntity, user);
-
         if (PersistentForumActivityEvent.Type.ANSWER.equals(persistentEvent.getType())) {
             forumAnswerProgress(user, courseId);
         }
