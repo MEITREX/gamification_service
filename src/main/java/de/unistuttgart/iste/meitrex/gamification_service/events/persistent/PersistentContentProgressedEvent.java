@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.events.persistent;
 
+import de.unistuttgart.iste.meitrex.common.event.ContentProgressedEvent;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -61,6 +62,10 @@ public class PersistentContentProgressedEvent extends PersistentEvent {
 
     @Column(name="time_to_complete")
     private Integer timeToComplete;
+
+    @Enumerated
+    @Column(name="content_type")
+    private ContentProgressedEvent.ContentType contentType;
 
     @OneToMany(mappedBy = "event")
     @Builder.Default

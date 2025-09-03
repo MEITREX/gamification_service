@@ -17,6 +17,14 @@ class DefaultUserXPAdder implements IUserXPAdder{
         causeXPMap.put(Cause.NEW_FORUM_POST, 20);
         causeXPMap.put(Cause.ACHIEVEMENT_COMPLETED, 30);
         causeXPMap.put(Cause.ANSWER_ACCEPTED, 80);
+        causeXPMap.put(Cause.STAGE_COMPLETED, 20);
+        causeXPMap.put(Cause.CHAPTER_COMPLETED, 200);
+        causeXPMap.put(Cause.COURSE_COMPLETED, 500);
+        causeXPMap.put(Cause.ASSIGNMENT_COMPLETED, 80);
+        causeXPMap.put(Cause.QUIZ_COMPLETED, 2);
+        causeXPMap.put(Cause.FLASHCARD_COMPLETED, 2);
+        causeXPMap.put(Cause.VIDEO_WATCHED, 2);
+        causeXPMap.put(Cause.DOCUMENT_OPENED, 2);
     }
 
     @Override
@@ -33,5 +41,10 @@ class DefaultUserXPAdder implements IUserXPAdder{
     @Override
     public void add(UserEntity entity, Cause cause) {
         this.add(entity, causeXPMap.get(Objects.requireNonNull(cause)));
+    }
+
+    @Override
+    public void add(UserEntity entity, Cause cause, int multiple) {
+        this.add(entity, causeXPMap.get(Objects.requireNonNull(cause)) * multiple);
     }
 }

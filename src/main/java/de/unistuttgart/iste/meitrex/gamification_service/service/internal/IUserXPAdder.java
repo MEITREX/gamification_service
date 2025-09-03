@@ -11,10 +11,12 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.User
 public interface IUserXPAdder {
 
     enum Cause {
-        NEW_FORUM_POST, ANSWER_ACCEPTED, ACHIEVEMENT_COMPLETED
+        NEW_FORUM_POST, ANSWER_ACCEPTED, ACHIEVEMENT_COMPLETED, STAGE_COMPLETED, CHAPTER_COMPLETED, COURSE_COMPLETED, ASSIGNMENT_COMPLETED, QUIZ_COMPLETED, FLASHCARD_COMPLETED, VIDEO_WATCHED, DOCUMENT_OPENED
     }
 
     void add(UserEntity entity, int value);
 
     void add(UserEntity entity, Cause cause);
+
+    void add(UserEntity entity, Cause cause, int multiple);
 }
