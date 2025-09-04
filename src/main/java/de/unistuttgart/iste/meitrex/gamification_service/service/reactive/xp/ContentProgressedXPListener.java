@@ -1,11 +1,8 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service.reactive.xp;
 
 import de.unistuttgart.iste.meitrex.common.event.ContentProgressedEvent;
-import de.unistuttgart.iste.meitrex.common.event.MediaType;
 import de.unistuttgart.iste.meitrex.gamification_service.events.internal.*;
-import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentChapterCompletedEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentContentProgressedEvent;
-import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPersistentChapterCompletedEventRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPersistentContentProgressedRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPersistentEventStatusRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
@@ -21,7 +18,7 @@ import java.util.Objects;
 @Component
 class ContentProgressedXPListener extends AbstractInternalListener<PersistentContentProgressedEvent, InternalContentProgressedEvent> {
 
-    private static int countResponse(PersistentContentProgressedEvent event) {
+    private static int countResponses(PersistentContentProgressedEvent event) {
         if(Objects.nonNull(event.getResponses())) {
             return event.getResponses().size();
         }
@@ -66,11 +63,11 @@ class ContentProgressedXPListener extends AbstractInternalListener<PersistentCon
         if(Objects.nonNull(contentType)) {
             switch (contentType) {
                 case FLASHCARDS: {
-                    userXPAdder.add(userEntity, IUserXPAdder.Cause.FLASHCARD_COMPLETED, countResponse(persistentEvent));
+                    userXPAdder.add(userEntity, IUserXPAdder.Cause.FLASHCARD_COMPLETED, countResponses(persistentEvent));
                     break;
                 }
                 case QUIZ: {
-                    userXPAdder.add(userEntity, IUserXPAdder.Cause.QUIZ_COMPLETED, countResponse(persistentEvent));
+                    userXPAdder.add(userEntity, IUserXPAdder.Cause.QUIZ_COMPLETED, countResponses(persistentEvent));
                     break;
                 }
                 case ASSIGNMENT: {
