@@ -13,7 +13,6 @@ import de.unistuttgart.iste.meitrex.gamification_service.service.internal.ICours
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.IUserCreator;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.achievements.IGoalProgressUpdater;
 import de.unistuttgart.iste.meitrex.gamification_service.time.ITimeService;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;

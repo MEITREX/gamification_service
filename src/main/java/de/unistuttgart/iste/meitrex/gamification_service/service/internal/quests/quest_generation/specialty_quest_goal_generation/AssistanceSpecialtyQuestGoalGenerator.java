@@ -2,6 +2,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.service.internal.quest
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.AskTutorCourseQuestionsGoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.GoalEntity;
 import de.unistuttgart.iste.meitrex.generated.dto.GamificationCategory;
 import org.springframework.stereotype.Component;
@@ -17,8 +18,10 @@ public class AssistanceSpecialtyQuestGoalGenerator implements ISpecialtyQuestGoa
 
     @Override
     public Optional<GoalEntity> generateGoal(UserEntity user, CourseEntity course) {
-        // TODO: Implement this
-        return Optional.empty();
+        AskTutorCourseQuestionsGoalEntity askTutorCourseQuestionsGoalEntity = new AskTutorCourseQuestionsGoalEntity();
+        askTutorCourseQuestionsGoalEntity.setRequiredCount(1);
+        askTutorCourseQuestionsGoalEntity.setTrackingTimeToToday();
+        return Optional.of(askTutorCourseQuestionsGoalEntity);
     }
 
     @Override
