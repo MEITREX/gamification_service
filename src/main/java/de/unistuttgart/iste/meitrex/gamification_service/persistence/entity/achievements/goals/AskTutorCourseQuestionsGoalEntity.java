@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals;
 
+import de.unistuttgart.iste.meitrex.common.event.TutorCategory;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.AskedTutorAQuestionGoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.GoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.CountableUserGoalProgressEntity;

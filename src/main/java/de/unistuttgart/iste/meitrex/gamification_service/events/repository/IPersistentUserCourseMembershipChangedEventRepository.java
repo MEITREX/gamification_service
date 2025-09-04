@@ -1,0 +1,6 @@
+package de.unistuttgart.iste.meitrex.gamification_service.events.repository;
+
+import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentUserCourseMembershipChangedEvent;
+
+public interface IPersistentUserCourseMembershipChangedEventRepository extends IPersistentEventRepository<PersistentUserCourseMembershipChangedEvent> {
+}

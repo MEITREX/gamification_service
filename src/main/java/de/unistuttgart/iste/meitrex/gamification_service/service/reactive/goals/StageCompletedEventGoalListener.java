@@ -4,6 +4,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.events.internal.*;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentStageCompletedEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPersistentEventRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPersistentEventStatusRepository;
+import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPersistentStageCompletedEventRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.CompletedSpecificStageGoalProgressEvent;
@@ -28,7 +29,7 @@ public class StageCompletedEventGoalListener extends AbstractInternalListener<Pe
     private final IGoalProgressUpdater goalProgressUpdater;
 
     public StageCompletedEventGoalListener(
-            @Autowired IPersistentEventRepository<PersistentStageCompletedEvent> persistentEventRepository,
+            @Autowired IPersistentStageCompletedEventRepository persistentEventRepository,
             @Autowired IPersistentEventStatusRepository eventStatusRepository,
             @Autowired ITimeService timeService, ICourseCreator courseCreator,
             @Autowired IUserCreator userCreator,

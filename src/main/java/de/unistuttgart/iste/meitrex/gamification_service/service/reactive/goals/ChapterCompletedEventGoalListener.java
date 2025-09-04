@@ -2,6 +2,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.service.reactive.goals
 
 import de.unistuttgart.iste.meitrex.gamification_service.events.internal.*;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentChapterCompletedEvent;
+import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPersistentChapterCompletedEventRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPersistentEventRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPersistentEventStatusRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
@@ -33,7 +34,7 @@ public class ChapterCompletedEventGoalListener extends AbstractInternalListener<
     }
 
     public ChapterCompletedEventGoalListener(
-            @Autowired IPersistentEventRepository<PersistentChapterCompletedEvent> persistentEventRepository,
+            @Autowired IPersistentChapterCompletedEventRepository persistentEventRepository,
             @Autowired IPersistentEventStatusRepository eventStatusRepository,
             @Autowired ITimeService timeService,
             @Autowired ICourseCreator courseCreator,

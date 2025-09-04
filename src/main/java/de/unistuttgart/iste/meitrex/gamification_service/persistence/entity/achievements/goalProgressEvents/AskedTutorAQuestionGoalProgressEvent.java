@@ -9,5 +9,4 @@ import lombok.experimental.SuperBuilder;
 @Value
 @SuperBuilder
 public class AskedTutorAQuestionGoalProgressEvent extends GoalProgressEvent {
-    TutorCategory questionCategory;
 }
