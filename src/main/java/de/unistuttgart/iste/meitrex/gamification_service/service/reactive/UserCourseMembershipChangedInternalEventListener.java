@@ -5,7 +5,6 @@ import de.unistuttgart.iste.meitrex.gamification_service.events.internal.Interna
 import de.unistuttgart.iste.meitrex.gamification_service.events.internal.NonTransientEventListenerException;
 import de.unistuttgart.iste.meitrex.gamification_service.events.internal.TransientEventListenerException;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentUserCourseMembershipChangedEvent;
-import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPersistentEventRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPersistentEventStatusRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPersistentUserCourseMembershipChangedEventRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
@@ -21,7 +20,7 @@ import org.springframework.stereotype.Component;
 import java.util.UUID;
 
 @Component
-public class UserCourseMembershipChangedEventListener
+public class UserCourseMembershipChangedInternalEventListener
         extends AbstractInternalListener<PersistentUserCourseMembershipChangedEvent, InternalUserCourseMembershipChangedEvent> {
 
     private final IUserCreator userCreator;
@@ -33,7 +32,7 @@ public class UserCourseMembershipChangedEventListener
         return "UserCourseMembershipChangedEventListener";
     }
 
-    public UserCourseMembershipChangedEventListener(
+    public UserCourseMembershipChangedInternalEventListener(
             @Autowired IPersistentUserCourseMembershipChangedEventRepository persistentEventRepository,
             @Autowired IPersistentEventStatusRepository eventStatusRepository,
             @Autowired ITimeService timeService,
