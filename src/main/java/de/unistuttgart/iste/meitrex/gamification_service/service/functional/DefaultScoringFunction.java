@@ -46,6 +46,7 @@ class DefaultScoringFunction implements IScoringFunction {
 
     @Override
     public double score(double correctness, int attempt) {
+        System.out.println("attempt: " + attempt);
         return Math.round(this.multiplicativeWeight*correctness*(Math.pow(2.0, this.decayRate*attempt)));
     }
 }

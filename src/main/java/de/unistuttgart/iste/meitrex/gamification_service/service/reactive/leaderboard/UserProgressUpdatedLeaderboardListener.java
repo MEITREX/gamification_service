@@ -86,7 +86,6 @@ class UserProgressUpdatedLeaderboardListener extends AbstractInternalListener<Pe
             throws TransientEventListenerException, NonTransientEventListenerException {
 
         final LocalDate today = this.timeService.toDate();
-
         final UserEntity userEntity = this.userCreator.fetchOrCreate(internalEvent.getUserId());
         final CourseEntity courseEntity = this.courseCreator.fetchOrCreate(internalEvent.getCourseId());
 
@@ -97,9 +96,9 @@ class UserProgressUpdatedLeaderboardListener extends AbstractInternalListener<Pe
                 .toList();
 
         if(leaderboardEntityList.size() < Period.values().length || checkIfLeaderboardIsOutdated(leaderboardEntityList, today)) {
+
             throw new TransientEventListenerException();
         }
-
         this.updateUserScoreEntity(leaderboardEntityList, userEntity, courseEntity, internalEvent);
 
     }

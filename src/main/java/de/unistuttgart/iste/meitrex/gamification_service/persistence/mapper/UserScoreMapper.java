@@ -11,7 +11,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.*;
 @RequiredArgsConstructor
 public class UserScoreMapper {
 
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
     public UserScore toDTO(UserScoreEntity userScoreEntity, int maxDepth) {
         if(userScoreEntity == null || maxDepth < 0) {

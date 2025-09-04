@@ -21,7 +21,8 @@ import java.util.Map;
 import java.util.Objects;
 
 @RestController
-public class ContentProgressedEventListener extends AbstractExternalListener<ContentProgressedEvent> {
+public class
+ContentProgressedEventListener extends AbstractExternalListener<ContentProgressedEvent> {
 
     private static String getContext(CloudEvent<ContentProgressedEvent> cloudEvent) {
         return "";

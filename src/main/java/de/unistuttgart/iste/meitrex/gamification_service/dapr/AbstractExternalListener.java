@@ -48,7 +48,7 @@ abstract class AbstractExternalListener<T> {
     }
 
     private void logEntry(CloudEvent<T> cloudEvent, Function<CloudEvent<T>, String> contextProvider, Map<String, String> headers) {
-
+        System.out.println(contextProvider);
     }
 
     private void logEmptyBody(CloudEvent<T> cloudEvent, Map<String, String> headers) {
@@ -56,7 +56,7 @@ abstract class AbstractExternalListener<T> {
     }
 
     private void logException(CloudEvent<T> cloudEvent, Exception e, Function<CloudEvent<T>, String> contextProvider, Map<String, String> headers) {
-
+        System.out.println(e.getCause());
     }
 
     protected abstract PersistentEvent mapToPersistentEvent(T event);

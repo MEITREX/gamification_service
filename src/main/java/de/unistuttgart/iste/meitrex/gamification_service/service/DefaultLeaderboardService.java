@@ -130,6 +130,7 @@ class DefaultLeaderboardService implements ILeaderboardService {
 
     @Override
     public List<Leaderboard> find(UUID courseID, LocalDate date, Period period) {
+
         return this.leaderboardRepository.findByCourseIdAndDateAfterAndPeriod(courseID, date, period)
                 .stream()
                 .map(leaderboard -> this.leaderboardMapper.toDTO(leaderboard, dtoRecursionDepth))

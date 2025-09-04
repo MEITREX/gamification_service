@@ -28,13 +28,17 @@ public class UserEntity implements IWithId<UUID> {
     private Integer xpValue;
 
     @Transient
-    private Double requiredXP;
+    private Double requiredXP = 0.0;
 
     @Transient
-    private Double exceedingXP;
+    private Double exceedingXP = 0.0;
 
     @Transient
-    private Integer level;
+    private Integer level = 1;
+
+    @Transient
+    private String userName;
+
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<UserCourseDataEntity> courseData;

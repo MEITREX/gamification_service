@@ -17,9 +17,9 @@ public interface ILeaderboardRepository extends JpaRepository<LeaderboardEntity,
 
     Optional<LeaderboardEntity> findByCourseAndPeriodOrderByStartDateDesc(CourseEntity courseEntity, Period period);
 
-    @Query("SELECT l FROM LeaderboardEntity l WHERE l.id = :id AND l.startDate >= :startDate AND l.period = :period")
+    @Query("SELECT l FROM LeaderboardEntity l WHERE l.course.id = :courseId AND l.startDate >= :startDate AND l.period = :period")
     List<LeaderboardEntity> findByCourseIdAndDateAfterAndPeriod(
-            @Param("id") UUID courseId,
+            @Param("courseId") UUID courseId,
             @Param("startDate") LocalDate date,
             @Param("period") Period period
     );

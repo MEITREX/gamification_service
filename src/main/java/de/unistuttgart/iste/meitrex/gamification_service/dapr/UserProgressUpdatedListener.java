@@ -48,6 +48,7 @@ class UserProgressUpdatedListener extends AbstractExternalListener<UserProgressU
         persistentEvent.setContentId(event.getContentId());
         persistentEvent.setCorrectness(event.getCorrectness());
         persistentEvent.setAssessmentAttempt(event.getAttempt());
+        System.out.println("in_attempt: " + event.getAttempt());
         persistentEvent.setChapterId(event.getChapterId());
         return persistentEvent;
     }
