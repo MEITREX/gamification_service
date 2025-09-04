@@ -50,6 +50,7 @@ public class ContentProgressedEventListener extends AbstractExternalListener<Con
         persistentContentProgressedEvent.setSuccess(event.isSuccess());
         persistentContentProgressedEvent.setCorrectness(event.getCorrectness());
         persistentContentProgressedEvent.setHintsUsed(event.getHintsUsed());
+        persistentContentProgressedEvent.setContentType(event.getContentType());
         final List<Response> responseList = event.getResponses();
         if(Objects.nonNull(responseList)) {
             persistentContentProgressedEvent.setResponses(responseList.stream().map(response -> {

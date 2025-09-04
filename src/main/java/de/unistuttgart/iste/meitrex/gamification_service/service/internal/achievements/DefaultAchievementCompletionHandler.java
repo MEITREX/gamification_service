@@ -17,6 +17,7 @@ import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -33,13 +34,16 @@ class DefaultAchievementCompletionHandler implements IAchievementCompletionHandl
 
     private final TopicPublisher topicPublisher;
 
+    private final ApplicationEventPublisher appPublisher;
+
     private final AchievementRepository achievementRepository;
 
     private final AdaptivityConfiguration adaptivityConfiguration;
 
     // Constructors
 
-    public DefaultAchievementCompletionHandler(@Autowired AchievementRepository achievementRepository, @Autowired TopicPublisher topicPublisher, @Autowired AdaptivityConfiguration adaptivityConfiguration) {
+    public DefaultAchievementCompletionHandler(@Autowired ApplicationEventPublisher publisher, @Autowired AchievementRepository achievementRepository, @Autowired TopicPublisher topicPublisher, @Autowired AdaptivityConfiguration adaptivityConfiguration) {
+        this.appPublisher = Objects.requireNonNull(publisher);
         this.topicPublisher = Objects.requireNonNull(topicPublisher);
         this.achievementRepository = Objects.requireNonNull(achievementRepository);
         this.adaptivityConfiguration = Objects.requireNonNull(adaptivityConfiguration);
@@ -55,7 +59,7 @@ class DefaultAchievementCompletionHandler implements IAchievementCompletionHandl
                 .courseId(achievement.getCourse().getId())
                 .build();
         topicPublisher.notifyAchievementCompleted(event);
-
+        appPublisher.publishEvent(new de.unistuttgart.iste.meitrex.gamification_service.events.internal.domain.AchievementCompletedEvent(this, achievement, goalProgressEntity.getUser()));
         addRewardToUser(goalProgressEntity.getUser());
 
         tryGenerateAdaptiveAchievementForUser(

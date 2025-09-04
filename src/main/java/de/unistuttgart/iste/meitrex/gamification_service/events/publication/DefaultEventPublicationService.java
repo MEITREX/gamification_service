@@ -39,6 +39,8 @@ class DefaultEventPublicationService implements IEventPublicationService {
 
     private final IPersistentUserSkillLevelChangedEventRepository userSkillLevelChangedEventRepository;
 
+    private final IPersistentMediaRecordInfoRepository mediaRecordInfoRepository;
+
     private final Map<Class<? extends PersistentEvent>, Function<PersistentEvent, InternalEvent>> handlerMap = new HashMap<>();
 
 
@@ -49,7 +51,8 @@ class DefaultEventPublicationService implements IEventPublicationService {
             @Autowired IPersistentContentProgressedRepository contentProgressedRepository,
             @Autowired IPersistentForumActivityRepository forumActivityRepository,
             @Autowired IPersistentSkillEntityChangedEventRepository skillEntityChangedEventRepository,
-            @Autowired IPersistentUserSkillLevelChangedEventRepository userSkillLevelChangedEventRepository
+            @Autowired IPersistentUserSkillLevelChangedEventRepository userSkillLevelChangedEventRepository,
+            @Autowired IPersistentMediaRecordInfoRepository mediaRecordInfoRepository
     ) {
         this.applicationEventPublisher = Objects.requireNonNull(applicationEventPublisher);
         this.persistentEventRepository = Objects.requireNonNull(persistentEventRepository);
@@ -58,11 +61,13 @@ class DefaultEventPublicationService implements IEventPublicationService {
         this.forumActivityRepository = Objects.requireNonNull(forumActivityRepository);
         this.skillEntityChangedEventRepository = Objects.requireNonNull(skillEntityChangedEventRepository);
         this.userSkillLevelChangedEventRepository = Objects.requireNonNull(userSkillLevelChangedEventRepository);
+        this.mediaRecordInfoRepository = Objects.requireNonNull(mediaRecordInfoRepository);
         this.handlerMap.put(PersistentUserProgressUpdatedEvent.class, this::saveUserProgressUpdatedEvent);
         this.handlerMap.put(PersistentContentProgressedEvent.class, this::saveContentProgressedEvent);
         this.handlerMap.put(PersistentForumActivityEvent.class, this::saveForumActivityEvent);
         this.handlerMap.put(PersistentSkillEntityChangedEvent.class, this::saveSkillEntityChangedEvent);
         this.handlerMap.put(PersistentUserSkillLevelChangedEvent.class, this::saveUserSkillLevelChangedEvent);
+        this.handlerMap.put(PersistentMediaRecordInfoEvent.class, this::saveMediaRecordInfoEvent);
     }
 
     @Override
@@ -146,6 +151,16 @@ class DefaultEventPublicationService implements IEventPublicationService {
                 .getUuid();
 
         return new InternalUserSkillLevelChangedEvent(DefaultEventPublicationService.this, uuid);
+    }
+
+
+    private InternalEvent saveMediaRecordInfoEvent(PersistentEvent persistentEvent) {
+        PersistentMediaRecordInfoEvent persistentMediaRecordInfoEvent = (PersistentMediaRecordInfoEvent) persistentEvent;
+
+        final UUID uuid = this.mediaRecordInfoRepository.save(persistentMediaRecordInfoEvent)
+                .getUuid();
+
+        return new InternalMediaRecordInfoEvent(DefaultEventPublicationService.this, uuid);
     }
 
 }

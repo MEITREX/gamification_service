@@ -21,7 +21,7 @@ class UserProgressUpdatedXPListener extends AbstractInternalListener<PersistentU
     private static final String ERR_MSG_NEW_XP_VALUE_CANT_BE_LESS = "The overall xp value must be non-negative.";
 
     // Do not change to keep unique UUID even in case of refactoring.
-    private static final String name = "XPListener";
+    private static final String name = "UserProgressUpdatedXPListener ";
 
     private final IUserCreator userCreator;
 
