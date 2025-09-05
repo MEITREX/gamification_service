@@ -3,6 +3,20 @@ type Query {
     PlayerHexadScoreExists(userId: UUID!): Boolean!
     achievementsByCourseId(courseId: UUID!): [Achievement!]!
     achievementsByUserId(userId: UUID): [Achievement!]!
+
     itemsByUserId(userId: UUID!): [UserItem!]!
     inventoryForUser: Inventory!
+
+    getUser(userID: ID!): [User!]
+
+    getWeeklyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
+    getMonthlyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
+    getAllTimeCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
+
+
+    """
+    Returns a string which the tutor in the immersive widget should say.
+    🔒 The user must have access to the courses with the given ids to access their contents, otherwise an error is thrown.
+    """
+    tutorImmersiveWidgetSpeechContent(courseId: UUID!): String!
 }

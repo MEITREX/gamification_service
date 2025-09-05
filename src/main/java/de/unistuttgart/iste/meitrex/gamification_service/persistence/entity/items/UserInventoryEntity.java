@@ -27,4 +27,12 @@ public class UserInventoryEntity {
         unspentPoints = 0;
         items = new ArrayList<>();
     }
+
+    public void addPoints(int points) {
+        unspentPoints += points;
+    }
+
+    public void removePoints(int points) {
+        unspentPoints -= points;
+    }
 }

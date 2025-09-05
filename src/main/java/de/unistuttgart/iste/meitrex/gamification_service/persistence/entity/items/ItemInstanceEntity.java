@@ -6,7 +6,6 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;

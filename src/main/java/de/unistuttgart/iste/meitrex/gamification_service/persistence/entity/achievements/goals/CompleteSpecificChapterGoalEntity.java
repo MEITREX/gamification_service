@@ -1,7 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.CompleteSpecificChapterGoalProgressEvent;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.CompletedSpecificChapterGoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goalProgressEvents.GoalProgressEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
 import jakarta.persistence.Column;
@@ -19,7 +19,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CompleteSpecificChapterGoalEntity extends GoalEntity{
+public class CompleteSpecificChapterGoalEntity extends GoalEntity {
     @Column
     UUID chapterId;
 
@@ -32,13 +32,32 @@ public class CompleteSpecificChapterGoalEntity extends GoalEntity{
     }
 
     @Override
-    public void updateProgress(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgress) {
-        if (progressEvent instanceof CompleteSpecificChapterGoalProgressEvent completeSpecificChapterGoalProgressEvent){
-            UUID eventChapterId = completeSpecificChapterGoalProgressEvent.getChapterId();
-            if (eventChapterId.equals(this.chapterId)) {
+    protected void populateFromOther(GoalEntity goal) {
+        if (!(goal instanceof CompleteSpecificChapterGoalEntity chapterGoal))
+            throw new IllegalArgumentException("Passed goal must be of type CompleteSpecificChapterGoalEntity.");
+
+        chapterId = chapterGoal.getChapterId();
+        chapterName = chapterGoal.getChapterName();
+    }
+
+    @Override
+    public boolean updateProgressInternal(GoalProgressEvent progressEvent, UserGoalProgressEntity userGoalProgress) {
+        if (progressEvent instanceof CompletedSpecificChapterGoalProgressEvent completedSpecificChapterGoalProgressEvent) {
+            UUID eventChapterId = completedSpecificChapterGoalProgressEvent.getChapterId();
+            if (eventChapterId.equals(this.chapterId)
+                    && !userGoalProgress.isCompleted()) {
                 userGoalProgress.setCompleted(true);
+                return true;
             }
         }
+
+        return false;
+    }
+
+    @Override
+    public boolean equalsGoalTargets(GoalEntity other) {
+        return super.equalsGoalTargets(other)
+                && this.chapterId.equals(((CompleteSpecificChapterGoalEntity)other).chapterId);
     }
 
     @Override

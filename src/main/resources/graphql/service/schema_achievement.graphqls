@@ -1,18 +1,28 @@
-type Achievement implements HasGoal{
+type Achievement implements HasGoal {
     id: UUID
     name : String!
     imageUrl: String!
-    description: String!
+    adaptive: Boolean!
+
+    # HasGoal fields
+
     courseId: UUID!
-    userId: UUID
-    completed: Boolean!
-    requiredCount: Int
-    completedCount: Int
+    userId: UUID!
     trackingStartTime: DateTime
     trackingEndTime: DateTime
+    requiredCount: Int
+    completedCount: Int
+    completed: Boolean!
+    description: String!
 }
 
 interface HasGoal {
     courseId: UUID!
-    userId: UUID
+    userId: UUID!
+    trackingStartTime: DateTime
+    trackingEndTime: DateTime
+    requiredCount: Int
+    completedCount: Int
+    completed: Boolean!
+    description: String!
 }

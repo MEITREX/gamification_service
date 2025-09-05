@@ -1,13 +1,13 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity;
 
+import java.util.UUID;
+
 import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -16,14 +16,14 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "PlayerHexadScoreEntity")
-public class PlayerHexadScoreEntity implements IWithId<Long> {
+public class PlayerHexadScoreEntity  implements IWithId<UUID> {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private UUID id;
 
-    @Column(nullable = false, unique = true)
-    private UUID userId;
+    @OneToOne
+    @JoinColumn(nullable = false)
+    private UserEntity user;
 
     @NotNull
     @Column(nullable = false)
@@ -59,5 +59,6 @@ public class PlayerHexadScoreEntity implements IWithId<Long> {
     @Column(nullable = false)
     @Min(0)
     @Max(100)
-    private double disruptor;   
+    private double disruptor;
+
 }

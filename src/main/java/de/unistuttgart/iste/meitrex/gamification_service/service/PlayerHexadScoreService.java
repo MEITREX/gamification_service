@@ -1,29 +1,34 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
 
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerHexadScoreEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper.PlayerHexadScoreMapper;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.PlayerHexadScoreRepository;
-import de.unistuttgart.iste.meitrex.generated.dto.PlayerAnswerInput;
-import de.unistuttgart.iste.meitrex.generated.dto.PlayerHexadScore;
-import de.unistuttgart.iste.meitrex.generated.dto.PlayerType;
-import de.unistuttgart.iste.meitrex.generated.dto.PlayerTypeScore;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.*;
+
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.service.internal.IUserCreator;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerHexadScoreEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper.PlayerHexadScoreMapper;
+import de.unistuttgart.iste.meitrex.generated.dto.*;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
+import lombok.*;
+
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 @Transactional 
-public class PlayerHexadScoreService {
+public class PlayerHexadScoreService implements IPlayerHexadScoreService {
 
-    private final PlayerHexadScoreRepository playerHexadScoreRepository;
     private final PlayerHexadScoreMapper playerHexadScoreMapper;
+
+    private final IUserCreator userCreator;
+
+
+    /*Modified Review Required*/
+
      /**
      * Returns Player Hexad Types (%) according to quiz answers
      * @param input the players quiz answer
@@ -31,16 +36,15 @@ public class PlayerHexadScoreService {
      * @return the calculated player hexad score 
      */
     public PlayerHexadScore evaluate(UUID userId, PlayerAnswerInput input) {
-
-        Optional<PlayerHexadScoreEntity> existingScore = playerHexadScoreRepository.findByUserId(userId);
-        PlayerHexadScore playerHexadScore; 
-        if(!existingScore.isPresent()){
-            playerHexadScore = input.getQuestions().isEmpty() ? calculateDefault(): calculateFromInput(input);
-            PlayerHexadScoreEntity newEntity = playerHexadScoreMapper.dtoToEntity(playerHexadScore.getScores(), userId);
-            playerHexadScoreRepository.save(newEntity);
-        } else {
+        final UserEntity user = userCreator.fetchOrCreate(userId);
+        PlayerHexadScoreEntity playerHexadScoreEntity = user.getPlayerHexadScore();
+        if(Objects.nonNull(playerHexadScoreEntity)) {
             throw new IllegalStateException("Player Hexad Score was already evaluated");
         }
+        final PlayerHexadScore playerHexadScore = input.getQuestions().isEmpty() ? calculateDefault(): calculateFromInput(input);
+        playerHexadScoreEntity = playerHexadScoreMapper.dtoToEntity(playerHexadScore.getScores(), userId);
+        user.setPlayerHexadScore(playerHexadScoreEntity);
+        playerHexadScoreEntity.setUser(user);
         return playerHexadScore;
     }
 
@@ -114,10 +118,11 @@ public class PlayerHexadScoreService {
      * @return users player hexad score 
      */
     public PlayerHexadScore getById(UUID userId) {
-        PlayerHexadScoreEntity entity = playerHexadScoreRepository.findByUserId(userId)
-            .orElseThrow(() -> new EntityNotFoundException("No score found for user " + userId));
-        return playerHexadScoreMapper.entityToDto(entity);
+        UserEntity user = userCreator.fetchOrCreate(userId);
+        return playerHexadScoreMapper.entityToDto(user.getPlayerHexadScore());
     }
+
+    /*Modified Review Required*/
 
     /**
      * Return wether the user has a player hexad score
@@ -125,10 +130,9 @@ public class PlayerHexadScoreService {
      * @return true if a hexad score exists otherwise false
      */
     public Boolean hasHexadScore(UUID userId) {
-        Optional<PlayerHexadScoreEntity> entity = playerHexadScoreRepository.findByUserId(userId);
-        if (entity.isPresent()) {
-            return true;
-        }
-        return false;
+        UserEntity user = userCreator.fetchOrCreate(userId);
+        return user.getPlayerHexadScore() != null;
     }
+
+
 }

@@ -11,7 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.OffsetDateTime;
@@ -27,7 +27,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Slf4j
 public class CountableUserGoalProgressEntity extends UserGoalProgressEntity{
     @Column
     int completedCount;
@@ -45,27 +44,36 @@ public class CountableUserGoalProgressEntity extends UserGoalProgressEntity{
         completedCount = 0;
     }
 
-    public void updateProgress(OffsetDateTime loginTime) {
-        if (super.getGoal() instanceof LoginStreakGoalEntity) {
+    public boolean updateProgress(OffsetDateTime loginTime) {
+        boolean completedNow = false;
+
+        if (Hibernate.unproxy(super.getGoal()) instanceof LoginStreakGoalEntity) {
             if (loginTimes.isEmpty()) {
                 completedCount = 1;
                 loginTimes.add(loginTime);
             }else if (getDifferenceInDays(loginTimes.getLast(), loginTime) > 1) {
-                completedCount = 0;
+                completedCount = 1;
             } else if (getDifferenceInDays(loginTimes.getLast(), loginTime) == 1) {
                 completedCount++;
-                if (completedCount >= ((LoginStreakGoalEntity) super.getGoal()).getRequiredCount()) {
+                if (completedCount >= ((LoginStreakGoalEntity) Hibernate.unproxy(super.getGoal())).getRequiredCount()
+                && !isCompleted()) {
                     setCompleted(true);
+                    completedNow = true;
                 }
             }
             loginTimes.add(loginTime);
         }
+
+        return completedNow;
     }
 
     private long getDifferenceInDays(OffsetDateTime firstTime, OffsetDateTime secondTime) {
         return ChronoUnit.DAYS.between(firstTime.toLocalDate(), secondTime.toLocalDate());
     }
 
+    public void incrementCompletedCount() {
+        completedCount++;
+    }
 
     @Override
     public String toString() {

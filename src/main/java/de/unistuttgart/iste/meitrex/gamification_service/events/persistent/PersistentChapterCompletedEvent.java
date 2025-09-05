@@ -1,0 +1,22 @@
+package de.unistuttgart.iste.meitrex.gamification_service.events.persistent;
+
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import lombok.*;
+
+import java.util.UUID;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString (callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+@Entity
+@DiscriminatorValue("CHAPTER_COMPLETED_EVENT")
+public class PersistentChapterCompletedEvent extends PersistentEvent {
+    private UUID courseId;
+    private UUID chapterId;
+    private UUID userId;
+}

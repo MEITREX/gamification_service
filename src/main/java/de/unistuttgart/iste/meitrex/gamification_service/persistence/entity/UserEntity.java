@@ -1,34 +1,71 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity;
 
-import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.ItemInstanceEntity;
+import java.util.*;
+
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.UserInventoryEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.skilllevels.SkillEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.skilllevels.SkillLevelsEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.FieldDefaults;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+import de.unistuttgart.iste.meitrex.common.persistence.IWithId;
 
-import java.util.List;
-import java.util.UUID;
 
-@Entity
-@Data
+@Getter
+@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@EqualsAndHashCode
+@Entity(name = "UserEntity")
 public class UserEntity implements IWithId<UUID> {
+
     @Id
-    UUID id;
+    @Column(name="id")
+    private UUID id;
+
+    @Column(name="xp_value", nullable = false)
+    private Integer xpValue;
+
+    @Transient
+    private Double requiredXP = 0.0;
+
+    @Transient
+    private Double exceedingXP = 0.0;
+
+    @Transient
+    private Integer level = 1;
+
+    @Transient
+    private String userName;
 
     @OneToMany(cascade = CascadeType.ALL)
-    List<UserGoalProgressEntity> userGoalProgressEntities;
-
-    @ElementCollection
-    List<UUID> courseIds;
+    private List<UserCourseDataEntity> courseData;
 
     @OneToOne(cascade = CascadeType.ALL)
-    UserInventoryEntity inventory;
+    private UserInventoryEntity inventory;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @NotNull
+    private List<SkillLevelsEntity> skillLevels;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private PlayerHexadScoreEntity playerHexadScore;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "user")
+    private List<UserScoreEntity> leaderboardList = new ArrayList<>();
+
+    public Optional<UserCourseDataEntity> getCourseData(UUID courseId) {
+        return courseData.stream()
+                .filter(data -> data.getCourseId().equals(courseId))
+                .findFirst();
+    }
+
+    public Optional<SkillLevelsEntity> getSkillLevelsForSkill(UUID skillId) {
+        return skillLevels.stream()
+                .filter(skillLevel -> skillLevel.getSkill().getId().equals(skillId))
+                .findFirst();
+    }
 }
+

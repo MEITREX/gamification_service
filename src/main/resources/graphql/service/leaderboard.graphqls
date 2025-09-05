@@ -1,0 +1,19 @@
+enum Period {
+  WEEKLY
+  MONTHLY
+  ALL_TIME
+}
+
+type Leaderboard {
+    id: ID!
+    title: String
+    startDate: Date
+    period: Period
+    userScores: [UserScore!]
+}
+
+type UserScore {
+    id: ID!
+    score: Float
+    user: User
+}

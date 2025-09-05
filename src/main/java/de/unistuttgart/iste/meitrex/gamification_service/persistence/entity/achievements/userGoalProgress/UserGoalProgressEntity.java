@@ -47,8 +47,8 @@ public class UserGoalProgressEntity implements IWithId<UUID> {
         startedAt = OffsetDateTime.now();
     }
 
-    public void updateProgress(GoalProgressEvent progressEvent) {
-        goal.updateProgress(progressEvent, this);
+    public boolean updateProgress(GoalProgressEvent progressEvent) {
+        return goal.updateProgress(progressEvent, this);
     }
 
     @Override
