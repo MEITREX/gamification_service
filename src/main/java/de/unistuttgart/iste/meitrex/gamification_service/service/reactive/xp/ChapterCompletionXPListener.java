@@ -52,6 +52,7 @@ class ChapterCompletionXPListener extends AbstractInternalListener<PersistentCha
     @Override
     protected void doProcess(PersistentChapterCompletedEvent persistentEvent)
             throws TransientEventListenerException, NonTransientEventListenerException {
+        System.out.println(persistentEvent.getClass().getName());
         final UserEntity userEntity = this.userCreator.fetchOrCreate(persistentEvent.getUserId());
         this.userXPAdder.add(userEntity, IUserXPAdder.Cause.CHAPTER_COMPLETED);
     }

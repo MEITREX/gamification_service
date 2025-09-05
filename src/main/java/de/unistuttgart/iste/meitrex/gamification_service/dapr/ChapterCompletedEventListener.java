@@ -34,8 +34,8 @@ public class ChapterCompletedEventListener extends AbstractExternalListener<Chap
     @Transactional
     @Topic(name = "chapter-completed", pubsubName = "meitrex")
     @PostMapping(path = "/chapter-completed-pubsub")
-    public void onChapterCompletedEvent(@RequestBody CloudEvent<ChapterCompletedEvent> event,
-                                        @RequestHeader Map<String, String> headers) {
+    public void onChapterCompletedEvent(@RequestBody CloudEvent<ChapterCompletedEvent> event, @RequestHeader Map<String, String> headers) {
+        System.out.println(ChapterCompletedEventListener.class.getName() + "$executed");
         super.handle(event, ChapterCompletedEventListener::getContext, headers);
     }
 

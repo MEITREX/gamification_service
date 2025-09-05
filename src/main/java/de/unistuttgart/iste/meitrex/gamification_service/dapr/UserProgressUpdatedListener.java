@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+// Working
 @RestController
 class UserProgressUpdatedListener extends AbstractExternalListener<UserProgressUpdatedEvent> {
 

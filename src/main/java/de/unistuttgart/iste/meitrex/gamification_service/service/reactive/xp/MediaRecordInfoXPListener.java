@@ -57,6 +57,7 @@ class MediaRecordInfoXPListener extends AbstractInternalListener<PersistentMedia
     @Override
     protected void doProcess(PersistentMediaRecordInfoEvent persistentEvent)
             throws TransientEventListenerException, NonTransientEventListenerException {
+        System.out.println(persistentEvent.getClass().getName());
         final UserEntity userEntity = this.userCreator.fetchOrCreate(persistentEvent.getUuid());
         final MediaType mediaType = persistentEvent.getMediaType();
         if(Objects.nonNull(mediaType)) {

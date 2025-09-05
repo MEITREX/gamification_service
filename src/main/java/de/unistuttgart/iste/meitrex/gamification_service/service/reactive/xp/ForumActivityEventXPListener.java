@@ -64,12 +64,13 @@ class ForumActivityEventXPListener extends AbstractInternalListener<PersistentFo
             throws TransientEventListenerException, NonTransientEventListenerException {
         final UserEntity author = this.userCreator.fetchOrCreate(persistentEvent.getUserId());
         switch (persistentEvent.getType()) {
-            case INFO, THREAD: {
-                // Handling a new post in forum.
+            case INFO, THREAD, QUESTION: {
                 this.userXPAdder.add(author, IUserXPAdder.Cause.NEW_FORUM_POST);
+                break;
             }
             case ANSWER_ACCEPTED: {
                 this.userXPAdder.add(author, IUserXPAdder.Cause.ANSWER_ACCEPTED);
+                break;
             }
         }
     }

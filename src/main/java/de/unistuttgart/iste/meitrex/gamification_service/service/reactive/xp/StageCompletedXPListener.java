@@ -54,6 +54,7 @@ class StageCompletedXPListener extends AbstractInternalListener<PersistentStageC
     @Override
     protected void doProcess(PersistentStageCompletedEvent persistentEvent)
             throws TransientEventListenerException, NonTransientEventListenerException {
+        System.out.println(persistentEvent.getClass().getName());
         final UserEntity userEntity = this.userCreator.fetchOrCreate(persistentEvent.getUserId());
         this.userXPAdder.add(userEntity, IUserXPAdder.Cause.STAGE_COMPLETED);
     }

@@ -58,7 +58,6 @@ class ContentProgressedXPListener extends AbstractInternalListener<PersistentCon
     @Override
     protected void doProcess(PersistentContentProgressedEvent persistentEvent)
             throws TransientEventListenerException, NonTransientEventListenerException {
-        System.out.println("ContentProgressedXPListener");
         final UserEntity userEntity = this.userCreator.fetchOrCreate(persistentEvent.getUserId());
         final ContentProgressedEvent.ContentType contentType = persistentEvent.getContentType();
         if(Objects.nonNull(contentType)) {
