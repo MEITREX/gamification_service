@@ -28,7 +28,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 @Component
-class UserProgressUpdatedLeaderboardListener extends AbstractInternalListener<PersistentUserProgressUpdatedEvent,  InternalUserProgressUpdatedEvent> {
+public class UserProgressUpdatedLeaderboardListener extends AbstractInternalListener<PersistentUserProgressUpdatedEvent,  InternalUserProgressUpdatedEvent> {
 
     // Do not change to keep unique UUID even in case of refactoring.
     private static final String name = "LeaderboardListener";
