@@ -22,7 +22,6 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class SocializationSpecialtyQuestGoalGenerator implements ISpecialtyQuestGoalGenerator {
     private final ILeaderboardRepository leaderboardRepository;
-    private final ILeaderboardService leaderboardService;
 
     @Override
     public GamificationCategory getCategory() {
