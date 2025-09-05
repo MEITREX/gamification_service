@@ -20,17 +20,21 @@ public class UserMapper {
         }
         final User user = new User();
         user.setId(userEntity.getId());
+        final Integer xpValue = userEntity.getXpValue();
         final Double requiredXP = userEntity.getRequiredXP();
         final Double exceedingXP = userEntity.getExceedingXP();
         final Integer level = userEntity.getLevel();
         if(Objects.nonNull(requiredXP)) {
-            userEntity.setRequiredXP(requiredXP);
+            user.setRequiredXP(requiredXP);
         }
         if(Objects.nonNull(exceedingXP)) {
-            userEntity.setExceedingXP(exceedingXP);
+            user.setExceedingXP(exceedingXP);
         }
         if(Objects.nonNull(level)) {
-            userEntity.setLevel(level);
+            user.setLevel(level);
+        }
+        if(Objects.nonNull(xpValue)) {
+            user.setXpValue(xpValue);
         }
         user.setName(userEntity.getUserName());
         return user;

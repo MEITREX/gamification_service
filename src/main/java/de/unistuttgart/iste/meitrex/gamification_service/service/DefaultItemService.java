@@ -72,8 +72,8 @@ public class DefaultItemService implements IItemService {
                     .filter(ItemParent::isObtainableInLottery)
                     .filter(itemParent -> itemParent.getRarity().equals(ItemRarity.ULTRA_RARE))
                     .toList();
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
+        } catch (Exception e) {
+            //throw new IllegalStateException(e);
         }
     }
 

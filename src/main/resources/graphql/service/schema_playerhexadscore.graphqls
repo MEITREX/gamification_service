@@ -35,6 +35,7 @@ type User {
   id: UUID!
   name: String
   email: String
+  xpValue: Int!
   requiredXP: Float!
   exceedingXP: Float!
   level: Int!

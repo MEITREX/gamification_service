@@ -39,7 +39,6 @@ public class UserEntity implements IWithId<UUID> {
     @Transient
     private String userName;
 
-
     @OneToMany(cascade = CascadeType.ALL)
     private List<UserCourseDataEntity> courseData;
 

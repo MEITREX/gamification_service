@@ -59,7 +59,7 @@ class DefaultXPImplementation implements IXPLevelMapping, IXPLevelDistance {
     private static List<Map.Entry<Integer, Double>> createXPThresholdMappingList(Map<Integer, Double> mapping) {
         return mapping.entrySet()
                 .stream()
-                .sorted(Map.Entry.<Integer, Double>comparingByValue())
+                .sorted(Map.Entry.<Integer, Double>comparingByValue().reversed())
                 .toList();
     }
 
@@ -86,24 +86,12 @@ class DefaultXPImplementation implements IXPLevelMapping, IXPLevelDistance {
     @Override
     public int calcLevel(double xpValue) {
         assureNonNegative(xpValue, ERR_MSG_XP_VALUE_MUST_BE_NON_NEGATIVE);
-        int minIndex = 0;
-        int maxIndex = levelXPThresholdMappingList.size() - 1;
-        int level = 0;
-        while (minIndex <= maxIndex) {
-            int midIndex = (minIndex + maxIndex) / 2;
-            double midThreshold = levelXPThresholdMappingList
-                    .get(midIndex)
-                    .getValue();
-            if (xpValue >= midThreshold) {
-                level = levelXPThresholdMappingList
-                        .get(midIndex)
-                        .getKey();
-                minIndex = midIndex + 1;
-            } else {
-                maxIndex = midIndex - 1;
+        for(Map.Entry<Integer, Double> entry : this.levelXPThresholdMappingList) {
+            if(xpValue >= entry.getValue()) {
+                return entry.getKey();
             }
         }
-        return level;
+        throw new IllegalStateException();
     }
 
     @Override
