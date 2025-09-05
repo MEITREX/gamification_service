@@ -50,6 +50,7 @@ public class UserProgressUpdatedLeaderboardListener extends AbstractInternalList
                     && userID.equals(userEntity.getId())) {
                 return Optional.of(rank);
             }
+            rank++;
         }
         return Optional.empty();
     }
