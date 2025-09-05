@@ -37,7 +37,7 @@ class UserProgressUpdatedLeaderboardListener extends AbstractInternalListener<Pe
         return !day.isBefore(beginDate)  && day.isBefore(endDate);
     }
 
-    private static Optional<Integer> computeRank(List<UserScoreEntity> scoreEntityList, UUID userID) {
+    public static Optional<Integer> computeRank(List<UserScoreEntity> scoreEntityList, UUID userID) {
         if(Objects.isNull(scoreEntityList) || Objects.isNull(userID)) {
             return Optional.empty();
         }
