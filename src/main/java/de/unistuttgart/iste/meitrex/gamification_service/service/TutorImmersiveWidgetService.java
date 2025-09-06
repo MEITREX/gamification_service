@@ -120,6 +120,9 @@ public class TutorImmersiveWidgetService {
     }
 
     private String generateContentListString(final List<Content> contents) {
+        if(contents.isEmpty())
+            return "No items completed.";
+
         final StringBuilder sb = new StringBuilder();
 
         boolean first = true;
