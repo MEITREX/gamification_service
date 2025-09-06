@@ -13,9 +13,14 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.ques
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.ICourseRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.IUserRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.quests.DailyQuestType;
+import de.unistuttgart.iste.meitrex.gamification_service.service.internal.ICourseCreator;
+import de.unistuttgart.iste.meitrex.gamification_service.service.internal.ICourseMembershipHandler;
+import de.unistuttgart.iste.meitrex.gamification_service.service.internal.IUserCreator;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.quests.quest_generation.QuestGeneratorServiceFactory;
 import de.unistuttgart.iste.meitrex.generated.dto.Quest;
 import de.unistuttgart.iste.meitrex.generated.dto.QuestSet;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -33,9 +38,9 @@ import java.util.*;
 @Transactional
 public class QuestService implements IQuestService{
 
-    private final IUserRepository userRepository;
+    private final IUserCreator userCreator;
 
-    private final ICourseRepository courseRepository;
+    private final ICourseCreator courseCreator;
 
     private final AdaptivityConfiguration adaptivityConfiguration;
 
@@ -43,34 +48,37 @@ public class QuestService implements IQuestService{
 
     private final ModelMapper modelMapper;
 
+    private final ICourseMembershipHandler courseMembershipHandler;
+    @PersistenceContext
+    private EntityManager entityManager;
+
     private final int DAILY_QUEST_COUNT = 3; // Number of quests in a daily quest set
 
     public QuestSet getDailyQuestSetForUser(final UUID courseId, final UUID userId) {
         log.info("Fetching daily quest set for user {} in course {}", userId, courseId);
 
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+        UserEntity user = userCreator.fetchOrCreate(userId);
 
-        UserCourseDataEntity courseData = user.getCourseData(courseId)
-                .orElseThrow(() -> new IllegalArgumentException("No course data found for user " + userId
-                        + " in course " + courseId));
+        CourseEntity course = courseCreator.fetchOrCreate(courseId);
+
+        UserCourseDataEntity courseData = courseMembershipHandler.addUserToCourseIfNotAlready(course, user);
 
         // if user has no daily quest set, or if it outdated, generate a new one
-        if (courseData.getDailyQuestSet() == null
-                || courseData.getDailyQuestSet().getForDay().isBefore(LocalDate.now())) {
-            courseData.setDailyQuestSet(generateDailyQuestSet(courseId, user, courseData.getDailyQuestSet()));
-            userRepository.save(user); // Save the updated user with the new quest set
+        QuestSetEntity questSetEntity = courseData.getDailyQuestSet();
+        if (questSetEntity == null
+                || questSetEntity.getForDay().isBefore(LocalDate.now())) {
+            questSetEntity = generateDailyQuestSet(course, user, courseData.getDailyQuestSet());
+            courseData.setDailyQuestSet(questSetEntity);
+            entityManager.persist(questSetEntity);
         }
 
         return mapQuestSetEntityToDto(user, courseData.getDailyQuestSet());
     }
 
-    private QuestSetEntity generateDailyQuestSet(@NotNull final UUID courseId,
+    private QuestSetEntity generateDailyQuestSet(@NotNull final CourseEntity courseEntity,
                                                  @NotNull final UserEntity user,
                                                  @Nullable final QuestSetEntity previousQuestSet) {
-        log.info("Generating new daily quest set for user {} in course {}", user, courseId);
-
-        CourseEntity courseEntity = courseRepository.findByIdOrThrow(courseId);
+        log.info("Generating new daily quest set for user {} in course {}", user, courseEntity.getId());
 
         float rewardMultiplier = previousQuestSet == null
                 ? 1
