@@ -19,7 +19,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class QuestSetEntity implements IWithId<UUID> {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     /**
