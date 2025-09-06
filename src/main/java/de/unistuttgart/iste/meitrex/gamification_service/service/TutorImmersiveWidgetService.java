@@ -7,9 +7,12 @@ import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
 import de.unistuttgart.iste.meitrex.content_service.exception.ContentServiceConnectionException;
 import de.unistuttgart.iste.meitrex.gamification_service.config.AdaptivityConfiguration;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.TutorImmersiveSpeechEmbeddable;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserCourseDataEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.service.internal.ICourseCreator;
+import de.unistuttgart.iste.meitrex.gamification_service.service.internal.ICourseMembershipHandler;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.IUserCreator;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 import jakarta.transaction.Transactional;
@@ -35,28 +38,27 @@ import java.util.stream.Stream;
 public class TutorImmersiveWidgetService {
     private final OllamaClient ollamaClient;
     private final IUserCreator userCreator;
+    private final ICourseCreator courseCreator;
+    private final ICourseMembershipHandler courseMembershipHandler;
     private final AdaptivityConfiguration adaptivityConfiguration;
     private final ContentServiceClient contentService;
 
     public String getSpeechContent(final LoggedInUser loggedInUser, final UUID courseId) {
         UserEntity userEntity = userCreator.fetchOrCreate(loggedInUser.getId());
-        Optional<UserCourseDataEntity> courseData = userEntity.getCourseData(courseId);
-        if(courseData.isEmpty()) {
-            log.warn("getSpeechContent(): Course data for course {} not found for user {}",
-                    courseId, loggedInUser.getId());
-            return "Hey! Welcome to the course. Let's learn together!";
-        }
+        CourseEntity courseEntity = courseCreator.fetchOrCreate(courseId);
+        UserCourseDataEntity courseData = courseMembershipHandler.addUserToCourseIfNotAlready(courseEntity, userEntity);
 
-        TutorImmersiveSpeechEmbeddable tutorSpeech = courseData.get().getTutorImmersiveSpeech();
+        TutorImmersiveSpeechEmbeddable tutorSpeech = courseData.getTutorImmersiveSpeech();
         try {
             String userActivityString = getUserRecentActivitiesString(loggedInUser.getId(), courseId);
 
             // if we don't have a speech yet or if the user's recent activities have changed, generate a new speech
             // for the tutor, otherwise return what we already have
             if(tutorSpeech == null || !tutorSpeech.getRecentActivitiesString().equals(userActivityString)) {
-                if(tutorSpeech == null)
+                if(tutorSpeech == null) {
                     tutorSpeech = new TutorImmersiveSpeechEmbeddable();
-
+                    courseData.setTutorImmersiveSpeech(tutorSpeech);
+                }
                 tutorSpeech.setRecentActivitiesString(userActivityString);
                 tutorSpeech.setTutorSpeechContent(generateSpeechContent(loggedInUser, userActivityString));
             }
