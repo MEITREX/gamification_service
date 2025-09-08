@@ -47,7 +47,6 @@ public class MediaRecordInfoEventListener extends AbstractExternalListener<Media
         persistentMediaRecordInfoEvent.setMediaType(event.getMediaType());
         persistentMediaRecordInfoEvent.setPageCount(event.getPageCount());
         persistentMediaRecordInfoEvent.setDurationInSeconds(event.getDurationSeconds());
-        //ToDo Setting the user's id
         return persistentMediaRecordInfoEvent;
     }
 }

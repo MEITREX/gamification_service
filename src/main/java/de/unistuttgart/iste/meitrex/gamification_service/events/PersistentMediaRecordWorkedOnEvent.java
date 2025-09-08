@@ -23,7 +23,7 @@ public class PersistentMediaRecordWorkedOnEvent extends PersistentEvent {
     @Column(name="media_record_id")
     private UUID mediaRecordId;
 
-    @Column(name="user_id")
+    @Column(name="working_user_id")
     private UUID userId;
 
 }
