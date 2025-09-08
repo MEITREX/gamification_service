@@ -37,6 +37,7 @@ public class MediaRecordWorkedOnEventListener extends AbstractExternalListener<M
     @Topic(name = "media-record-worked-on", pubsubName = "meitrex")
     @PostMapping(path = "/media-record-worked-on-pubsub")
     public void onChapterCompletedEvent(@RequestBody CloudEvent<MediaRecordWorkedOnEvent> event, @RequestHeader Map<String, String> headers) {
+        System.out.println("media-record-worked-on");
         super.handle(event, MediaRecordWorkedOnEventListener::getContext, headers);
     }
 
