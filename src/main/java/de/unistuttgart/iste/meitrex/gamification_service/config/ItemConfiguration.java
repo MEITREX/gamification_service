@@ -1,0 +1,12 @@
+package de.unistuttgart.iste.meitrex.gamification_service.config;
+
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+@Data
+@ConfigurationProperties("app.items")
+@Configuration
+public class ItemConfiguration {
+    private int defaultStartingCapital;
+}

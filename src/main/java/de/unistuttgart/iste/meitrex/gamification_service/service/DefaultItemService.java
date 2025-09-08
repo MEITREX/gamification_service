@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service;
 
+import de.unistuttgart.iste.meitrex.gamification_service.domain.UserInventoryFactory;
 import de.unistuttgart.iste.meitrex.gamification_service.model.ItemData;
 import de.unistuttgart.iste.meitrex.gamification_service.model.ItemParent;
 import de.unistuttgart.iste.meitrex.gamification_service.model.ItemRarity;
@@ -7,7 +8,6 @@ import de.unistuttgart.iste.meitrex.gamification_service.model.access.IItemProvi
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.ItemInstanceEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.ItemType;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.UserInventoryEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.IUserRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.ItemInstanceRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.IUserCreator;
@@ -19,7 +19,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.*;
 
 @Component
@@ -89,6 +88,8 @@ public class DefaultItemService implements IItemService {
 
     private final IItemProvider itemProvider = null;
 
+    private static UserInventoryFactory userInventoryFactory;
+
     // Data Structures
 
     private final Random r = new Random();
@@ -104,11 +105,12 @@ public class DefaultItemService implements IItemService {
     private List<ItemParent> ultraRareLotteryItemList;
 
 
-    public DefaultItemService(@Autowired IItemProvider itemProvider, @Autowired IGoalProgressService goalProgressService, @Autowired IUserCreator userCreator, @Autowired IUserRepository userRepository, @Autowired ItemInstanceRepository itemInstanceRepository) {
+    public DefaultItemService(@Autowired IItemProvider itemProvider, @Autowired IGoalProgressService goalProgressService, @Autowired IUserCreator userCreator, @Autowired IUserRepository userRepository, @Autowired ItemInstanceRepository itemInstanceRepository, @Autowired UserInventoryFactory userInventoryFactory) {
         this.goalProgressService = Objects.requireNonNull(goalProgressService);
         this.userCreator = Objects.requireNonNull(userCreator);
         this.userRepository = Objects.requireNonNull(userRepository);
         this.itemInstanceRepository = Objects.requireNonNull(itemInstanceRepository);
+        DefaultItemService.userInventoryFactory = Objects.requireNonNull(userInventoryFactory);
         itemList = new ArrayList<>();
         initItemLists(itemProvider, this);
     }
@@ -116,12 +118,8 @@ public class DefaultItemService implements IItemService {
 
     public Inventory getInventoryForUser(UUID userId) {
         UserEntity user = userCreator.fetchOrCreate(userId);
-        if (user.getInventory() == null) {
-            user.setInventory(new UserInventoryEntity());
-        }
-        if(user.getInventory().getItems().isEmpty()) {
-            addDefaultItems(user);
-        }
+        ensureInventory(user);
+        checkDefaultItems(user);
         List<UserItem> userItems = getItems(user);
         Inventory inventory = new Inventory();
         inventory.setItems(userItems);
@@ -132,12 +130,8 @@ public class DefaultItemService implements IItemService {
 
     public List<UserItem> getItemsForUser(UUID userId) {
         UserEntity user = userCreator.fetchOrCreate(userId);
-        if (user.getInventory() == null) {
-            user.setInventory(new UserInventoryEntity());
-        }
-        if(user.getInventory().getItems().isEmpty()) {
-            addDefaultItems(user);
-        }
+        ensureInventory(user);
+        checkDefaultItems(user);
         return getItems(user);
     }
 
@@ -164,9 +158,7 @@ public class DefaultItemService implements IItemService {
 
     public Inventory equipItem(UUID userId, UUID itemId) {
         UserEntity user = userCreator.fetchOrCreate(userId);
-        if(user.getInventory().getItems().isEmpty()) {
-            addDefaultItems(user);
-        }
+        checkDefaultItems(user);
         user.getInventory().getItems().stream().filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId()
                 .equals(itemId)).findFirst().ifPresent(itemInstanceEntity -> {
             user.getInventory().getItems().stream().filter(itemInstanceEntity1 ->
@@ -190,9 +182,7 @@ public class DefaultItemService implements IItemService {
 
     public Inventory unequipItem(UUID userId, UUID itemId) {
         UserEntity user = userCreator.fetchOrCreate(userId);
-        if(user.getInventory().getItems().isEmpty()) {
-            addDefaultItems(user);
-        }
+        checkDefaultItems(user);
         user.getInventory().getItems().stream().filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId().equals(itemId)).findFirst().ifPresent(itemInstanceEntity -> {
             if (itemInstanceEntity.getItemType() != ItemType.Tutor) {
                 itemInstanceEntity.setEquipped(false);
@@ -204,12 +194,8 @@ public class DefaultItemService implements IItemService {
 
     public Inventory addItemRewardToUser(UUID userId, UUID itemId) {
         UserEntity user = userCreator.fetchOrCreate(userId);
-        if (user.getInventory() == null) {
-            user.setInventory(new UserInventoryEntity());
-        }
-        if(user.getInventory().getItems().isEmpty()) {
-            addDefaultItems(user);
-        }
+        ensureInventory(user);
+        checkDefaultItems(user);
         itemList.stream().filter(ItemParent::isObtainableAsReward)
                 .filter(itemParent -> itemParent.getId().equals(itemId))
                 .findAny().ifPresent(itemParent -> {
@@ -227,9 +213,7 @@ public class DefaultItemService implements IItemService {
 
     public Inventory addPointsToUser(UUID userId, Integer points) {
         UserEntity user = userCreator.fetchOrCreate(userId);
-        if(user.getInventory().getItems().isEmpty()) {
-            addDefaultItems(user);
-        }
+        checkDefaultItems(user);
         user.getInventory().addPoints(points);
         userRepository.save(user);
         return getInventoryForUser(user);
@@ -239,18 +223,13 @@ public class DefaultItemService implements IItemService {
         UserItemComplete userItem;
         UserEntity user = userCreator.fetchOrCreate(userId);
         if (user.getInventory() == null) {
-            user.setInventory(new UserInventoryEntity());
+            user.setInventory(userInventoryFactory.createUserInventory());
         }
-        if(user.getInventory().getItems().isEmpty()) {
-            addDefaultItems(user);
-        }
+        checkDefaultItems(user);
         if (user.getInventory().getUnspentPoints() <= LOTTERY_COST) {
             return null;
         } else {
             user.getInventory().removePoints(LOTTERY_COST);
-        }
-        if(user.getInventory().getItems().isEmpty()) {
-            addDefaultItems(user);
         }
         double randomValue = r.nextDouble();
         if (randomValue < COMMON_PERCENTAGE) {
@@ -320,9 +299,7 @@ public class DefaultItemService implements IItemService {
     }
 
     private static void getItem(UserEntity user, UUID itemId, List<UserItem> userItems) {
-        if (user.getInventory() == null) {
-            user.setInventory(new UserInventoryEntity());
-        }
+        ensureInventory(user);
         ItemInstanceEntity itemInstance = user.getInventory().getItems().stream()
                 .filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId().equals(itemId))
                 .findFirst().orElse(null);
@@ -340,5 +317,17 @@ public class DefaultItemService implements IItemService {
             item.setEquipped(itemInstance.isEquipped());
         }
         userItems.add(item);
+    }
+
+    private static void ensureInventory(UserEntity user) {
+        if (user.getInventory() == null) {
+            user.setInventory(userInventoryFactory.createUserInventory());
+        }
+    }
+
+    private void checkDefaultItems(UserEntity user) {
+        if(user.getInventory().getItems().isEmpty()) {
+            addDefaultItems(user);
+        }
     }
 }

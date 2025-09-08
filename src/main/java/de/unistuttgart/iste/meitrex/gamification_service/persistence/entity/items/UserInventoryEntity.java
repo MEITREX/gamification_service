@@ -2,7 +2,9 @@ package de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.ite
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import java.util.ArrayList;
@@ -11,6 +13,8 @@ import java.util.UUID;
 
 @Entity
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserInventoryEntity {
     @Id
@@ -21,12 +25,7 @@ public class UserInventoryEntity {
     int unspentPoints;
 
     @OneToMany(cascade = CascadeType.ALL)
-    List<ItemInstanceEntity> items;
-
-    public UserInventoryEntity() {
-        unspentPoints = 0;
-        items = new ArrayList<>();
-    }
+    List<ItemInstanceEntity> items = new ArrayList<>();
 
     public void addPoints(int points) {
         unspentPoints += points;
