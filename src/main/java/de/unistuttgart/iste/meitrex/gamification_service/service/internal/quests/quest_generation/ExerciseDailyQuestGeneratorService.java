@@ -170,10 +170,18 @@ public class ExerciseDailyQuestGeneratorService implements IDailyQuestGenerator 
         if(!latestLog.get().getSuccess())
             return AssessmentUserStatus.FAILED;
 
+        // if user has passed assessment, but no next learn interval is given, we will treat this assessment as
+        // completely passed and will not suggest it
+        if(assessment.getUserProgressData().getNextLearnDate() == null)
+            return AssessmentUserStatus.PASSED;
+
+        // otherwise, we check if the learning interval has passed and note this for this assessment. A passed learning
+        // interval is a reason to suggest it
         if(assessment.getUserProgressData().getNextLearnDate().isBefore(OffsetDateTime.now()))
             return AssessmentUserStatus.PASSED_PAST_LEARNING_INTERVAL;
 
-        return AssessmentUserStatus.PASSED; // Default case, should not happen
+        // if learning interval has not passed yet, we treat it as passed and will not suggest it
+        return AssessmentUserStatus.PASSED;
     }
 
     /**
