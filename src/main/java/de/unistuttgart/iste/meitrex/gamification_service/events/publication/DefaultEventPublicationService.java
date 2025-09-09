@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.events.publication;
 
+import de.unistuttgart.iste.meitrex.gamification_service.events.PersistentMediaRecordWorkedOnEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.events.internal.*;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.*;
 import de.unistuttgart.iste.meitrex.gamification_service.events.repository.*;
@@ -42,10 +43,16 @@ class DefaultEventPublicationService implements IEventPublicationService {
     private final IPersistentMediaRecordInfoRepository mediaRecordInfoRepository;
 
     private final IPersistentAskedTutorAQuestionEventRepository askedTutorAQuestionEventRepository;
+
     private final IPersistentChapterCompletedEventRepository chapterCompletedEventRepository;
+
     private final IPersistentStageCompletedEventRepository stageCompletedEventRepository;
+
     private final IPersistentCourseCompletedEventRepository courseCompletedEventRepository;
+
     private final IPersistentUserCourseMembershipChangedEventRepository userCourseMembershipChangedEventRepository;
+
+    private final IPersistentMediaRecordWorkedOnRepository persistentMediaRecordWorkedOnRepository;
 
     private final Map<Class<? extends PersistentEvent>, Function<PersistentEvent, InternalEvent>> handlerMap = new HashMap<>();
 
@@ -63,7 +70,8 @@ class DefaultEventPublicationService implements IEventPublicationService {
             @Autowired IPersistentChapterCompletedEventRepository chapterCompletedEventRepository,
             @Autowired IPersistentStageCompletedEventRepository stageCompletedEventRepository,
             @Autowired IPersistentCourseCompletedEventRepository courseCompletedEventRepository,
-            @Autowired IPersistentUserCourseMembershipChangedEventRepository userCourseMembershipChangedEventRepository
+            @Autowired IPersistentUserCourseMembershipChangedEventRepository userCourseMembershipChangedEventRepository,
+            @Autowired IPersistentMediaRecordWorkedOnRepository persistentMediaRecordWorkedOnRepository
     ) {
         this.applicationEventPublisher = Objects.requireNonNull(applicationEventPublisher);
         this.persistentEventRepository = Objects.requireNonNull(persistentEventRepository);
@@ -78,12 +86,14 @@ class DefaultEventPublicationService implements IEventPublicationService {
         this.stageCompletedEventRepository = Objects.requireNonNull(stageCompletedEventRepository);
         this.courseCompletedEventRepository = Objects.requireNonNull(courseCompletedEventRepository);
         this.userCourseMembershipChangedEventRepository = Objects.requireNonNull(userCourseMembershipChangedEventRepository);
+        this.persistentMediaRecordWorkedOnRepository = Objects.requireNonNull(persistentMediaRecordWorkedOnRepository);
         this.handlerMap.put(PersistentUserProgressUpdatedEvent.class, this::saveUserProgressUpdatedEvent);
         this.handlerMap.put(PersistentContentProgressedEvent.class, this::saveContentProgressedEvent);
         this.handlerMap.put(PersistentForumActivityEvent.class, this::saveForumActivityEvent);
         this.handlerMap.put(PersistentSkillEntityChangedEvent.class, this::saveSkillEntityChangedEvent);
         this.handlerMap.put(PersistentUserSkillLevelChangedEvent.class, this::saveUserSkillLevelChangedEvent);
         this.handlerMap.put(PersistentMediaRecordInfoEvent.class, this::saveMediaRecordInfoEvent);
+        this.handlerMap.put(PersistentMediaRecordWorkedOnEvent.class, this::saveMediaRecordWorkedOnEvent);
         this.handlerMap.put(PersistentChapterCompletedEvent.class, this::saveChapterCompletedEvent);
         this.handlerMap.put(PersistentStageCompletedEvent.class, this::saveStageCompletedEvent);
         this.handlerMap.put(PersistentCourseCompletedEvent.class, this::saveCourseCompletedEvent);
@@ -106,6 +116,7 @@ class DefaultEventPublicationService implements IEventPublicationService {
                 @Override
                 public void afterCommit() {
                     applicationEventPublisher.publishEvent(internalEvent);
+                    System.out.println("published");
                 }
             });
         /*}
@@ -221,6 +232,21 @@ class DefaultEventPublicationService implements IEventPublicationService {
                 .getUuid();
 
         return new InternalCourseCompletedEvent(DefaultEventPublicationService.this, uuid);
+    }
+
+    private InternalEvent saveMediaRecordWorkedOnEvent(PersistentEvent persistentEvent) {
+        PersistentMediaRecordWorkedOnEvent persistentMediaRecordWorkedOnEvent
+                = (PersistentMediaRecordWorkedOnEvent) persistentEvent;
+
+        System.out.println("media-record-worked-on-4 " + persistentEvent.getClass().getName());
+
+        final UUID uuid = this.persistentMediaRecordWorkedOnRepository
+                .save(persistentMediaRecordWorkedOnEvent)
+                .getUuid();
+
+        System.out.println("media-record-worked-on-5: " + persistentEvent.getClass().getName());
+
+        return new InternalMediaWorkedOnEvent(DefaultEventPublicationService.this, uuid);
     }
 
     private InternalEvent saveUserCourseMembershipChangedEvent(PersistentEvent persistentEvent) {

@@ -1,8 +1,8 @@
 package de.unistuttgart.iste.meitrex.gamification_service.dapr;
 
-import de.unistuttgart.iste.meitrex.common.event.ChapterCompletedEvent;
 import de.unistuttgart.iste.meitrex.common.event.MediaRecordInfoEvent;
-import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentChapterCompletedEvent;
+import de.unistuttgart.iste.meitrex.common.event.MediaRecordWorkedOnEvent;
+import de.unistuttgart.iste.meitrex.gamification_service.events.PersistentMediaRecordWorkedOnEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentMediaRecordInfoEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.events.publication.IEventPublicationService;
@@ -20,13 +20,13 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-public class MediaRecordInfoEventListener extends AbstractExternalListener<MediaRecordInfoEvent> {
+public class MediaRecordWorkedOnEventListener extends AbstractExternalListener<MediaRecordWorkedOnEvent> {
 
-    private static String getContext(CloudEvent<MediaRecordInfoEvent> cloudEvent) {
+    private static String getContext(CloudEvent<MediaRecordWorkedOnEvent> cloudEvent) {
         return "";
     }
 
-    public MediaRecordInfoEventListener(
+    public MediaRecordWorkedOnEventListener(
             @Autowired ITimeService timeService,
             @Autowired IEventPublicationService eventService,
             @Value("${de.unistuttgart.iste.meitrex.gamification_service.dapr.log_headers:false}") boolean logHeaders) {
@@ -34,20 +34,18 @@ public class MediaRecordInfoEventListener extends AbstractExternalListener<Media
     }
 
     @Transactional
-    @Topic(name = "media-record-info", pubsubName = "meitrex")
-    @PostMapping(path = "/media-record-info-pubsub")
-    public void onChapterCompletedEvent(@RequestBody CloudEvent<MediaRecordInfoEvent> event, @RequestHeader Map<String, String> headers) {
-        System.out.println("media-record-info-in");
-        super.handle(event, MediaRecordInfoEventListener::getContext, headers);
+    @Topic(name = "media-record-worked-on", pubsubName = "meitrex")
+    @PostMapping(path = "/media-record-worked-on-pubsub")
+    public void onChapterCompletedEvent(@RequestBody CloudEvent<MediaRecordWorkedOnEvent> event, @RequestHeader Map<String, String> headers) {
+        System.out.println("media-record-worked-on");
+        super.handle(event, MediaRecordWorkedOnEventListener::getContext, headers);
     }
 
     @Override
-    protected PersistentEvent mapToPersistentEvent(MediaRecordInfoEvent event) {
-        final PersistentMediaRecordInfoEvent persistentMediaRecordInfoEvent = new PersistentMediaRecordInfoEvent();
-        persistentMediaRecordInfoEvent.setMediaRecordId(event.getMediaRecordId());
-        persistentMediaRecordInfoEvent.setMediaType(event.getMediaType());
-        persistentMediaRecordInfoEvent.setPageCount(event.getPageCount());
-        persistentMediaRecordInfoEvent.setDurationInSeconds(event.getDurationSeconds());
-        return persistentMediaRecordInfoEvent;
+    protected PersistentEvent mapToPersistentEvent(MediaRecordWorkedOnEvent event) {
+        final PersistentMediaRecordWorkedOnEvent persistentMediaRecordWorkedOnEvent = new PersistentMediaRecordWorkedOnEvent();
+        persistentMediaRecordWorkedOnEvent.setUserId(event.getUserId());
+        persistentMediaRecordWorkedOnEvent.setMediaRecordId(event.getMediaRecordId());
+        return persistentMediaRecordWorkedOnEvent;
     }
 }
