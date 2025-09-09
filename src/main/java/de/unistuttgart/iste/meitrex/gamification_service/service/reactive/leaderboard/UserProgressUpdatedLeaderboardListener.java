@@ -167,7 +167,7 @@ public class UserProgressUpdatedLeaderboardListener extends AbstractInternalList
             int oldRank = curRankOptional.get();
             int newRank = newRankOptional.get();
             if(oldRank != newRank) {
-                goalProgressUpdater.updateGoalProgressEntitiesForUser(userEntity, MoveLeaderboardGoalProgressEvent.builder()
+                goalProgressUpdater.updateGoalProgressEntitiesForUser(userEntity, courseEntity.getId(), MoveLeaderboardGoalProgressEvent.builder()
                         .oldRank(oldRank)
                         .newRank(newRank)
                         .build()

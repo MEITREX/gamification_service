@@ -93,6 +93,7 @@ class DefaultEventPublicationService implements IEventPublicationService {
         this.handlerMap.put(PersistentSkillEntityChangedEvent.class, this::saveSkillEntityChangedEvent);
         this.handlerMap.put(PersistentUserSkillLevelChangedEvent.class, this::saveUserSkillLevelChangedEvent);
         this.handlerMap.put(PersistentMediaRecordInfoEvent.class, this::saveMediaRecordInfoEvent);
+        this.handlerMap.put(PersistentMediaRecordWorkedOnEvent.class, this::saveMediaRecordWorkedOnEvent);
         this.handlerMap.put(PersistentChapterCompletedEvent.class, this::saveChapterCompletedEvent);
         this.handlerMap.put(PersistentStageCompletedEvent.class, this::saveStageCompletedEvent);
         this.handlerMap.put(PersistentCourseCompletedEvent.class, this::saveCourseCompletedEvent);
@@ -115,6 +116,7 @@ class DefaultEventPublicationService implements IEventPublicationService {
                 @Override
                 public void afterCommit() {
                     applicationEventPublisher.publishEvent(internalEvent);
+                    System.out.println("published");
                 }
             });
         /*}
@@ -236,9 +238,13 @@ class DefaultEventPublicationService implements IEventPublicationService {
         PersistentMediaRecordWorkedOnEvent persistentMediaRecordWorkedOnEvent
                 = (PersistentMediaRecordWorkedOnEvent) persistentEvent;
 
+        System.out.println("media-record-worked-on-4 " + persistentEvent.getClass().getName());
+
         final UUID uuid = this.persistentMediaRecordWorkedOnRepository
                 .save(persistentMediaRecordWorkedOnEvent)
                 .getUuid();
+
+        System.out.println("media-record-worked-on-5: " + persistentEvent.getClass().getName());
 
         return new InternalMediaWorkedOnEvent(DefaultEventPublicationService.this, uuid);
     }

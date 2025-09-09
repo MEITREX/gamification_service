@@ -60,9 +60,11 @@ class MediaRecordWorkedOnXPListener extends AbstractInternalListener<PersistentM
     @Override
     protected void doProcess(PersistentMediaRecordWorkedOnEvent persistentEvent)
             throws TransientEventListenerException, NonTransientEventListenerException {
+        System.out.println("media-record-worked-on-7");
         final UserEntity userEntity = this.userCreator.fetchOrCreate(persistentEvent.getUuid());
         final PersistentMediaRecordInfoEvent mediaRecordInfoEvent = findMediaRecordInfo(persistentEvent);
         final MediaType mediaType = mediaRecordInfoEvent.getMediaType();
+        System.out.println("old: " + userEntity.getXpValue());
         if(Objects.nonNull(mediaType)) {
             switch (mediaType) {
                 case VIDEO: {
@@ -75,18 +77,23 @@ class MediaRecordWorkedOnXPListener extends AbstractInternalListener<PersistentM
                 }
             }
         }
+        System.out.println("new: " + userEntity.getXpValue());
     }
 
     private PersistentMediaRecordInfoEvent findMediaRecordInfo(PersistentMediaRecordWorkedOnEvent persistentEvent) {
         final UUID mediaRecordID = persistentEvent.getMediaRecordId();
         if(Objects.isNull(mediaRecordID)) {
+            System.out.println("invalid");
             throw new NonTransientEventListenerException();
         }
         final Optional<PersistentMediaRecordInfoEvent> mediaRecordInfoEvent
                 = this.mediaRecordInfoRepository.findById(mediaRecordID);
         if(mediaRecordInfoEvent.isEmpty()) {
+            System.out.println("media-record-worked-on-not-found");
             throw new TransientEventListenerException();
         }
+        System.out.println("passed-media-record-worked-on");
+
         return mediaRecordInfoEvent.get();
     }
 
