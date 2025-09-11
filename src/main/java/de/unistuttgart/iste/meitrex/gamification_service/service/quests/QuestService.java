@@ -88,7 +88,7 @@ public class QuestService implements IQuestService{
 
         List<DailyQuestType> questTypeCandidates;
 
-        if(debugAdaptivityConfiguration.getQuests().getForceSpecialtyQuestType() != null) {
+        if(debugAdaptivityConfiguration.getQuests().getForceDailyQuestType() != null) {
             questTypeCandidates = new ArrayList<>(List.of(
                     DailyQuestType.valueOf(debugAdaptivityConfiguration.getQuests().getForceDailyQuestType())));
         } else {

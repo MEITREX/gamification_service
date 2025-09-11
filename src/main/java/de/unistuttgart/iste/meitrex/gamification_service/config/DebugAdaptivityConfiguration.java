@@ -14,7 +14,7 @@ public class DebugAdaptivityConfiguration {
     public static class Quests {
         /**
          * Forces daily quest generation to exclusively generate the specified quest type.
-         * Must be one of: "EXERCISE", "LEARNING", "SPECIALTY" or null to disable forcing.
+         * Must be one of: "EXERCISE", "LEARNING", "SKILL_LEVEL", "SPECIALTY" or null to disable forcing.
          */
         private String forceDailyQuestType = null;
         /**
