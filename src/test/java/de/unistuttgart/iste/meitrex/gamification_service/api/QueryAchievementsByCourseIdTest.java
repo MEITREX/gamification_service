@@ -6,20 +6,22 @@ import de.unistuttgart.iste.meitrex.common.testutil.MockTestPublisherConfigurati
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
 import de.unistuttgart.iste.meitrex.course_service.client.CourseServiceClient;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserCourseDataEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.AchievementEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.UserInventoryEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.AchievementRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.CourseRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserGoalProgressRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.ICourseRepository;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.IUserGoalProgressRepository;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.IUserRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.test_util.CourseUtil;
 import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
-import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 import org.springframework.graphql.test.tester.GraphQlTester;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -34,6 +36,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
 @ContextConfiguration(classes = {MockTestPublisherConfiguration.class})
+@Import(CourseUtil.class)
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")
@@ -46,25 +49,27 @@ public class QueryAchievementsByCourseIdTest {
     @Autowired
     ContentServiceClient contentServiceClient;
 
+    @Autowired
+    CourseUtil courseUtil;
+
     @InjectCurrentUserHeader
     private final LoggedInUser loggedInUser = userWithMembershipInCourseWithId(courseId, LoggedInUser.UserRoleInCourse.STUDENT);
     @Autowired
-    private UserRepository userRepository;
+    private IUserRepository userRepository;
     @Autowired
-    private CourseRepository courseRepository;
+    private ICourseRepository courseRepository;
     @Autowired
-    private UserGoalProgressRepository userGoalProgressRepository;
+    private IUserGoalProgressRepository userGoalProgressRepository;
     @Autowired
     private AchievementRepository achievementRepository;
 
     @Test
     void queryAchievementsByCourseIdEmpty (GraphQlTester tester) {
-        UserEntity user = new UserEntity();
-        user.setId(loggedInUser.getId());
-        user.setUserGoalProgressEntities(new ArrayList<>());
+        UserEntity user = new UserEntity(loggedInUser.getId(), 0, null, null, null, null, new ArrayList<>(), new UserInventoryEntity(), new ArrayList<>(), null, new ArrayList<>());
+
         userRepository.save(user);
 
-        CourseEntity courseEntity = CourseUtil.dummyCourseEntity(courseId, achievementRepository);
+        CourseEntity courseEntity = courseUtil.dummyCourseEntity(courseId, achievementRepository);
         courseRepository.save(courseEntity);
 
         final String query = """
@@ -92,12 +97,9 @@ public class QueryAchievementsByCourseIdTest {
 
     @Test
     void queryAchievementsByCourseId (GraphQlTester tester) {
-        UserEntity user = new UserEntity();
-        user.setId(loggedInUser.getId());
-        user.setCourseIds(new ArrayList<>(List.of(courseId)));
-        userRepository.save(user);
+        UserEntity user = new UserEntity(loggedInUser.getId(), 0, null, null, null, null, new ArrayList<>(), new UserInventoryEntity(), new ArrayList<>(), null, new ArrayList<>());
 
-        CourseEntity courseEntity = CourseUtil.dummyCourseEntity(courseId, achievementRepository);
+        CourseEntity courseEntity = courseUtil.dummyCourseEntity(courseId, achievementRepository);
         courseRepository.save(courseEntity);
 
         List<UserGoalProgressEntity> userGoalProgressEntities = new ArrayList<>();
@@ -106,23 +108,28 @@ public class QueryAchievementsByCourseIdTest {
             userGoalProgressEntities.add(userGoalProgressEntity);
         }
         userGoalProgressRepository.saveAll(userGoalProgressEntities);
-        user.setUserGoalProgressEntities(userGoalProgressEntities);
-        userRepository.save(user);
+        UserCourseDataEntity userCourseDataEntity = new UserCourseDataEntity(null, courseId, null, userGoalProgressEntities, null);
+        user.getCourseData().add(userCourseDataEntity);
+        userRepository.saveAndFlush(user);
+
 
         final String query = """
                 query {
                     achievementsByCourseId(courseId: "%s") {
-                        id
-                        name
-                        imageUrl
-                        description
-                        courseId
-                        userId
-                        completed
-                        requiredCount
-                        completedCount
-                        trackingStartTime
-                        trackingEndTime
+                    __typename
+                        ... on Achievement {
+                            id
+                            name
+                            imageUrl
+                            description
+                            courseId
+                            userId
+                            completed
+                            requiredCount
+                            completedCount
+                            trackingStartTime
+                            trackingEndTime
+                        }
                     }
                 }
                 """.formatted(courseId);

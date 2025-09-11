@@ -8,8 +8,8 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.User
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.ItemInstanceEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.ItemType;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.UserInventoryEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.service.ItemService;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.IUserRepository;
+import de.unistuttgart.iste.meitrex.gamification_service.service.DefaultItemService;
 import de.unistuttgart.iste.meitrex.gamification_service.test_config.MockContentServiceClientConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.test_config.MockCourseServiceClientConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.test_util.ItemUtil;
@@ -37,17 +37,17 @@ public class MutationUnequipItemTest {
     UUID courseId = UUID.randomUUID();
 
     @Autowired
-    ItemService itemService;
+    DefaultItemService itemService;
 
     @InjectCurrentUserHeader
     private final LoggedInUser loggedInUser = userWithMembershipInCourseWithId(courseId, LoggedInUser.UserRoleInCourse.STUDENT);
     @Autowired
-    private UserRepository userRepository;
+    private IUserRepository userRepository;
 
     @Test
     void testUnequipItem(final GraphQlTester tester) {
         UUID itemId = UUID.fromString(ItemUtil.DEFAULT_TUTOR_ITEM_ID);
-        UserEntity user = new UserEntity(loggedInUser.getId(), new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
+        UserEntity user = new UserEntity(loggedInUser.getId(), 0, null, null, null, null, new ArrayList<>(), new UserInventoryEntity(), new ArrayList<>(), null, new ArrayList<>());
         ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
         itemInstanceEntity.setPrototypeId(itemId);
         itemInstanceEntity.setEquipped(true);
@@ -83,7 +83,7 @@ public class MutationUnequipItemTest {
     @Test
     void testUnequipTutorItem(final GraphQlTester tester) {
         UUID itemId = UUID.fromString(ItemUtil.DEFAULT_TUTOR_ITEM_ID);
-        UserEntity user = new UserEntity(loggedInUser.getId(), new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
+        UserEntity user = new UserEntity(loggedInUser.getId(), 0, null, null, null, null, new ArrayList<>(), new UserInventoryEntity(), new ArrayList<>(), null, new ArrayList<>());
         ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
         itemInstanceEntity.setPrototypeId(itemId);
         itemInstanceEntity.setEquipped(true);

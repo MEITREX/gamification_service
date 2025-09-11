@@ -6,8 +6,8 @@ import de.unistuttgart.iste.meitrex.common.testutil.MockTestPublisherConfigurati
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.UserInventoryEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.service.ItemService;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.IUserRepository;
+import de.unistuttgart.iste.meitrex.gamification_service.service.DefaultItemService;
 import de.unistuttgart.iste.meitrex.gamification_service.test_config.MockContentServiceClientConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.test_config.MockCourseServiceClientConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.test_util.ItemUtil;
@@ -43,17 +43,17 @@ public class MutationLotteryRunTest {
     private final static int LOTTERY_COST = 3000;
 
     @Autowired
-    ItemService itemService;
+    DefaultItemService itemService;
 
     @InjectCurrentUserHeader
     private final LoggedInUser loggedInUser = userWithMembershipInCourseWithId(courseId, LoggedInUser.UserRoleInCourse.STUDENT);
     @Autowired
-    private UserRepository userRepository;
+    private IUserRepository userRepository;
 
     @Test
     void testRunLottery(final GraphQlTester tester) {
         int initialUnspentPoints = 4000;
-        UserEntity user = new UserEntity(loggedInUser.getId(), new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
+        UserEntity user = new UserEntity(loggedInUser.getId(), 0, null, null, null, null, new ArrayList<>(), new UserInventoryEntity(), new ArrayList<>(), null, new ArrayList<>());
         user.getInventory().setUnspentPoints(initialUnspentPoints);
         userRepository.save(user);
 
@@ -96,7 +96,7 @@ public class MutationLotteryRunTest {
     @Test
     void testRunLotteryTillItemSold(final GraphQlTester tester) {
         int initialUnspentPoints = 1000000;
-        UserEntity user = new UserEntity(loggedInUser.getId(), new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
+        UserEntity user = new UserEntity(loggedInUser.getId(), 0, null, null, null, null, new ArrayList<>(), new UserInventoryEntity(), new ArrayList<>(), null, new ArrayList<>());
         user.getInventory().setUnspentPoints(initialUnspentPoints);
         userRepository.save(user);
 
@@ -146,7 +146,7 @@ public class MutationLotteryRunTest {
     @Test
     void testRunLotteryNotEnoughMoney(final GraphQlTester tester) {
         int initialUnspentPoints = 1000;
-        UserEntity user = new UserEntity(loggedInUser.getId(), new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
+        UserEntity user = new UserEntity(loggedInUser.getId(), 0, null, null, null, null, new ArrayList<>(), new UserInventoryEntity(), new ArrayList<>(), null, new ArrayList<>());
         user.getInventory().setUnspentPoints(initialUnspentPoints);
         userRepository.save(user);
 

@@ -5,6 +5,7 @@ import de.unistuttgart.iste.meitrex.common.testutil.InjectCurrentUserHeader;
 import de.unistuttgart.iste.meitrex.common.testutil.MockTestPublisherConfiguration;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.UserInventoryEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.IUserRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.service.DefaultItemService;
 import de.unistuttgart.iste.meitrex.gamification_service.test_config.MockContentServiceClientConfiguration;
@@ -46,7 +47,7 @@ public class MutationBuyItemTest {
     @Test
     void testBuyItem(final GraphQlTester tester) {
         UUID itemId = UUID.fromString(ItemUtil.NEW_ITEM_ID);
-        UserEntity user = new UserEntity(loggedInUser.getId(), 0, null, null, null, null, new ArrayList<>(), null, new ArrayList<>(), null, new ArrayList<>());
+        UserEntity user = new UserEntity(loggedInUser.getId(), 0, null, null, null, null, new ArrayList<>(), new UserInventoryEntity(), new ArrayList<>(), null, new ArrayList<>());
 
         user.getInventory().setUnspentPoints(10000);
         userRepository.save(user);
@@ -81,7 +82,7 @@ public class MutationBuyItemTest {
     @Test
     void testBuyItemNoMoney(final GraphQlTester tester) {
         UUID itemId = UUID.fromString(ItemUtil.NEW_ITEM_ID);
-        UserEntity user = new UserEntity(loggedInUser.getId(), 0, null, null, null, null, new ArrayList<>(), null, new ArrayList<>(), null, new ArrayList<>());
+        UserEntity user = new UserEntity(loggedInUser.getId(), 0, null, null, null, null, new ArrayList<>(), new UserInventoryEntity(), new ArrayList<>(), null, new ArrayList<>());
         user.getInventory().setUnspentPoints(1000);
         userRepository.save(user);
 

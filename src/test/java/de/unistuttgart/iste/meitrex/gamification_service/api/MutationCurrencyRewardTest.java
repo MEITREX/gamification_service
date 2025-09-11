@@ -6,8 +6,7 @@ import de.unistuttgart.iste.meitrex.common.testutil.MockTestPublisherConfigurati
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.UserInventoryEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.UserRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.service.ItemService;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.IUserRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.test_config.MockContentServiceClientConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.test_config.MockCourseServiceClientConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.test_util.ItemUtil;
@@ -33,18 +32,15 @@ import static org.hamcrest.Matchers.is;
 public class MutationCurrencyRewardTest {
     UUID courseId = UUID.randomUUID();
 
-    @Autowired
-    ItemService itemService;
-
     @InjectCurrentUserHeader
     private final LoggedInUser loggedInUser = userWithMembershipInCourseWithId(courseId, LoggedInUser.UserRoleInCourse.STUDENT);
     @Autowired
-    private UserRepository userRepository;
+    private IUserRepository userRepository;
 
     @Test
     void testCurrencyRewardItem(final GraphQlTester tester) {
         UUID itemId = UUID.fromString(ItemUtil.DEFAULT_TUTOR_ITEM_ID);
-        UserEntity user = new UserEntity(loggedInUser.getId(), new ArrayList<>(), new ArrayList<>(), new UserInventoryEntity());
+        UserEntity user = new UserEntity(loggedInUser.getId(), 0, null, null, null, null, new ArrayList<>(), new UserInventoryEntity(), new ArrayList<>(), null, new ArrayList<>());
         user.getInventory().setUnspentPoints(0);
         userRepository.save(user);
 
