@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.UUID;
 
@@ -28,7 +29,7 @@ public class CompleteSpecificStageGoalEntity extends GoalEntity {
 
     @Override
     public String generateDescription() {
-        return "Complete the stage " + (stagePosition + 1) + " in section " + sectionName + ".";
+        return "Complete the " + (stagePosition + 1) + ". stage in section \"" + sectionName + "\".";
     }
 
     @Override
