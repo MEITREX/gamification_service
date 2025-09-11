@@ -4,11 +4,13 @@ import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.Persi
 import de.unistuttgart.iste.meitrex.gamification_service.events.publication.IEventPublicationService;
 import de.unistuttgart.iste.meitrex.gamification_service.time.ITimeService;
 import io.dapr.client.domain.CloudEvent;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
+@Slf4j
 abstract class AbstractExternalListener<T> {
 
     private final ITimeService timeService;
@@ -56,7 +58,7 @@ abstract class AbstractExternalListener<T> {
     }
 
     private void logEmptyBody(CloudEvent<T> cloudEvent, Map<String, String> headers) {
-
+        log.warn("Event had empty body. Ignoring. CloudEvent: {}", cloudEvent);
     }
 
     private void logException(CloudEvent<T> cloudEvent, Exception e, Function<CloudEvent<T>, String> contextProvider, Map<String, String> headers) {
