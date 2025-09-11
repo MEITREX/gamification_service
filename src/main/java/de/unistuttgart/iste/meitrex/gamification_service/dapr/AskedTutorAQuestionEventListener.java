@@ -11,7 +11,11 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @RestController
 public class AskedTutorAQuestionEventListener extends AbstractExternalListener<AskedTutorAQuestionEvent> {
@@ -30,8 +34,9 @@ public class AskedTutorAQuestionEventListener extends AbstractExternalListener<A
     @Transactional
     @Topic(name = "asked-tutor-a-question", pubsubName = "meitrex")
     @PostMapping(path = "/asked-tutor-a-question-pubsub")
-    public void onAskedTutorAQuestionEvent(CloudEvent<AskedTutorAQuestionEvent> event) {
-        super.handle(event, AskedTutorAQuestionEventListener::getContext, null);
+    public void onAskedTutorAQuestionEvent(@RequestBody CloudEvent<AskedTutorAQuestionEvent> event,
+                                           @RequestHeader Map<String, String> headers) {
+        super.handle(event, AskedTutorAQuestionEventListener::getContext, headers);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service.internal.quests.quest_generation;
 
+import de.unistuttgart.iste.meitrex.gamification_service.config.DebugAdaptivityConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.*;
@@ -25,12 +26,21 @@ public class SpecialtyDailyQuestGeneratorService implements IDailyQuestGenerator
     private final IRecommendationCreator recommendationCreator;
     private final SpecialtyQuestGoalGeneratorFactory specialtyQuestGoalGeneratorFactory;
 
+    private final DebugAdaptivityConfiguration debugAdaptivityConfiguration;
+
     @Override
     public Optional<QuestEntity> generateQuest(CourseEntity courseEntity,
                                                UserEntity userEntity,
                                                List<QuestEntity> otherQuests) {
-        GamificationCategory recommendationCategory = recommendationCreator.makeRecommendation(
-                userEntity.getId(), courseEntity.getId(), RecommendationType.DAILY_QUEST);
+        GamificationCategory recommendationCategory;
+
+        if(debugAdaptivityConfiguration.getQuests().getForceSpecialtyQuestType() != null) {
+            recommendationCategory = GamificationCategory.valueOf(
+                    debugAdaptivityConfiguration.getQuests().getForceSpecialtyQuestType());
+        } else {
+            recommendationCategory = recommendationCreator.makeRecommendation(
+                    userEntity.getId(), courseEntity.getId(), RecommendationType.DAILY_QUEST);
+        }
 
         log.info("Generating specialty daily quest for user {} in course {} with recommendation category {}",
                 userEntity.getId(), courseEntity.getId(), recommendationCategory);
