@@ -11,6 +11,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.service.reactive.leader
 import de.unistuttgart.iste.meitrex.gamification_service.time.Period;
 import de.unistuttgart.iste.meitrex.generated.dto.GamificationCategory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -20,6 +21,7 @@ import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class SocializationSpecialtyQuestGoalGenerator implements ISpecialtyQuestGoalGenerator {
     private final ILeaderboardRepository leaderboardRepository;
 
@@ -30,8 +32,11 @@ public class SocializationSpecialtyQuestGoalGenerator implements ISpecialtyQuest
 
     @Override
     public Optional<GoalEntity> generateGoal(UserEntity user, CourseEntity course) {
-        if(isUserTop1InAllLeaderboards(course, user))
+        if(isUserTop1InAllLeaderboards(course, user)) {
+            log.info("User {} is already top 1 in all leaderboards of course {}, not generating socialization quest",
+                    user.getId(), course.getId());
             return Optional.empty();
+        }
 
         MoveUpLeaderboardGoalEntity goal = new MoveUpLeaderboardGoalEntity();
         goal.setTrackingTimeToToday();

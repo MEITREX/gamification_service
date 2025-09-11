@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service.internal.quests.quest_generation;
 
+import de.unistuttgart.iste.meitrex.gamification_service.config.DebugAdaptivityConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.*;
@@ -11,6 +12,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.service.internal.quests
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.quests.quest_generation.specialty_quest_goal_generation.SpecialtyQuestGoalGeneratorFactory;
 import de.unistuttgart.iste.meitrex.generated.dto.GamificationCategory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,17 +20,30 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SpecialtyDailyQuestGeneratorService implements IDailyQuestGenerator {
 
     private final IRecommendationCreator recommendationCreator;
     private final SpecialtyQuestGoalGeneratorFactory specialtyQuestGoalGeneratorFactory;
 
+    private final DebugAdaptivityConfiguration debugAdaptivityConfiguration;
+
     @Override
     public Optional<QuestEntity> generateQuest(CourseEntity courseEntity,
                                                UserEntity userEntity,
                                                List<QuestEntity> otherQuests) {
-        GamificationCategory recommendationCategory = recommendationCreator.makeRecommendation(
-                userEntity.getId(), courseEntity.getId(), RecommendationType.DAILY_QUEST);
+        GamificationCategory recommendationCategory;
+
+        if(debugAdaptivityConfiguration.getQuests().getForceSpecialtyQuestType() != null) {
+            recommendationCategory = GamificationCategory.valueOf(
+                    debugAdaptivityConfiguration.getQuests().getForceSpecialtyQuestType());
+        } else {
+            recommendationCategory = recommendationCreator.makeRecommendation(
+                    userEntity.getId(), courseEntity.getId(), RecommendationType.DAILY_QUEST);
+        }
+
+        log.info("Generating specialty daily quest for user {} in course {} with recommendation category {}",
+                userEntity.getId(), courseEntity.getId(), recommendationCategory);
 
         ISpecialtyQuestGoalGenerator goalGenerator =
                 specialtyQuestGoalGeneratorFactory.getGoalGenerator(recommendationCategory);
@@ -45,7 +60,7 @@ public class SpecialtyDailyQuestGeneratorService implements IDailyQuestGenerator
         quest.setGoal(goal.get());
         goal.get().setParentWithGoal(quest);
 
-        return Optional.empty();
+        return Optional.of(quest);
     }
 
     @Override

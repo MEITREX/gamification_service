@@ -2,6 +2,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.service.quests;
 
 import de.unistuttgart.iste.meitrex.content_service.exception.ContentServiceConnectionException;
 import de.unistuttgart.iste.meitrex.gamification_service.config.AdaptivityConfiguration;
+import de.unistuttgart.iste.meitrex.gamification_service.config.DebugAdaptivityConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserCourseDataEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
@@ -10,8 +11,6 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achi
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.userGoalProgress.UserGoalProgressEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.quests.QuestEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.quests.QuestSetEntity;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.ICourseRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.IUserRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.quests.DailyQuestType;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.ICourseCreator;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.ICourseMembershipHandler;
@@ -43,6 +42,7 @@ public class QuestService implements IQuestService{
     private final ICourseCreator courseCreator;
 
     private final AdaptivityConfiguration adaptivityConfiguration;
+    private final DebugAdaptivityConfiguration debugAdaptivityConfiguration;
 
     private final QuestGeneratorServiceFactory questGeneratorServiceFactory;
 
@@ -86,8 +86,15 @@ public class QuestService implements IQuestService{
 
         int rewardPoints = (int)(adaptivityConfiguration.getQuestBaseRewardPoints() * rewardMultiplier);
 
-        List<DailyQuestType> questTypeCandidates = new ArrayList<>(Arrays.stream(DailyQuestType.values()).toList());
-        Collections.shuffle(questTypeCandidates);
+        List<DailyQuestType> questTypeCandidates;
+
+        if(debugAdaptivityConfiguration.getQuests().getForceSpecialtyQuestType() != null) {
+            questTypeCandidates = new ArrayList<>(List.of(
+                    DailyQuestType.valueOf(debugAdaptivityConfiguration.getQuests().getForceDailyQuestType())));
+        } else {
+            questTypeCandidates = new ArrayList<>(Arrays.stream(DailyQuestType.values()).toList());
+            Collections.shuffle(questTypeCandidates);
+        }
 
         List<QuestEntity> quests = new ArrayList<>();
         while (quests.size() < DAILY_QUEST_COUNT) {
