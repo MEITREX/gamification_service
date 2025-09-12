@@ -36,7 +36,7 @@ public class ItemController {
     }
 
     @QueryMapping
-    public List<Inventory> inventoryForUser(@Argument List<UUID> userIds,
+    public List<Inventory> inventoriesForUsers(@Argument List<UUID> userIds,
             @NotNull @ContextValue final LoggedInUser currentUser) {
         return itemService.getInventoriesForUsers(userIds);
     }
