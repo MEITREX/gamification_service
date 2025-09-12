@@ -20,6 +20,12 @@ public interface IItemService {
     List<UserItem> getItemsForUser(UUID userId);
 
     /**
+     * Get the list of inventories for the given users, initializing defaults if needed.
+     *
+     */
+    List<Inventory> getInventoriesForUsers(List<UUID> userIds);
+
+    /**
      * Purchase an item for a user (deducts points if affordable) and return updated inventory.
      *
      */

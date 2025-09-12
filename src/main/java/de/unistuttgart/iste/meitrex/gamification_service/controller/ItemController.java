@@ -35,6 +35,12 @@ public class ItemController {
         return itemService.getInventoryForUser(currentUser.getId());
     }
 
+    @QueryMapping
+    public List<Inventory> inventoryForUser(@Argument List<UUID> userIds,
+            @NotNull @ContextValue final LoggedInUser currentUser) {
+        return itemService.getInventoriesForUsers(userIds);
+    }
+
     @MutationMapping
     public Inventory buyItem(@Argument UUID itemId,
                              @ContextValue final LoggedInUser currentUser) {
