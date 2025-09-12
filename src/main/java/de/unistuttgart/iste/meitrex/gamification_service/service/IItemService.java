@@ -20,8 +20,8 @@ public interface IItemService {
     List<UserItem> getItemsForUser(UUID userId);
 
     /**
-     * Get the list of inventories for the given users, initializing defaults if needed.
-     *
+     * Get the list of inventories for the given users with a 0 for the Unspent points, initializing defaults if needed.
+     * This query is meant for use cases where you need the items of other users
      */
     List<Inventory> getInventoriesForUsers(List<UUID> userIds);
 
