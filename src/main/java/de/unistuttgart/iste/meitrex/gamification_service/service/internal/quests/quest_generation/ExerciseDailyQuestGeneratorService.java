@@ -36,7 +36,9 @@ public class ExerciseDailyQuestGeneratorService implements IDailyQuestGenerator 
             new AssessmentMapKey(AssessmentUserStatus.FAILED, false),
             new AssessmentMapKey(AssessmentUserStatus.NOT_WORKED_ON, false),
             new AssessmentMapKey(AssessmentUserStatus.PASSED_PAST_LEARNING_INTERVAL, true),
-            new AssessmentMapKey(AssessmentUserStatus.PASSED_PAST_LEARNING_INTERVAL, false)
+            new AssessmentMapKey(AssessmentUserStatus.PASSED_PAST_LEARNING_INTERVAL, false),
+            new AssessmentMapKey(AssessmentUserStatus.PASSED, true),
+            new AssessmentMapKey(AssessmentUserStatus.PASSED, false)
     );
 
     public Optional<QuestEntity> generateQuest(final CourseEntity courseEntity,
@@ -129,7 +131,10 @@ public class ExerciseDailyQuestGeneratorService implements IDailyQuestGenerator 
      */
     private Optional<Assessment> pickAssessmentRandomly(final Map<AssessmentMapKey, List<Assessment>> foundAssessments,
                                                         final float pickProbability) {
-        for (AssessmentMapKey key : assessmentImportanceOrder) {
+        for (final AssessmentMapKey key : assessmentImportanceOrder) {
+            if(key.status == AssessmentUserStatus.PASSED)
+                continue; // we do not want to suggest passed assessments
+
             final List<Assessment> assessments = foundAssessments.get(key);
             if(Math.random() <= pickProbability && !assessments.isEmpty()) {
                 for(Assessment assessment : assessments) {
