@@ -3,6 +3,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.service;
 
 import java.util.*;
 
+import de.unistuttgart.iste.meitrex.gamification_service.model.ItemParent;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 
 public interface IItemService {
@@ -61,4 +62,9 @@ public interface IItemService {
      *
      */
     UserItemComplete lotteryRun(UUID userId);
+
+    /**
+     * Get the item prototype by its ID.
+     */
+    Optional<ItemParent> getItemPrototypeById(UUID itemId);
 }
