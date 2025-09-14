@@ -7,10 +7,7 @@ import de.unistuttgart.iste.meitrex.generated.dto.Chapter;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 
 @Component
@@ -18,7 +15,7 @@ class DefaultCourseAchievementMapper implements ICourseAchievementMapper {
 
     @FunctionalInterface
     interface IAchievementSource {
-        AchievementEntity create(CourseEntity course);
+        Optional<AchievementEntity> create(CourseEntity course);
     }
 
     // Functional constructors
@@ -47,8 +44,10 @@ class DefaultCourseAchievementMapper implements ICourseAchievementMapper {
         this.achievementSourceList.add(this::generateForumAnswerer);
         this.achievementSourceList.add(this::generateLoginAchievement);
         this.achievementSourceList.add(this::generateQuizzerAchievement);
-        this.achievementSourceList.add(this::generateActiveAchievement);
-
+        this.achievementSourceList.add(this::generateFirstStartAchievement);
+        this.achievementSourceList.add(this::generateGamblerAchievement);
+        this.achievementSourceList.add(this::generateFastFashionAchievement);
+        this.achievementSourceList.add(this::generateCuriousAchievement);
     }
 
     @Override
@@ -57,39 +56,39 @@ class DefaultCourseAchievementMapper implements ICourseAchievementMapper {
         final Function<AchievementEntity, AchievementEntity> courseAchievementLinker = createLinker(course);
         return this.achievementSourceList
                 .stream()
-                .map(source -> source.create(course))
+                .flatMap(source -> source.create(course).stream())
                 .map(courseAchievementLinker)
                 .toList();
     }
 
     // Sources
 
-    public AchievementEntity generateQuizMaster(CourseEntity course) {
+    public Optional<AchievementEntity> generateQuizMaster(CourseEntity course) {
         AchievementEntity quizMaster = create("Quiz Master", "");
         CompletedQuizzesGoalEntity quizMasterGoal = new CompletedQuizzesGoalEntity();
         quizMasterGoal.setMinimumScore(1.0F);
-        quizMasterGoal.setRequiredCount(1);
+        quizMasterGoal.setRequiredCount(5);
         quizMaster.setGoal(quizMasterGoal);
-        return quizMaster;
+        return Optional.of(quizMaster);
     }
 
-    public AchievementEntity generateForumAnswerer(CourseEntity course) {
+    public Optional<AchievementEntity> generateForumAnswerer(CourseEntity course) {
         AchievementEntity forumAnswerer = create("Forum Answer", "");
         AnswerForumQuestionGoalEntity forumAnswerGoal = new AnswerForumQuestionGoalEntity();
-        forumAnswerGoal.setRequiredCount(1);
+        forumAnswerGoal.setRequiredCount(3);
         forumAnswerer.setGoal(forumAnswerGoal);
-        return forumAnswerer;
+        return Optional.of(forumAnswerer);
     }
 
-    public AchievementEntity generateLoginAchievement(CourseEntity course) {
+    public Optional<AchievementEntity> generateLoginAchievement(CourseEntity course) {
         AchievementEntity loginAchievement = create("Login Achievement", "");
         LoginStreakGoalEntity loginStreakGoal = new LoginStreakGoalEntity();
-        loginStreakGoal.setRequiredCount(2);
+        loginStreakGoal.setRequiredCount(3);
         loginAchievement.setGoal(loginStreakGoal);
-        return loginAchievement;
+        return Optional.of(loginAchievement);
     }
 
-    public AchievementEntity generateQuizzerAchievement(CourseEntity course) {
+    public Optional<AchievementEntity> generateQuizzerAchievement(CourseEntity course) {
         AchievementEntity quizzer = create("Quizzer", "");
         CompletedQuizzesGoalEntity quizzerGoal1 = new CompletedQuizzesGoalEntity();
         quizzerGoal1.setMinimumScore(1.0F);
@@ -101,23 +100,55 @@ class DefaultCourseAchievementMapper implements ICourseAchievementMapper {
         orCombinatorGoalEntity.setGoal1(quizzerGoal1);
         orCombinatorGoalEntity.setGoal2(quizzerGoal2);
         quizzer.setGoal(orCombinatorGoalEntity);
-        return quizzer;
+        return Optional.of(quizzer);
     }
 
-    public AchievementEntity generateActiveAchievement(CourseEntity course) {
-        AchievementEntity activeUser =  create("Active User", "");
+    public Optional<AchievementEntity> generateFirstStartAchievement(CourseEntity course) {
+        AchievementEntity activeUser =  create("A First Start", "");
         LoginStreakGoalEntity loginStreakGoal = new LoginStreakGoalEntity();
-        loginStreakGoal.setRequiredCount(7);
+        loginStreakGoal.setRequiredCount(1);
         CompleteSpecificChapterGoalEntity completeSpecificChapterGoalEntity = new CompleteSpecificChapterGoalEntity();
-        Chapter firstChapter = course.getChapters().stream()
-                .min(Comparator.comparingInt(Chapter::getNumber))
-                .orElseThrow(() -> new EntityNotFoundException("Chapter List empty"));
-        completeSpecificChapterGoalEntity.setChapterId(firstChapter.getId());
-        completeSpecificChapterGoalEntity.setChapterName(firstChapter.getTitle());
+        Optional<Chapter> firstChapter = course.getChapters().stream()
+                .min(Comparator.comparingInt(Chapter::getNumber));
+
+        if (firstChapter.isEmpty())
+            return Optional.empty();
+
+        completeSpecificChapterGoalEntity.setChapterId(firstChapter.get().getId());
+        completeSpecificChapterGoalEntity.setChapterName(firstChapter.get().getTitle());
         AndCombinatorGoalEntity andCombinatorGoalEntity = new AndCombinatorGoalEntity();
         andCombinatorGoalEntity.setGoal1(loginStreakGoal);
         andCombinatorGoalEntity.setGoal2(completeSpecificChapterGoalEntity);
         activeUser.setGoal(andCombinatorGoalEntity);
-        return activeUser;
+        return Optional.of(activeUser);
+    }
+
+    public Optional<AchievementEntity> generateGamblerAchievement(CourseEntity course) {
+        AchievementEntity gamblerAchievement = create("Gambler", "");
+
+        LotteryRunGoalEntity lotteryRunGoal = new LotteryRunGoalEntity();
+        lotteryRunGoal.setRequiredCount(5);
+        gamblerAchievement.setGoal(lotteryRunGoal);
+
+        return Optional.of(gamblerAchievement);
+    }
+
+    public Optional<AchievementEntity> generateFastFashionAchievement(CourseEntity course) {
+        AchievementEntity fastFashion = create("Fast Fashion", "");
+
+        ReceiveItemsGoalEntity receiveItemsGoalEntity = new ReceiveItemsGoalEntity();
+        receiveItemsGoalEntity.setRequiredCount(5);
+        fastFashion.setGoal(receiveItemsGoalEntity);
+
+        return Optional.of(fastFashion);
+    }
+
+    public Optional<AchievementEntity> generateCuriousAchievement(CourseEntity course) {
+        AchievementEntity curiousAchievement = create("Curious", "");
+
+        AskTutorCourseQuestionsGoalEntity askTutorCourseQuestionsGoalEntity = new AskTutorCourseQuestionsGoalEntity();
+        askTutorCourseQuestionsGoalEntity.setRequiredCount(5);
+        curiousAchievement.setGoal(askTutorCourseQuestionsGoalEntity);
+        return Optional.of(curiousAchievement);
     }
 }
