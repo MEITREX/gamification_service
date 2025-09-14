@@ -255,6 +255,13 @@ public class DefaultItemService implements IItemService {
         return userItem;
     }
 
+    @Override
+    public Optional<ItemParent> getItemPrototypeById(UUID prototypeId) {
+        return itemList.stream()
+                .filter(it -> it.getId().equals(prototypeId))
+                .findFirst();
+    }
+
 
     @NotNull
     private UserItemComplete addRandomItemToUser(UserEntity user, List<ItemParent> lotteryItemList) {

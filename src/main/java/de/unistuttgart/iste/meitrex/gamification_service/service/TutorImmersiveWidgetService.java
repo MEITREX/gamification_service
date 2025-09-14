@@ -7,6 +7,7 @@ import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
 import de.unistuttgart.iste.meitrex.content_service.exception.ContentServiceConnectionException;
 import de.unistuttgart.iste.meitrex.gamification_service.config.AdaptivityConfiguration;
+import de.unistuttgart.iste.meitrex.gamification_service.model.Tutor;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.CourseEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.TutorImmersiveSpeechEmbeddable;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserCourseDataEntity;
@@ -42,6 +43,7 @@ public class TutorImmersiveWidgetService {
     private final ICourseMembershipHandler courseMembershipHandler;
     private final AdaptivityConfiguration adaptivityConfiguration;
     private final ContentServiceClient contentService;
+    private final IItemService itemService;
 
     public String getSpeechContent(final LoggedInUser loggedInUser, final UUID courseId) {
         UserEntity userEntity = userCreator.fetchOrCreate(loggedInUser.getId());
@@ -73,7 +75,7 @@ public class TutorImmersiveWidgetService {
     private String generateSpeechContent(final LoggedInUser user, final String userActivityString) {
         try {
             final Map<String, String> placeholders = Map.of(
-                    "tutor_name", "Dino", // TODO: Insert actual tutor name
+                    "tutor_name", getUserEquippedTutorName(user),
                     "user_info", getUserInfoString(user),
                     "user_activity", userActivityString
             );
@@ -87,6 +89,19 @@ public class TutorImmersiveWidgetService {
             log.error("Error while generating immersive tutor speech.", ex);
             return "";
         }
+    }
+
+    private String getUserEquippedTutorName(final LoggedInUser user) {
+        Optional<Tutor> tutor = itemService.getItemsForUser(user.getId()).stream()
+                .filter(UserItem::getEquipped)
+                .map(it ->
+                        itemService.getItemPrototypeById(it.getId())
+                                .orElseThrow(() -> new RuntimeException("Item prototype not found for item.")))
+                .filter(it -> it instanceof Tutor)
+                .map(it -> (Tutor) it)
+                .findFirst();
+
+        return tutor.map(Tutor::getName).orElse("Tutor");
     }
 
     private String getUserInfoString(final LoggedInUser user) {
@@ -115,8 +130,6 @@ public class TutorImmersiveWidgetService {
         sb.append("\n\n");
         sb.append("Items completed yesterday:\n");
         sb.append(generateContentListString(contentsWorkedOnRecently.get(yesterday)));
-
-        log.info(sb.toString());
 
         return sb.toString();
     }
