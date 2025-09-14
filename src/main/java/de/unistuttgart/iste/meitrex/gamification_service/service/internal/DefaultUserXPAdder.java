@@ -9,7 +9,14 @@ import java.util.Map;
 import java.util.Objects;
 
 @Component
-class DefaultUserXPAdder implements IUserXPAdder{
+public class DefaultUserXPAdder implements IUserXPAdder{
+
+    private static void assureNonNull(int value) {
+        if(value < 0) {
+            throw new IllegalArgumentException();
+        }
+    }
+
 
     private final Map<Cause, Integer> causeXPMap = new HashMap<>();
 
@@ -30,6 +37,7 @@ class DefaultUserXPAdder implements IUserXPAdder{
     @Override
     public void add(UserEntity entity, int value) {
         Objects.requireNonNull(entity);
+        assureNonNull(value);
         Integer curXPValue = entity.getXpValue();
         if(entity.getXpValue() == null) {
             curXPValue = 0;
@@ -45,6 +53,7 @@ class DefaultUserXPAdder implements IUserXPAdder{
 
     @Override
     public void add(UserEntity entity, Cause cause, int multiple) {
+        assureNonNull(multiple);
         this.add(entity, causeXPMap.get(Objects.requireNonNull(cause)) * multiple);
     }
 }
