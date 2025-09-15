@@ -92,8 +92,8 @@ public class QuestService implements IQuestService{
             questTypeCandidates = new ArrayList<>(List.of(
                     DailyQuestType.valueOf(debugAdaptivityConfiguration.getQuests().getForceDailyQuestType())));
         } else {
-            questTypeCandidates = new ArrayList<>(Arrays.stream(DailyQuestType.values()).toList());
-            Collections.shuffle(questTypeCandidates);
+            questTypeCandidates = new ArrayList<>(getShuffledQuestCandidates());
+            questTypeCandidates.addAll(getShuffledQuestCandidates());
         }
 
         List<QuestEntity> quests = new ArrayList<>();
@@ -136,6 +136,13 @@ public class QuestService implements IQuestService{
         generateUserGoalProgressEntitiesForQuestSet(user, questSetEntity);
 
         return questSetEntity;
+    }
+
+    private List<DailyQuestType> getShuffledQuestCandidates() {
+        final ArrayList<DailyQuestType> questTypeCandidates =
+                new ArrayList<>(Arrays.stream(DailyQuestType.values()).toList());
+        Collections.shuffle(questTypeCandidates);
+        return questTypeCandidates;
     }
 
     private void generateUserGoalProgressEntitiesForQuestSet(UserEntity userEntity, QuestSetEntity questSetEntity) {

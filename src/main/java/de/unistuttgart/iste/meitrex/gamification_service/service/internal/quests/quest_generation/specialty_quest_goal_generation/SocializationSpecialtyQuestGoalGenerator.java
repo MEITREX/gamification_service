@@ -49,7 +49,7 @@ public class SocializationSpecialtyQuestGoalGenerator implements ISpecialtyQuest
     }
 
     private boolean isUserTop1InAllLeaderboards(CourseEntity course, UserEntity user) {
-        /*Optional<LeaderboardEntity> allTimeLeaderboard =
+        Optional<LeaderboardEntity> allTimeLeaderboard =
                 leaderboardRepository.findByCourseAndPeriodOrderByStartDateDesc(course, Period.ALL_TIME);
         Optional<LeaderboardEntity> monthlyLeaderboard =
                 leaderboardRepository.findByCourseAndPeriodOrderByStartDateDesc(course, Period.MONTHLY);
@@ -67,8 +67,6 @@ public class SocializationSpecialtyQuestGoalGenerator implements ISpecialtyQuest
         if(maxRank.isEmpty())
             return false;
 
-        return maxRank.getAsInt() == 1;*/
-        // TODO: disable temporarily as leaderboards don't work correctly
-        return false;
+        return maxRank.getAsInt() == 1;
     }
 }
