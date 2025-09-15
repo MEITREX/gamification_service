@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.*;
 
 
 @Component
-class DefaultScoringFunction implements IScoringFunction {
+public class DefaultScoringFunction implements IScoringFunction {
 
     private static final String EXCEPTION_MSG_DECAY_RATE_MUST_BE_NEGATIVE
             = "Non-negative decay rate is invalid.";
@@ -46,7 +46,6 @@ class DefaultScoringFunction implements IScoringFunction {
 
     @Override
     public double score(double correctness, int attempt) {
-        System.out.println("attempt: " + attempt);
         return Math.round(this.multiplicativeWeight*correctness*(Math.pow(2.0, this.decayRate*attempt)));
     }
 }

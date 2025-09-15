@@ -7,7 +7,7 @@ import org.springframework.stereotype.*;
 import org.springframework.beans.factory.annotation.*;
 
 @Component
-class DefaultPeriodCalculator implements IPeriodCalculator {
+public class DefaultPeriodCalculator implements IPeriodCalculator {
 
     // Error messages
 
