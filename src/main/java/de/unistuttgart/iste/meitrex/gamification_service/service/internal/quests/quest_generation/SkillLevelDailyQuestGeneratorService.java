@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.*;
 
 @Service
@@ -71,10 +72,11 @@ public class SkillLevelDailyQuestGeneratorService implements IDailyQuestGenerato
                 .toList();
         // get which assessments we can actually use for the quest, i.e. those which are not used in any of the
         // other quests, as it would make no sense to create 2 quests to complete the same assessment, and only
-        // those assessments which are available to be worked on
+        // those assessments which are available to be worked on and suggestedDate has passed
         List<Assessment> usableCourseAssessments = IDailyQuestGenerator
                 .filterContentsUsedInOtherQuests(courseContents, otherQuests).stream()
                 .filter(Content::getIsAvailableToBeWorkedOn)
+                .filter(c -> c.getMetadata().getSuggestedDate().isBefore(OffsetDateTime.now()))
                 .filter(c -> c instanceof Assessment)
                 .map(Assessment.class::cast)
                 .toList();
@@ -83,7 +85,7 @@ public class SkillLevelDailyQuestGeneratorService implements IDailyQuestGenerato
         if(usableCourseAssessments.isEmpty())
             return Optional.empty();
 
-        List<Skill> skills = courseAssessments.stream()
+        List<Skill> skills = usableCourseAssessments.stream()
                 .flatMap(a -> a.getItems().stream())
                 .flatMap(i -> i.getAssociatedSkills().stream())
                 .toList();
@@ -95,6 +97,9 @@ public class SkillLevelDailyQuestGeneratorService implements IDailyQuestGenerato
                             return new SkillLevelsEntity(skillEntity, userEntity);
                         }))
                 .toList();
+
+        if(skillLevels.isEmpty())
+            return Optional.empty();
 
         // calculate a "total" value for a skill level by averaging the bloom levels, but ignore bloom levels which
         // the user cannot achieve because there are no assessments associated with them
