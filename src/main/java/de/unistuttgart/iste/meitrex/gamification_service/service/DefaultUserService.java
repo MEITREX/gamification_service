@@ -48,14 +48,11 @@ class DefaultUserService implements IUserService, IUserCreator {
 
     private final int dtoRecursionDepth;
 
-    //private final UserServiceClient graphQLUserClient;
-
     public DefaultUserService(
             @Autowired IXPLevelMapping xpLevelMapping,
             @Autowired IXPLevelDistance xpLevelDistance,
             @Autowired IUserRepository userRepository,
             @Autowired UserMapper userMapper,
-            //@Autowired  UserServiceClient graphQLUserClient,
             @Value("${de.unistuttgart.iste.meitrex.gamification_service.service.dtoRecursionDepth:3}")
             int dtoRecursionDepth
     ) {
@@ -63,7 +60,6 @@ class DefaultUserService implements IUserService, IUserCreator {
         this.xpLevelDistance = Objects.requireNonNull(xpLevelDistance);
         this.userRepository = Objects.requireNonNull(userRepository);
         this.userMapper = Objects.requireNonNull(userMapper);
-        //this.graphQLUserClient = Objects.requireNonNull(graphQLUserClient);
         this.dtoRecursionDepth = dtoRecursionDepth;
     }
 
@@ -72,27 +68,9 @@ class DefaultUserService implements IUserService, IUserCreator {
         final UserEntity user =  this.userRepository
                 .findById(userId)
                 .orElseGet(()  -> this.userRepository.save(new UserEntity(userId, 0, null, null, null, null, new ArrayList<>(), null, new ArrayList<>(), null, new ArrayList<>())));
-        //augmentName(user);
         return user;
     }
 
-    /*
-    private void augmentName(UserEntity user) {
-        final UUID userID;
-
-        if(Objects.isNull(user) || Objects.isNull(userID = user.getId())) {
-            return;
-        }
-
-        try {
-            final List<UserInfo> userInfos = graphQLUserClient.queryUserInfos(List.of(userID));
-            if(!userInfos.isEmpty()) {
-                user.setUserName(userInfos.getFirst().getUserName());
-            }
-        } catch(UserServiceConnectionException e0) {
-          log.error("Failed to fetch user name for id {}.", user.getId(), e0);
-        }
-    }*/
 
     @Override
     public User fetchUser(UUID userID)
