@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerHexadScoreEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper.PlayerHexadScoreMapper;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.*;
@@ -87,7 +86,7 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
 
         // Raw score
         input.getQuestions().stream()
-            .map(question -> question.getSelectedAnswer())
+            .map(QuestionInput::getSelectedAnswer)
             .flatMap(answer -> answer.getPlayerTypes().stream())
             .forEach(type ->  rawScores.put(type, rawScores.get(type) + 1));
 
@@ -102,7 +101,7 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
             .map(type -> {
                 float raw = rawScores.get(type);
                 int max = maxPossibleScores.get(type);
-                float normalizedScore = (max == 0) ? 0f: ((float) raw/max) * 100;
+                float normalizedScore = (max == 0) ? 0f: (raw /max) * 100;
                 return PlayerTypeScore.builder()
                     .setType(type)
                     .setValue(normalizedScore)

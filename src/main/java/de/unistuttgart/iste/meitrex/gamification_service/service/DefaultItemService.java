@@ -194,7 +194,8 @@ public class DefaultItemService implements IItemService {
         UserEntity user = userCreator.fetchOrCreate(userId);
         checkDefaultItems(user);
         user.getInventory().getItems().stream().filter(itemInstanceEntity -> itemInstanceEntity.getPrototypeId().equals(itemId)).findFirst().ifPresent(itemInstanceEntity -> {
-            if (itemInstanceEntity.getItemType() != ItemType.Tutor) {
+            if (itemInstanceEntity.getItemType() != ItemType.Tutor
+                    && itemInstanceEntity.getItemType() != ItemType.ProfilePic) {
                 itemInstanceEntity.setEquipped(false);
                 itemInstanceRepository.save(itemInstanceEntity);
             }
