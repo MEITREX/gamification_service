@@ -25,6 +25,7 @@ type UserItemComplete {
     filename: String
     nickname: String
     sold: Boolean!
+    itemType: String
 }
 
 type Inventory {

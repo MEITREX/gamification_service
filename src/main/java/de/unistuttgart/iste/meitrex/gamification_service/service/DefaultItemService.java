@@ -281,6 +281,7 @@ public class DefaultItemService implements IItemService {
             userItem = item.toCompleteUserItemInstance();
             userItem.setUnlockedTime(itemInstance.getCreationTime());
             userItem.setSold(false);
+            userItem.setItemType(itemInstance.getItemType().name());
             goalProgressService.itemReceivedProgress(user);
         }
         userRepository.save(user);
