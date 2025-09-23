@@ -275,13 +275,14 @@ public class DefaultItemService implements IItemService {
             userItem = item.toCompleteUserItemInstance();
             userItem.setSold(true);
             userItem.setUnlockedTime(oldItemInstance.get().getCreationTime());
+            userItem.setItemType(item.toItemInstance().getItemType().toString());
         } else {
             ItemInstanceEntity itemInstance = item.toItemInstance();
             user.getInventory().getItems().add(itemInstance);
             userItem = item.toCompleteUserItemInstance();
             userItem.setUnlockedTime(itemInstance.getCreationTime());
             userItem.setSold(false);
-            userItem.setItemType(itemInstance.getItemType().name());
+            userItem.setItemType(itemInstance.getItemType().toString());
             goalProgressService.itemReceivedProgress(user);
         }
         userRepository.save(user);
