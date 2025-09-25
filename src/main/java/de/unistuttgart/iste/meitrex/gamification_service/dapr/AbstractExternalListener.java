@@ -28,7 +28,6 @@ abstract class AbstractExternalListener<T> {
     protected final void handle(CloudEvent<T> cloudEvent, Function<CloudEvent<T>, String> contextProvider, Map<String, String> headers) {
         Objects.requireNonNull(cloudEvent);
         Objects.requireNonNull(contextProvider);
-        System.out.println("media-record-worked-on-1");
         try {
             logEntry(cloudEvent, contextProvider, headers);
             final T body = cloudEvent.getData();
@@ -36,10 +35,7 @@ abstract class AbstractExternalListener<T> {
                 logEmptyBody(cloudEvent, headers);
                 return;
             }
-            System.out.println("media-record-worked-on-2");
             final PersistentEvent persistentEvent = setDeliveryDetails(this.mapToPersistentEvent(cloudEvent.getData()));
-            System.out.println("media-record-worked-on-3");
-
             this.eventService.saveCommitAndPublishIfNew(persistentEvent);
         } catch(RuntimeException e0) {
             logException(cloudEvent, e0, contextProvider, headers);
@@ -54,7 +50,7 @@ abstract class AbstractExternalListener<T> {
     }
 
     private void logEntry(CloudEvent<T> cloudEvent, Function<CloudEvent<T>, String> contextProvider, Map<String, String> headers) {
-        System.out.println(contextProvider);
+
     }
 
     private void logEmptyBody(CloudEvent<T> cloudEvent, Map<String, String> headers) {
@@ -62,7 +58,7 @@ abstract class AbstractExternalListener<T> {
     }
 
     private void logException(CloudEvent<T> cloudEvent, Exception e, Function<CloudEvent<T>, String> contextProvider, Map<String, String> headers) {
-        System.out.println(e.getCause());
+
     }
 
     protected abstract PersistentEvent mapToPersistentEvent(T event);

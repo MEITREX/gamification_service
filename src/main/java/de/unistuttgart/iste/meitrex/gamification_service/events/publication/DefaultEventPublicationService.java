@@ -25,6 +25,8 @@ class DefaultEventPublicationService implements IEventPublicationService {
 
     private static final String ERR_MSG_NO_SEQ_NO = "A persist event must feature a valid sequence no.";
 
+    private static final String ERR_MSG_DUPLICATE_RECEIVED = "Ignored message {} since the passed sequence no  {} has already been passed";
+
 
     private final TransactionalApplicationEventPublisher applicationEventPublisher;
 
@@ -103,34 +105,33 @@ class DefaultEventPublicationService implements IEventPublicationService {
 
     @Override
     public void saveCommitAndPublishIfNew(PersistentEvent persistentEvent) {
-
         if(!this.handlerMap.containsKey(persistentEvent.getClass())) {
             throw new IllegalArgumentException(ERR_MSG_UNSUPPORTED_EVENT_TYPE);
         }
-
-        //if(true || isNew(persistentEvent)) {
+        if(isNew(persistentEvent)) {
             final InternalEvent internalEvent = this.handlerMap.get(persistentEvent.getClass())
                     .apply(persistentEvent);
-
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
                     applicationEventPublisher.publishEvent(internalEvent);
                 }
             });
-        /*}
+        }
         else {
-            log.info("Ignored message {} since the passed sequence no  {} has already been passed.", persistentEvent, persistentEvent.getSequenceNo());
-        }*/
+            log.info(ERR_MSG_DUPLICATE_RECEIVED, persistentEvent, persistentEvent.getMsgSequenceNo());
+        }
     }
 
     private boolean isNew(PersistentEvent persistentEvent) {
-        final Long seqNo = persistentEvent.getMsgSequenceNo();
 
+        if(!(persistentEvent instanceof ISequenced)) {
+            return true;
+        }
+        final Long seqNo = persistentEvent.getMsgSequenceNo();
         if(Objects.isNull(seqNo)) {
             throw new IllegalArgumentException(ERR_MSG_NO_SEQ_NO);
         }
-
         return this.persistentEventRepository.
                 findByMsgSequenceNo(seqNo)
                 .isEmpty();
@@ -183,7 +184,6 @@ class DefaultEventPublicationService implements IEventPublicationService {
 
         return new InternalUserSkillLevelChangedEvent(DefaultEventPublicationService.this, uuid);
     }
-
 
     private InternalEvent saveMediaRecordInfoEvent(PersistentEvent persistentEvent) {
         PersistentMediaRecordInfoEvent persistentMediaRecordInfoEvent = (PersistentMediaRecordInfoEvent) persistentEvent;

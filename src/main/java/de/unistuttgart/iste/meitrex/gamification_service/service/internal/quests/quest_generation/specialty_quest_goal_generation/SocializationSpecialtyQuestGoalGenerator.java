@@ -6,7 +6,6 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.User
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.GoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.achievements.goals.MoveUpLeaderboardGoalEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.ILeaderboardRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.service.ILeaderboardService;
 import de.unistuttgart.iste.meitrex.gamification_service.service.reactive.leaderboard.UserProgressUpdatedLeaderboardListener;
 import de.unistuttgart.iste.meitrex.gamification_service.time.Period;
 import de.unistuttgart.iste.meitrex.generated.dto.GamificationCategory;
@@ -14,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.Stream;
@@ -50,11 +48,11 @@ public class SocializationSpecialtyQuestGoalGenerator implements ISpecialtyQuest
 
     private boolean isUserTop1InAllLeaderboards(CourseEntity course, UserEntity user) {
         Optional<LeaderboardEntity> allTimeLeaderboard =
-                leaderboardRepository.findByCourseAndPeriodOrderByStartDateDesc(course, Period.ALL_TIME);
+                leaderboardRepository.findFirstByCourseAndPeriodOrderByStartDateDesc(course, Period.ALL_TIME);
         Optional<LeaderboardEntity> monthlyLeaderboard =
-                leaderboardRepository.findByCourseAndPeriodOrderByStartDateDesc(course, Period.MONTHLY);
+                leaderboardRepository.findFirstByCourseAndPeriodOrderByStartDateDesc(course, Period.MONTHLY);
         Optional<LeaderboardEntity> weeklyLeaderboard =
-                leaderboardRepository.findByCourseAndPeriodOrderByStartDateDesc(course, Period.WEEKLY);
+                leaderboardRepository.findFirstByCourseAndPeriodOrderByStartDateDesc(course, Period.WEEKLY);
         OptionalInt maxRank = Stream.concat(
                 Stream.concat(allTimeLeaderboard.stream(), monthlyLeaderboard.stream()), weeklyLeaderboard.stream())
                 .map(leaderboard ->

@@ -21,4 +21,6 @@ ARG DEPENDENCY=/workspace/app/build/dependency
 COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
 COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
 COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
-ENTRYPOINT ["java","-cp","app:app/lib/*","de.unistuttgart.iste.meitrex.gamification_service.GamificationServiceApplication"]
+#ENTRYPOINT ["java","-cp","app:app/lib/*","de.unistuttgart.iste.meitrex.gamification_service.GamificationServiceApplication"]
+ENTRYPOINT ["java", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005", "-cp", "app:app/lib/*", "de.unistuttgart.iste.meitrex.gamification_service.GamificationServiceApplication"]
+EXPOSE 5005
