@@ -7,7 +7,7 @@ import org.springframework.stereotype.*;
 import org.springframework.beans.factory.annotation.*;
 
 @Component
-class DefaultXPImplementation implements IXPLevelMapping, IXPLevelDistance {
+public class DefaultXPImplementation implements IXPLevelMapping, IXPLevelDistance {
 
     // Validation
 
@@ -48,7 +48,7 @@ class DefaultXPImplementation implements IXPLevelMapping, IXPLevelDistance {
     private static Map<Integer, Double> initXPThresholdMap(Map<Integer, Double> mapping, int maxLevel, double multiplicationWeight) {
         int curLevel = 1;
         double curXPThreshold = 0.0;
-        while(curLevel < maxLevel) {
+        while(curLevel <= maxLevel) {
             curXPThreshold += multiplicationWeight * Math.log10((curLevel / 2.00) + 1);
             mapping.put(curLevel, curXPThreshold);
             curLevel++;

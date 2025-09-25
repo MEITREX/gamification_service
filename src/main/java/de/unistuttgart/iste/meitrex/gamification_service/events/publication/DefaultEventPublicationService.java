@@ -116,7 +116,6 @@ class DefaultEventPublicationService implements IEventPublicationService {
                 @Override
                 public void afterCommit() {
                     applicationEventPublisher.publishEvent(internalEvent);
-                    System.out.println("published");
                 }
             });
         /*}
@@ -238,13 +237,11 @@ class DefaultEventPublicationService implements IEventPublicationService {
         PersistentMediaRecordWorkedOnEvent persistentMediaRecordWorkedOnEvent
                 = (PersistentMediaRecordWorkedOnEvent) persistentEvent;
 
-        System.out.println("media-record-worked-on-4 " + persistentEvent.getClass().getName());
 
         final UUID uuid = this.persistentMediaRecordWorkedOnRepository
                 .save(persistentMediaRecordWorkedOnEvent)
                 .getUuid();
 
-        System.out.println("media-record-worked-on-5: " + persistentEvent.getClass().getName());
 
         return new InternalMediaWorkedOnEvent(DefaultEventPublicationService.this, uuid);
     }

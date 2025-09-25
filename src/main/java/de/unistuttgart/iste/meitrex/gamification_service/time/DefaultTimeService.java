@@ -5,7 +5,7 @@ import java.time.*;
 import org.springframework.stereotype.*;
 
 @Component
-class DefaultTimeService implements ITimeService {
+public class DefaultTimeService implements ITimeService {
 
     @Override
     public long curTime() {

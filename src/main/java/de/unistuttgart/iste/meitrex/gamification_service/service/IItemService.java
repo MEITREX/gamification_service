@@ -3,6 +3,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.service;
 
 import java.util.*;
 
+import de.unistuttgart.iste.meitrex.gamification_service.model.ItemParent;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 
 public interface IItemService {
@@ -18,6 +19,12 @@ public interface IItemService {
      *
      */
     List<UserItem> getItemsForUser(UUID userId);
+
+    /**
+     * Get the list of inventories for the given users with a 0 for the Unspent points, initializing defaults if needed.
+     * This query is meant for use cases where you need the items of other users
+     */
+    List<Inventory> getInventoriesForUsers(List<UUID> userIds);
 
     /**
      * Purchase an item for a user (deducts points if affordable) and return updated inventory.
@@ -55,4 +62,9 @@ public interface IItemService {
      *
      */
     UserItemComplete lotteryRun(UUID userId);
+
+    /**
+     * Get the item prototype by its ID.
+     */
+    Optional<ItemParent> getItemPrototypeById(UUID itemId);
 }

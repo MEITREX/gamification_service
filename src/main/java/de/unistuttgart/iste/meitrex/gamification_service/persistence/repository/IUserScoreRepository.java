@@ -3,7 +3,6 @@ package de.unistuttgart.iste.meitrex.gamification_service.persistence.repository
 import java.util.*;
 
 import de.unistuttgart.iste.meitrex.gamification_service.time.Period;
-import org.apache.catalina.User;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.*;
 
@@ -26,10 +25,11 @@ public interface IUserScoreRepository extends JpaRepository<UserScoreEntity, UUI
                     "WHERE o.user = :user AND l.course = :course AND l.period = :period " +
                     "ORDER BY l.startDate DESC"
     )
-    Optional<UserScoreEntity> findMostRecentUserScore(
+    Optional<UserScoreEntity> findFirstMostRecentUserScore(
             @Param("user") UserEntity user,
             @Param("course") CourseEntity course,
             @Param("period") Period period
     );
 
 }
+

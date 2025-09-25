@@ -135,6 +135,16 @@ public class DefaultItemService implements IItemService {
         return getItems(user);
     }
 
+    public List<Inventory> getInventoriesForUsers(List<UUID> userIds) {
+        List<Inventory> inventories = new ArrayList<>();
+        for (UUID userId : userIds) {
+            Inventory inventory = getInventoryForUser(userId);
+            inventory.setUnspentPoints(0);
+            inventories.add(inventory);
+        }
+        return inventories;
+    }
+
     public Inventory buyItem(UUID userId, UUID itemId) {
         UserEntity user = userCreator.fetchOrCreate(userId);
         if(user.getInventory().getItems().isEmpty()) {
@@ -243,6 +253,13 @@ public class DefaultItemService implements IItemService {
         }
         goalProgressService.lotteryRunProgress(user);
         return userItem;
+    }
+
+    @Override
+    public Optional<ItemParent> getItemPrototypeById(UUID prototypeId) {
+        return itemList.stream()
+                .filter(it -> it.getId().equals(prototypeId))
+                .findFirst();
     }
 
 

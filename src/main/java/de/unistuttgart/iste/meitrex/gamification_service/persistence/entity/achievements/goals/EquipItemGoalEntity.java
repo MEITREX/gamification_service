@@ -18,7 +18,7 @@ public class EquipItemGoalEntity extends GoalEntity {
 
     @Override
     public String generateDescription() {
-        return "Euqip an item.";
+        return "Equip an item.";
     }
 
     @Override

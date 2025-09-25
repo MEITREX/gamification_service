@@ -68,6 +68,7 @@ public class StageCompletedEventGoalListener extends AbstractInternalListener<Pe
 
         GoalProgressEvent goalProgressEvent = CompletedSpecificStageGoalProgressEvent.builder()
                 .stageId(persistentEvent.getStageId())
+                .userId(userId)
                 .build();
         this.goalProgressUpdater.updateGoalProgressEntitiesForUser(user, courseId, goalProgressEvent);
     }
