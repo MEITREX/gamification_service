@@ -37,7 +37,6 @@ class UserProgressUpdatedListener extends AbstractExternalListener<UserProgressU
     @PostMapping(path = "/user-progress-updated")
     @Topic(name = "user-progress-updated", pubsubName = "meitrex")
     public void onUserProgressUpdated(@RequestBody CloudEvent<UserProgressUpdatedEvent> cloudEvent, @RequestHeader Map<String, String> headers) {
-        System.out.println("$ " + this.getClass().getName());
         super.handle(cloudEvent, UserProgressUpdatedListener::getContext, headers);
     }
 
@@ -55,13 +54,18 @@ class UserProgressUpdatedListener extends AbstractExternalListener<UserProgressU
     }
 
     @Transactional
-    @GetMapping(path = "/test")
-    public void test() {
+    @GetMapping(path = "/test2")
+    public void test(
+            String userId,
+            String contentId,
+            String courseId
+    ) {
+
         CloudEvent<UserProgressUpdatedEvent>  cloudEvent = new CloudEvent<>();
         cloudEvent.setData(new UserProgressUpdatedEvent(
                 System.currentTimeMillis(),
-                UUID.randomUUID(),
-                UUID.randomUUID(),
+                UUID.fromString(userId),
+                UUID.fromString(contentId),
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 0,
@@ -70,7 +74,7 @@ class UserProgressUpdatedListener extends AbstractExternalListener<UserProgressU
                 0,
                 0,
                 new ArrayList<>(),
-                MediaType.VIDEO));
+                MediaType.DOCUMENT));
         this.onUserProgressUpdated(cloudEvent, new HashMap<>());
     }
 }
