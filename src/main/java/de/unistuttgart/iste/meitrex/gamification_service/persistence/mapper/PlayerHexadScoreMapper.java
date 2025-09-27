@@ -41,6 +41,6 @@ public class PlayerHexadScoreMapper {
         scores.add(new PlayerTypeScore(PlayerType.PLAYER, entity.getPlayer()));
         scores.add(new PlayerTypeScore(PlayerType.DISRUPTOR, entity.getDisruptor()));
 
-        return new PlayerHexadScore(scores);
+        return new PlayerHexadScore(entity.isDefaultInput(), scores);
     }
 }

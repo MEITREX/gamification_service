@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerHexadScoreEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper.PlayerHexadScoreMapper;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import lombok.*;
@@ -38,11 +37,13 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
     public PlayerHexadScore evaluate(UUID userId, PlayerAnswerInput input) {
         final UserEntity user = userCreator.fetchOrCreate(userId);
         PlayerHexadScoreEntity playerHexadScoreEntity = user.getPlayerHexadScore();
-        if(Objects.nonNull(playerHexadScoreEntity)) {
+        if(playerHexadScoreEntity != null && !playerHexadScoreEntity.isDefaultInput()) {
             throw new IllegalStateException("Player Hexad Score was already evaluated");
         }
         final PlayerHexadScore playerHexadScore = input.getQuestions().isEmpty() ? calculateDefault(): calculateFromInput(input);
+        playerHexadScore.setDefaultInput(input.getDefaultInput());
         playerHexadScoreEntity = playerHexadScoreMapper.dtoToEntity(playerHexadScore.getScores(), userId);
+        playerHexadScoreEntity.setDefaultInput(input.getDefaultInput());
         user.setPlayerHexadScore(playerHexadScoreEntity);
         playerHexadScoreEntity.setUser(user);
         return playerHexadScore;
@@ -63,7 +64,7 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
             .build())                           
         .collect(Collectors.toList());
 
-        return new PlayerHexadScore(scores);
+        return new PlayerHexadScore(true, scores);
     }
 
     /**
@@ -87,7 +88,7 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
 
         // Raw score
         input.getQuestions().stream()
-            .map(question -> question.getSelectedAnswer())
+            .map(QuestionInput::getSelectedAnswer)
             .flatMap(answer -> answer.getPlayerTypes().stream())
             .forEach(type ->  rawScores.put(type, rawScores.get(type) + 1));
 
@@ -102,14 +103,14 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
             .map(type -> {
                 float raw = rawScores.get(type);
                 int max = maxPossibleScores.get(type);
-                float normalizedScore = (max == 0) ? 0f: ((float) raw/max) * 100;
+                float normalizedScore = (max == 0) ? 0f: (raw /max) * 100;
                 return PlayerTypeScore.builder()
                     .setType(type)
                     .setValue(normalizedScore)
                     .build(); 
             }).collect(Collectors.toList());
         
-        return new PlayerHexadScore(scores);
+        return new PlayerHexadScore(input.getDefaultInput(), scores);
     }
 
      /**

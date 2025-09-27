@@ -19,7 +19,8 @@ input QuestionInput {
 }
 
 input PlayerAnswerInput {
-  questions: [QuestionInput!]!
+    defaultInput: Boolean!
+    questions: [QuestionInput!]!
 }
 
 type PlayerTypeScore {
@@ -28,7 +29,8 @@ type PlayerTypeScore {
 }
 
 type PlayerHexadScore {
-  scores: [PlayerTypeScore!]!
+    defaultInput: Boolean!
+    scores: [PlayerTypeScore!]!
 }
 
 type User {

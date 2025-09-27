@@ -26,6 +26,10 @@ public class PlayerHexadScoreEntity  implements IWithId<UUID> {
     private UserEntity user;
 
     @NotNull
+    @Column
+    private boolean defaultInput;
+
+    @NotNull
     @Column(nullable = false)
     @Min(0)
     @Max(100)
