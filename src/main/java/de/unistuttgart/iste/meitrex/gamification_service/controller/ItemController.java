@@ -2,6 +2,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.controller;
 
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.gamification_service.service.IItemService;
+import de.unistuttgart.iste.meitrex.generated.dto.EquippedItems;
 import de.unistuttgart.iste.meitrex.generated.dto.Inventory;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItemComplete;
@@ -39,6 +40,12 @@ public class ItemController {
     public List<Inventory> inventoriesForUsers(@Argument List<UUID> userIds,
             @NotNull @ContextValue final LoggedInUser currentUser) {
         return itemService.getInventoriesForUsers(userIds);
+    }
+
+    @QueryMapping
+    public List<EquippedItems> equippedItemsForUsers(@Argument List<UUID> userIds,
+                                                    @NotNull @ContextValue final LoggedInUser currentUser) {
+        return itemService.getEquippedItemsForUsers(userIds);
     }
 
     @MutationMapping

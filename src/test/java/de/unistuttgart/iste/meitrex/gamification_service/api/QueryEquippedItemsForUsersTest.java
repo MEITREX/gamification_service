@@ -13,6 +13,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.service.DefaultItemServ
 import de.unistuttgart.iste.meitrex.gamification_service.test_config.MockContentServiceClientConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.test_config.MockCourseServiceClientConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.test_util.ItemUtil;
+import de.unistuttgart.iste.meitrex.generated.dto.EquippedItems;
 import de.unistuttgart.iste.meitrex.generated.dto.Inventory;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
 import jakarta.transaction.Transactional;
@@ -23,6 +24,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMembershipInCourseWithId;
@@ -34,7 +36,8 @@ import static org.hamcrest.Matchers.is;
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")
-public class QueryInventoryForUserTest {
+public class QueryEquippedItemsForUsersTest {
+
     UUID courseId = UUID.randomUUID();
 
     @Autowired
@@ -45,25 +48,39 @@ public class QueryInventoryForUserTest {
     @Autowired
     private IUserRepository userRepository;
 
+
     @Test
     void testInventoryForUser(final GraphQlTester tester) {
-        UUID itemId = UUID.fromString(ItemUtil.DEFAULT_TUTOR_ITEM_ID);
+        UUID itemId = UUID.fromString(ItemUtil.PATTERN_THEME_ID);
+        UUID itemId2 = UUID.fromString(ItemUtil.COLOR_THEME_ID);
+        UUID itemId3 = UUID.fromString(ItemUtil.DEFAULT_TUTOR_ITEM_ID);
         UserEntity user = new UserEntity(loggedInUser.getId(), 0, null, null, null, null, new ArrayList<>(), new UserInventoryEntity(), new ArrayList<>(), null, new ArrayList<>());
         ItemInstanceEntity itemInstanceEntity = new ItemInstanceEntity();
         itemInstanceEntity.setPrototypeId(itemId);
         itemInstanceEntity.setEquipped(false);
         itemInstanceEntity.setUniqueDescription("");
         itemInstanceEntity.setItemType(ItemType.PatternTheme);
+        ItemInstanceEntity itemInstanceEntity2 = new ItemInstanceEntity();
+        itemInstanceEntity2.setPrototypeId(itemId2);
+        itemInstanceEntity2.setEquipped(true);
+        itemInstanceEntity2.setUniqueDescription("");
+        itemInstanceEntity2.setItemType(ItemType.ColorTheme);
+        ItemInstanceEntity itemInstanceEntity3 = new ItemInstanceEntity();
+        itemInstanceEntity3.setPrototypeId(itemId3);
+        itemInstanceEntity3.setEquipped(true);
+        itemInstanceEntity3.setUniqueDescription("");
+        itemInstanceEntity3.setItemType(ItemType.Tutor);
         user.getInventory().getItems().add(itemInstanceEntity);
+        user.getInventory().getItems().add(itemInstanceEntity2);
+        user.getInventory().getItems().add(itemInstanceEntity3);
         user.getInventory().setUnspentPoints(0);
         userRepository.save(user);
 
         final String query = """
                 query {
-                    inventoryForUser
+                    equippedItemsForUsers(userIds: ["%s"])
                     {
                         userId
-                        unspentPoints
                         items
                         {
                             id
@@ -73,14 +90,16 @@ public class QueryInventoryForUserTest {
                         }
                     }
                 }
-                """;
+                """.formatted(loggedInUser.getId());
 
-        Inventory inventory = tester.document(query)
+        List<EquippedItems> equippedItemsList = tester.document(query)
                 .execute()
-                .path("inventoryForUser").entity(Inventory.class).get();
-        assertThat(inventory.getUnspentPoints(), is(0));
-        UserItem unlockedItem = inventory.getItems().stream().filter(userItem -> userItem.getId().equals(itemId)).findFirst().get();
-        assertThat(unlockedItem.getUnlocked(), is(true));
-        assertThat(inventory.getItems(), hasSize(81));
+                .path("equippedItemsForUsers").entityList(EquippedItems.class).get();
+
+        assertThat(equippedItemsList, hasSize(1));
+        EquippedItems equippedItems = equippedItemsList.get(0);
+        System.out.println(equippedItems.toString());
+        assertThat(equippedItems.getItems(), hasSize(2));
+        assertThat(equippedItems.getItems().stream().anyMatch(item -> item.getId().equals(UUID.fromString(ItemUtil.DEFAULT_TUTOR_ITEM_ID))), is(true));
     }
 }

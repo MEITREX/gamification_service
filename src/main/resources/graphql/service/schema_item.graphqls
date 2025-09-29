@@ -33,3 +33,8 @@ type Inventory {
     unspentPoints: Int!
     items: [UserItem!]!
 }
+
+type EquippedItems {
+    userId: UUID!
+    items: [UserItem!]!
+}

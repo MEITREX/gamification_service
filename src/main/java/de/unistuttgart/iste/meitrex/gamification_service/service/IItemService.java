@@ -27,6 +27,11 @@ public interface IItemService {
     List<Inventory> getInventoriesForUsers(List<UUID> userIds);
 
     /**
+     * Get the list of equipped items for the given users.
+     */
+    List<EquippedItems> getEquippedItemsForUsers(List<UUID> userIds);
+
+    /**
      * Purchase an item for a user (deducts points if affordable) and return updated inventory.
      *
      */

@@ -11,6 +11,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.item
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.IUserRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.ItemInstanceRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.IUserCreator;
+import de.unistuttgart.iste.meitrex.generated.dto.EquippedItems;
 import de.unistuttgart.iste.meitrex.generated.dto.Inventory;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItemComplete;
@@ -143,6 +144,18 @@ public class DefaultItemService implements IItemService {
             inventories.add(inventory);
         }
         return inventories;
+    }
+
+    public List<EquippedItems> getEquippedItemsForUsers(List<UUID> userIds) {
+        List<EquippedItems> equippedItems = new ArrayList<>();
+        for (UUID userId : userIds) {
+            Inventory inventory = getInventoryForUser(userId);
+            EquippedItems equippedItem = new EquippedItems();
+            equippedItem.setUserId(userId);
+            equippedItem.setItems(inventory.getItems().stream().filter(UserItem::getEquipped).toList());
+            equippedItems.add(equippedItem);
+        }
+        return equippedItems;
     }
 
     public Inventory buyItem(UUID userId, UUID itemId) {
