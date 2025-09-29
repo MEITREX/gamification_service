@@ -118,6 +118,7 @@ public class UserProgressUpdatedLeaderboardListener extends AbstractInternalList
     @Override
     protected void doProcess(PersistentUserProgressUpdatedEvent internalEvent)
             throws TransientEventListenerException, NonTransientEventListenerException {
+        System.out.println("$ " + this.getClass().getName());
         final LocalDate today = this.timeService.toDate();
         final UserEntity userEntity = this.userCreator.fetchOrCreate(internalEvent.getUserId());
         final CourseEntity courseEntity = this.courseCreator.fetchOrCreate(internalEvent.getCourseId());
@@ -155,6 +156,7 @@ public class UserProgressUpdatedLeaderboardListener extends AbstractInternalList
     }
 
     private void updateUserScoreEntity(LeaderboardEntity leaderboardEntity, UserEntity userEntity, CourseEntity courseEntity, PersistentUserProgressUpdatedEvent event) {
+        System.out.println("$ " + this.getClass().getName() + "updating score");
         Optional<Integer> curRankOptional = computeRank(leaderboardEntity.getScoreEntityList(), userEntity.getId());
         final UserScoreEntity userScoreEntity = this.findOrCreateMostRecentUserScoreEntity(leaderboardEntity, userEntity, courseEntity, leaderboardEntity.getPeriod());
         final double curScore = userScoreEntity.getScore();
