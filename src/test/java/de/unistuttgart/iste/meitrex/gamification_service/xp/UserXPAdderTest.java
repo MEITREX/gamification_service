@@ -12,8 +12,6 @@ public class UserXPAdderTest {
 
     public static DefaultUserXPAdder userXPAdder = new DefaultUserXPAdder();
 
-    private static final UserEntity newUser = new UserEntity();
-
     private UserEntity createExperiencedUser(){
         final UserEntity experiencedUser = new UserEntity();
         experiencedUser.setXpValue(2000);

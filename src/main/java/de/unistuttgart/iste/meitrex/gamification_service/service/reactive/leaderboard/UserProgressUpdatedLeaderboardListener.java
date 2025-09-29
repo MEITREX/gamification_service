@@ -18,8 +18,6 @@ import de.unistuttgart.iste.meitrex.gamification_service.service.internal.achiev
 import de.unistuttgart.iste.meitrex.gamification_service.time.IPeriodCalculator;
 import de.unistuttgart.iste.meitrex.gamification_service.time.ITimeService;
 import de.unistuttgart.iste.meitrex.gamification_service.time.Period;
-import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
-import de.unistuttgart.iste.meitrex.generated.dto.Leaderboard;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -176,7 +174,7 @@ public class UserProgressUpdatedLeaderboardListener extends AbstractInternalList
 
     private UserScoreEntity findOrCreateMostRecentUserScoreEntity(LeaderboardEntity leaderboardEntity, UserEntity user, CourseEntity course, Period period) {
         return this.userScoreRepository
-                .findMostRecentUserScore(user, course, period)
+                .findFirstMostRecentUserScore(user, course, period)
                 .orElseGet(() -> {
                     final UserScoreEntity scoreEntity = new UserScoreEntity();
                     scoreEntity.setLeaderboard(leaderboardEntity);

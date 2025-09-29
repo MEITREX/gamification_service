@@ -48,8 +48,6 @@ public class DefaultUserService implements IUserService, IUserCreator {
 
     private final int dtoRecursionDepth;
 
-    //private final UserServiceClient graphQLUserClient;
-
     public DefaultUserService(
             @Autowired IXPLevelMapping xpLevelMapping,
             @Autowired IXPLevelDistance xpLevelDistance,
