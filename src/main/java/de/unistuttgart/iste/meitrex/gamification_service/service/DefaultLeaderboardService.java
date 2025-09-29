@@ -21,10 +21,13 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.
 import de.unistuttgart.iste.meitrex.gamification_service.time.*;
 import de.unistuttgart.iste.meitrex.gamification_service.time.Period;
 import de.unistuttgart.iste.meitrex.gamification_service.events.internal.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 
 @Component
 @Transactional
+@RestController
 class DefaultLeaderboardService implements ILeaderboardService {
 
     private static final String ERR_MSG_ILLEGAL_ATTEMPT_OF_FUTURE_LEADERBOARD_CREATION
@@ -118,13 +121,43 @@ class DefaultLeaderboardService implements ILeaderboardService {
     @Transactional
     @Scheduled(cron = "0 0 0 * * MON")
     public void runWeeklyLeaderboardUpdate() {
+        System.out.println("weekly");
         this.updateAllCourseLeaderboards(Period.WEEKLY);
     }
 
     @Transactional
     @Scheduled(cron = "0 0 0 1 * *")
     public void runMonthlyLeaderboardUpdate() {
+        System.out.println("monthly");
         this.updateAllCourseLeaderboards(Period.MONTHLY);
+    }
+
+    @GetMapping("monthly_all")
+    public List<Leaderboard> findAllMonthly() {
+        return findAll(Period.MONTHLY);
+    }
+
+    @GetMapping("weekly_all")
+    public List<Leaderboard> findAllWeekly() {
+        return findAll(Period.WEEKLY);
+    }
+
+    @Autowired
+    private LeaderboardMapper mapper;
+
+    public List<Leaderboard> findAll(Period period) {
+        List<LeaderboardEntity> list = new ArrayList<>();
+        this.courseRepository
+                .findAll()
+                .forEach(courseEntity -> {
+                    this.leaderboardRepository
+                            .findByCourseAndPeriodOrderByStartDateDesc(courseEntity, period)
+                            .stream()
+                            .findFirst().ifPresent(list::add);
+                });
+        return list.stream()
+                .map(leaderboardEntity -> mapper.toDTO(leaderboardEntity, 1))
+                .toList();
     }
 
     private void updateAllCourseLeaderboards(Period period) {
@@ -147,14 +180,19 @@ class DefaultLeaderboardService implements ILeaderboardService {
     private void updateCourseLeaderboard(CourseEntity courseEntity, LeaderboardEntity leaderboardEntity,  LocalDate now, Period period) {
         assureUpdateCourseLeaderboardPreconditionsAreMet(courseEntity, leaderboardEntity, now, period);
 
+        System.out.println("Now: "+ now);
         final LocalDate curStartDate = leaderboardEntity.getStartDate();
+        System.out.println("CurStartDate: "+ curStartDate);
         final LocalDate nextStartDate = this.periodCalculator.calcSucStartDate(curStartDate, period);
+        System.out.println("NextStartDate: "+ nextStartDate);
 
         if(isDayInRange(now, curStartDate, nextStartDate)) {
             return;
         }
-
         LeaderboardEntity newLeaderboard = instantiateLeaderboard(courseEntity, nextStartDate, period);
+
+        System.out.println(newLeaderboard.getId() + " " + newLeaderboard.getTitle() + " " + newLeaderboard.getStartDate() + " " + newLeaderboard.getPeriod() + " " + newLeaderboard.getCourse().getId());
+
         newLeaderboard = this.leaderboardRepository.save(newLeaderboard);
         updateCourseLeaderboard(courseEntity, newLeaderboard, now, period);
     }
