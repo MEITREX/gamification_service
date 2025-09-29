@@ -52,29 +52,4 @@ class UserProgressUpdatedListener extends AbstractExternalListener<UserProgressU
         persistentEvent.setChapterId(event.getChapterId());
         return persistentEvent;
     }
-
-    @Transactional
-    @GetMapping(path = "/test2")
-    public void test(
-            String userId,
-            String contentId,
-            String courseId
-    ) {
-
-        CloudEvent<UserProgressUpdatedEvent>  cloudEvent = new CloudEvent<>();
-        cloudEvent.setData(new UserProgressUpdatedEvent(
-                System.currentTimeMillis(),
-                UUID.fromString(userId),
-                UUID.fromString(contentId),
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                0,
-                true,
-                1.0,
-                0,
-                0,
-                new ArrayList<>(),
-                MediaType.DOCUMENT));
-        this.onUserProgressUpdated(cloudEvent, new HashMap<>());
-    }
 }
