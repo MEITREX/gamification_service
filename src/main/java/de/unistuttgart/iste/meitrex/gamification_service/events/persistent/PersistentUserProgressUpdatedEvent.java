@@ -17,7 +17,7 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @DiscriminatorValue("USER_PROGRESS_UPDATED_EVENT")
-public class PersistentUserProgressUpdatedEvent extends PersistentEvent {
+public class PersistentUserProgressUpdatedEvent extends PersistentEvent implements ISequenced {
 
 
     @Column(name="fk_user_id")
