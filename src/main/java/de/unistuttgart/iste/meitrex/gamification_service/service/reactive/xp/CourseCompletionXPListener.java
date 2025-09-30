@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 import java.util.Objects;
 
 @Component
-class CourseCompletionXPListener extends AbstractInternalListener<PersistentCourseCompletedEvent, InternalCourseCompletedEvent> {
+public class CourseCompletionXPListener extends AbstractInternalListener<PersistentCourseCompletedEvent, InternalCourseCompletedEvent> {
 
     // Do not change to keep unique UUID even in case of refactoring.
     private static final String name = "CourseCompletionXPListener";
@@ -50,7 +50,7 @@ class CourseCompletionXPListener extends AbstractInternalListener<PersistentCour
     }
 
     @Override
-    protected void doProcess(PersistentCourseCompletedEvent persistentEvent)
+    public void doProcess(PersistentCourseCompletedEvent persistentEvent)
             throws TransientEventListenerException, NonTransientEventListenerException {
         final UserEntity userEntity = this.userCreator.fetchOrCreate(persistentEvent.getUserId());
         this.userXPAdder.add(userEntity, IUserXPAdder.Cause.COURSE_COMPLETED);

@@ -26,7 +26,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Component
-class ForumActivityEventXPListener extends AbstractInternalListener<PersistentForumActivityEvent, InternalForumActivityEvent> {
+public class ForumActivityEventXPListener extends AbstractInternalListener<PersistentForumActivityEvent, InternalForumActivityEvent> {
 
     // Do not change to keep unique UUID even in case of refactoring.
     private static final String name = "ForumActivityListener";
@@ -60,7 +60,7 @@ class ForumActivityEventXPListener extends AbstractInternalListener<PersistentFo
     }
 
     @Override
-    protected void doProcess(PersistentForumActivityEvent persistentEvent)
+    public void doProcess(PersistentForumActivityEvent persistentEvent)
             throws TransientEventListenerException, NonTransientEventListenerException {
         final UserEntity author = this.userCreator.fetchOrCreate(persistentEvent.getUserId());
         switch (persistentEvent.getType()) {

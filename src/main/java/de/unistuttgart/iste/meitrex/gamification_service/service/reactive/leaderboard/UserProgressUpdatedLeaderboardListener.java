@@ -81,8 +81,8 @@ public class UserProgressUpdatedLeaderboardListener extends AbstractInternalList
     private final IGoalProgressUpdater goalProgressUpdater;
 
     public UserProgressUpdatedLeaderboardListener(
-            @Autowired  IPersistentUserProgressUpdatedRepository persistentEventRepository,
-            @Autowired  IPersistentEventStatusRepository eventStatusRepository,
+            @Autowired IPersistentUserProgressUpdatedRepository persistentEventRepository,
+            @Autowired IPersistentEventStatusRepository eventStatusRepository,
             @Autowired ITimeService timeService,
             @Autowired ICourseCreator courseCreator,
             @Autowired IUserCreator userCreator,
@@ -90,7 +90,7 @@ public class UserProgressUpdatedLeaderboardListener extends AbstractInternalList
             @Autowired IPeriodCalculator periodCalculator,
             @Autowired ILeaderboardRepository leaderboardRepository,
             @Autowired IUserScoreRepository userScoreRepository,
-            @Autowired  IGoalProgressUpdater goalProgressUpdater
+            @Autowired IGoalProgressUpdater goalProgressUpdater
     ) {
         super(persistentEventRepository, eventStatusRepository, timeService);
         this.timeService = Objects.requireNonNull(timeService);
@@ -115,7 +115,7 @@ public class UserProgressUpdatedLeaderboardListener extends AbstractInternalList
     }
 
     @Override
-    protected void doProcess(PersistentUserProgressUpdatedEvent internalEvent)
+    public void doProcess(PersistentUserProgressUpdatedEvent internalEvent)
             throws TransientEventListenerException, NonTransientEventListenerException {
         final LocalDate today = this.timeService.toDate();
         final UserEntity userEntity = this.userCreator.fetchOrCreate(internalEvent.getUserId());
@@ -128,6 +128,7 @@ public class UserProgressUpdatedLeaderboardListener extends AbstractInternalList
         if(leaderboardEntityList.size() < Period.values().length || checkIfLeaderboardIsOutdated(leaderboardEntityList, today)) {
             throw new TransientEventListenerException();
         }
+
         this.updateUserScoreEntity(extractMostRecentLeaderboardFromOrderedList(leaderboardEntityList, Period.ALL_TIME), userEntity, courseEntity, internalEvent);
         this.updateUserScoreEntity(extractMostRecentLeaderboardFromOrderedList(leaderboardEntityList, Period.MONTHLY), userEntity, courseEntity, internalEvent);
         this.updateUserScoreEntity(extractMostRecentLeaderboardFromOrderedList(leaderboardEntityList, Period.WEEKLY), userEntity, courseEntity, internalEvent);

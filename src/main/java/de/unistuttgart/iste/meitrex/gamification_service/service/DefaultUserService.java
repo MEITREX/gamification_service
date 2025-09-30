@@ -36,7 +36,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.
 @Component
 @Transactional
 @Slf4j
-class DefaultUserService implements IUserService, IUserCreator {
+public class DefaultUserService implements IUserService, IUserCreator {
 
     private final IXPLevelMapping xpLevelMapping;
 
@@ -63,6 +63,7 @@ class DefaultUserService implements IUserService, IUserCreator {
         this.dtoRecursionDepth = dtoRecursionDepth;
     }
 
+
     @Override
     public UserEntity fetchOrCreate(UUID userId) {
         final UserEntity user =  this.userRepository
@@ -70,7 +71,6 @@ class DefaultUserService implements IUserService, IUserCreator {
                 .orElseGet(()  -> this.userRepository.save(new UserEntity(userId, 0, null, null, null, null, new ArrayList<>(), null, new ArrayList<>(), null, new ArrayList<>())));
         return user;
     }
-
 
     @Override
     public User fetchUser(UUID userID)
