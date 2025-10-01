@@ -230,7 +230,7 @@ public class DefaultItemService implements IItemService {
     }
 
     public UserItemComplete lotteryRun(UUID userId) {
-        UserItemComplete userItem;
+        UserItemComplete userItem = new UserItemComplete();
         UserEntity user = userCreator.fetchOrCreate(userId);
         if (user.getInventory() == null) {
             user.setInventory(userInventoryFactory.createUserInventory());
@@ -241,6 +241,26 @@ public class DefaultItemService implements IItemService {
         } else {
             user.getInventory().removePoints(LOTTERY_COST);
         }
+        userItem = randomItemRun(userItem, user);
+        goalProgressService.lotteryRunProgress(user);
+        return userItem;
+    }
+
+    public void submissionReward(UUID userId) {
+        UserItemComplete userItem = new UserItemComplete();
+        UserEntity user = userCreator.fetchOrCreate(userId);
+        if (user.getInventory() == null) {
+            user.setInventory(userInventoryFactory.createUserInventory());
+        }
+        checkDefaultItems(user);
+        if (r.nextBoolean()) {
+            randomItemRun(userItem, user);
+        }
+        user.getInventory().addPoints(500);
+        userRepository.save(user);
+    }
+
+    private UserItemComplete randomItemRun(UserItemComplete userItem, UserEntity user) {
         double randomValue = r.nextDouble();
         if (randomValue < COMMON_PERCENTAGE) {
             userItem = addRandomItemToUser(user, commonLotteryItemList);
@@ -251,7 +271,6 @@ public class DefaultItemService implements IItemService {
         } else {
             userItem = addRandomItemToUser(user, ultraRareLotteryItemList);
         }
-        goalProgressService.lotteryRunProgress(user);
         return userItem;
     }
 
