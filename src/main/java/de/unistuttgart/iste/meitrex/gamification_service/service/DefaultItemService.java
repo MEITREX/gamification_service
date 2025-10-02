@@ -71,6 +71,30 @@ public class DefaultItemService implements IItemService {
                     .filter(ItemParent::isObtainableInLottery)
                     .filter(itemParent -> itemParent.getRarity().equals(ItemRarity.ULTRA_RARE))
                     .toList();
+            itemService.commonRewardItemList = itemService
+                    .itemList
+                    .stream()
+                    .filter(ItemParent::isObtainableAsReward)
+                    .filter(itemParent -> itemParent.getRarity().equals(ItemRarity.COMMON))
+                    .toList();
+            itemService.uncommonRewardItemList = itemService
+                    .itemList
+                    .stream()
+                    .filter(ItemParent::isObtainableAsReward)
+                    .filter(itemParent -> itemParent.getRarity().equals(ItemRarity.UNCOMMON))
+                    .toList();
+            itemService.rareRewardItemList = itemService
+                    .itemList
+                    .stream()
+                    .filter(ItemParent::isObtainableAsReward)
+                    .filter(itemParent -> itemParent.getRarity().equals(ItemRarity.RARE))
+                    .toList();
+            itemService.ultraRareRewardItemList = itemService
+                    .itemList
+                    .stream()
+                    .filter(ItemParent::isObtainableAsReward)
+                    .filter(itemParent -> itemParent.getRarity().equals(ItemRarity.ULTRA_RARE))
+                    .toList();
         } catch (Exception e) {
             //throw new IllegalStateException(e);
         }
@@ -103,6 +127,14 @@ public class DefaultItemService implements IItemService {
     private List<ItemParent> rareLotteryItemList;
 
     private List<ItemParent> ultraRareLotteryItemList;
+
+    private List<ItemParent> commonRewardItemList;
+
+    private List<ItemParent> uncommonRewardItemList;
+
+    private List<ItemParent> rareRewardItemList;
+
+    private List<ItemParent> ultraRareRewardItemList;
 
 
     public DefaultItemService(@Autowired IItemProvider itemProvider, @Autowired IGoalProgressService goalProgressService, @Autowired IUserCreator userCreator, @Autowired IUserRepository userRepository, @Autowired ItemInstanceRepository itemInstanceRepository, @Autowired UserInventoryFactory userInventoryFactory) {
@@ -176,11 +208,11 @@ public class DefaultItemService implements IItemService {
                     .forEach(itemInstanceEntity1 -> itemInstanceEntity1.setEquipped(false));
             if (itemInstanceEntity.getItemType() == ItemType.ColorTheme) {
                 user.getInventory().getItems().stream().filter(itemInstanceEntity1 -> itemInstanceEntity1.getItemType()
-                        .equals(ItemType.PatternTheme)).forEach(itemInstanceEntity1 -> {itemInstanceEntity1.setEquipped(false);});
+                        .equals(ItemType.PatternTheme)).forEach(itemInstanceEntity1 -> itemInstanceEntity1.setEquipped(false));
             }
             if (itemInstanceEntity.getItemType() == ItemType.PatternTheme) {
                 user.getInventory().getItems().stream().filter(itemInstanceEntity1 -> itemInstanceEntity1.getItemType()
-                        .equals(ItemType.ColorTheme)).forEach(itemInstanceEntity1 -> {itemInstanceEntity1.setEquipped(false);});
+                        .equals(ItemType.ColorTheme)).forEach(itemInstanceEntity1 -> itemInstanceEntity1.setEquipped(false));
             }
             userRepository.save(user);
             itemInstanceEntity.setEquipped(true);
@@ -230,7 +262,7 @@ public class DefaultItemService implements IItemService {
     }
 
     public UserItemComplete lotteryRun(UUID userId) {
-        UserItemComplete userItem = new UserItemComplete();
+        UserItemComplete userItem;
         UserEntity user = userCreator.fetchOrCreate(userId);
         if (user.getInventory() == null) {
             user.setInventory(userInventoryFactory.createUserInventory());
@@ -241,35 +273,36 @@ public class DefaultItemService implements IItemService {
         } else {
             user.getInventory().removePoints(LOTTERY_COST);
         }
-        userItem = randomItemRun(userItem, user);
+        userItem = getUserItemComplete(user, commonLotteryItemList, uncommonLotteryItemList, rareLotteryItemList, ultraRareLotteryItemList);
         goalProgressService.lotteryRunProgress(user);
         return userItem;
     }
 
     public void submissionReward(UUID userId) {
-        UserItemComplete userItem = new UserItemComplete();
         UserEntity user = userCreator.fetchOrCreate(userId);
         if (user.getInventory() == null) {
             user.setInventory(userInventoryFactory.createUserInventory());
         }
         checkDefaultItems(user);
         if (r.nextBoolean()) {
-            randomItemRun(userItem, user);
+            getUserItemComplete(user, commonRewardItemList, uncommonRewardItemList, rareRewardItemList, ultraRareRewardItemList);
         }
         user.getInventory().addPoints(500);
         userRepository.save(user);
     }
 
-    private UserItemComplete randomItemRun(UserItemComplete userItem, UserEntity user) {
+    @NotNull
+    private UserItemComplete getUserItemComplete(UserEntity user, List<ItemParent> commonRewardItemList, List<ItemParent> uncommonRewardItemList, List<ItemParent> rareRewardItemList, List<ItemParent> ultraRareRewardItemList) {
+        UserItemComplete userItem;
         double randomValue = r.nextDouble();
         if (randomValue < COMMON_PERCENTAGE) {
-            userItem = addRandomItemToUser(user, commonLotteryItemList);
+            userItem = addRandomItemToUser(user, commonRewardItemList);
         } else if (randomValue < COMMON_PERCENTAGE + UNCOMMON_PERCENTAGE) {
-            userItem = addRandomItemToUser(user, uncommonLotteryItemList);
+            userItem = addRandomItemToUser(user, uncommonRewardItemList);
         } else if (randomValue < COMMON_PERCENTAGE + UNCOMMON_PERCENTAGE + RARE_PERCENTAGE) {
-            userItem = addRandomItemToUser(user, rareLotteryItemList);
+            userItem = addRandomItemToUser(user, rareRewardItemList);
         } else {
-            userItem = addRandomItemToUser(user, ultraRareLotteryItemList);
+            userItem = addRandomItemToUser(user, ultraRareRewardItemList);
         }
         return userItem;
     }
@@ -317,20 +350,15 @@ public class DefaultItemService implements IItemService {
     }
 
     private void addDefaultItems(UserEntity user) {
-        itemList.stream().filter(itemParent -> itemParent.getRarity().equals(ItemRarity.DEFAULT)).forEach(itemParent -> {
-            user.getInventory().getItems().add(itemParent.toItemInstance());
-        });
-        user.getInventory().getItems().forEach(itemInstanceEntity -> {
-            itemInstanceEntity.setEquipped(true);
-        });
+        itemList.stream().filter(itemParent -> itemParent.getRarity().equals(ItemRarity.DEFAULT))
+                .forEach(itemParent -> user.getInventory().getItems().add(itemParent.toItemInstance()));
+        user.getInventory().getItems().forEach(itemInstanceEntity -> itemInstanceEntity.setEquipped(true));
         userRepository.save(user);
     }
 
     private List<UserItem> getItems(UserEntity user) {
         List<UserItem> userItems = new ArrayList<>();
-        itemList.forEach(itemParent -> {
-            getItem(user, itemParent.getId(), userItems);
-        });
+        itemList.forEach(itemParent -> getItem(user, itemParent.getId(), userItems));
         return userItems;
     }
 
