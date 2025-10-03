@@ -1,0 +1,8 @@
+package de.unistuttgart.iste.meitrex.gamification_service.events.repository;
+
+import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentSubmissionCompletedEvent;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface IPersistentSubmissionCompletedEventRepository extends IPersistentEventRepository<PersistentSubmissionCompletedEvent>{
+}

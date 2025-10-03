@@ -64,6 +64,12 @@ public interface IItemService {
     UserItemComplete lotteryRun(UUID userId);
 
     /**
+     * Generates the item and currency reward for a completed submission
+     * @param userId
+     */
+    void submissionReward(UUID userId);
+
+    /**
      * Get the item prototype by its ID.
      */
     Optional<ItemParent> getItemPrototypeById(UUID itemId);

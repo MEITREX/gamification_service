@@ -56,6 +56,8 @@ class DefaultEventPublicationService implements IEventPublicationService {
 
     private final IPersistentMediaRecordWorkedOnRepository persistentMediaRecordWorkedOnRepository;
 
+    private final IPersistentSubmissionCompletedEventRepository persistentSubmissionCompletedEventRepository;
+
     private final Map<Class<? extends PersistentEvent>, Function<PersistentEvent, InternalEvent>> handlerMap = new HashMap<>();
 
 
@@ -73,7 +75,8 @@ class DefaultEventPublicationService implements IEventPublicationService {
             @Autowired IPersistentStageCompletedEventRepository stageCompletedEventRepository,
             @Autowired IPersistentCourseCompletedEventRepository courseCompletedEventRepository,
             @Autowired IPersistentUserCourseMembershipChangedEventRepository userCourseMembershipChangedEventRepository,
-            @Autowired IPersistentMediaRecordWorkedOnRepository persistentMediaRecordWorkedOnRepository
+            @Autowired IPersistentMediaRecordWorkedOnRepository persistentMediaRecordWorkedOnRepository,
+            @Autowired IPersistentSubmissionCompletedEventRepository persistentSubmissionCompletedEventRepository
     ) {
         this.applicationEventPublisher = Objects.requireNonNull(applicationEventPublisher);
         this.persistentEventRepository = Objects.requireNonNull(persistentEventRepository);
@@ -89,6 +92,7 @@ class DefaultEventPublicationService implements IEventPublicationService {
         this.courseCompletedEventRepository = Objects.requireNonNull(courseCompletedEventRepository);
         this.userCourseMembershipChangedEventRepository = Objects.requireNonNull(userCourseMembershipChangedEventRepository);
         this.persistentMediaRecordWorkedOnRepository = Objects.requireNonNull(persistentMediaRecordWorkedOnRepository);
+        this.persistentSubmissionCompletedEventRepository = Objects.requireNonNull(persistentSubmissionCompletedEventRepository);
         this.handlerMap.put(PersistentUserProgressUpdatedEvent.class, this::saveUserProgressUpdatedEvent);
         this.handlerMap.put(PersistentContentProgressedEvent.class, this::saveContentProgressedEvent);
         this.handlerMap.put(PersistentForumActivityEvent.class, this::saveForumActivityEvent);
@@ -101,6 +105,7 @@ class DefaultEventPublicationService implements IEventPublicationService {
         this.handlerMap.put(PersistentCourseCompletedEvent.class, this::saveCourseCompletedEvent);
         this.handlerMap.put(PersistentAskedTutorAQuestionEvent.class, this::saveAskedTutorAQuestionEvent);
         this.handlerMap.put(PersistentUserCourseMembershipChangedEvent.class, this::saveUserCourseMembershipChangedEvent);
+        this.handlerMap.put(PersistentSubmissionCompletedEvent.class, this::saveSubmissionCompletedEvent);
     }
 
     @Override
@@ -255,5 +260,16 @@ class DefaultEventPublicationService implements IEventPublicationService {
                 .getUuid();
 
         return new InternalUserCourseMembershipChangedEvent(DefaultEventPublicationService.this, uuid);
+    }
+
+    private InternalEvent saveSubmissionCompletedEvent(PersistentEvent persistentEvent) {
+        PersistentSubmissionCompletedEvent persistentSubmissionCompletedEvent
+                = (PersistentSubmissionCompletedEvent) persistentEvent;
+
+        final UUID uuid = this.persistentSubmissionCompletedEventRepository
+                .save(persistentSubmissionCompletedEvent)
+                .getUuid();
+
+        return new InternalSubmissionCompletedEvent(DefaultEventPublicationService.this, uuid);
     }
 }
