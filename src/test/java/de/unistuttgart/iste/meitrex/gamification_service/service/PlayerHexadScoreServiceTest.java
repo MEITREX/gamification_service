@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.Optional;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.IPlayerHexadScoreQuestionRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.IUserCreator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,17 +33,21 @@ public class PlayerHexadScoreServiceTest {
     private PlayerHexadScoreService playerHexadScoreService;
 
     @Mock
+    private IPlayerHexadScoreQuestionRepository  playerHexadScoreQuestionRepository;
+
+    @Mock
     private PlayerAnswerInput input;
 
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        playerHexadScoreService = new PlayerHexadScoreService(playerHexadScoreMapper,  userCreator);
+        playerHexadScoreService = new PlayerHexadScoreService(playerHexadScoreMapper,  userCreator, playerHexadScoreQuestionRepository);
     }
 
     @Test
     void testEvaluateWithEmptyQuestions() {
+        String username = "Test name";
         // Arrange
         PlayerHexadScoreService spyService = spy(playerHexadScoreService);
         when(input.getQuestions()).thenReturn(Collections.emptyList());
@@ -53,7 +58,7 @@ public class PlayerHexadScoreServiceTest {
         double expectedValue = defaultValue;
 
         // Act
-        PlayerHexadScore result = spyService.evaluate(UUID.randomUUID(), input);
+        PlayerHexadScore result = spyService.evaluate(UUID.randomUUID(), input, username);
 
         verify(spyService).calculateDefault();
         verify(spyService, times(0)).calculateFromInput(input);
@@ -69,6 +74,7 @@ public class PlayerHexadScoreServiceTest {
 
     @Test
     public void testEvaluateWithInput(){
+        String username = "Test name";
         // Arrange
         PlayerHexadScoreService spyService = spy(playerHexadScoreService);
 
@@ -89,13 +95,13 @@ public class PlayerHexadScoreServiceTest {
                 Arrays.asList(answer1, answer2)
         );
 
-        PlayerAnswerInput playerAnswerInput = new PlayerAnswerInput(false ,Collections.singletonList(question));
+        PlayerAnswerInput playerAnswerInput = new PlayerAnswerInput(Collections.singletonList(question));
         when(input.getQuestions()).thenReturn(playerAnswerInput.getQuestions());
         when(userCreator.fetchOrCreate(any(UUID.class)))
                 .thenReturn(new UserEntity());
 
         // Act
-        PlayerHexadScore result = spyService.evaluate(UUID.randomUUID(), input);
+        PlayerHexadScore result = spyService.evaluate(UUID.randomUUID(), input, username);
 
         verify(spyService).calculateFromInput(input);
         verify(spyService, times(0)).calculateDefault();
@@ -116,6 +122,7 @@ public class PlayerHexadScoreServiceTest {
 
     @Test
     public void testEvaluateWithDefaultInputExists(){
+        String username = "Test name";
         // Arrange
         PlayerHexadScoreService spyService = spy(playerHexadScoreService);
 
@@ -136,7 +143,7 @@ public class PlayerHexadScoreServiceTest {
                 Arrays.asList(answer1, answer2)
         );
 
-        PlayerAnswerInput playerAnswerInput = new PlayerAnswerInput(false ,Collections.singletonList(question));
+        PlayerAnswerInput playerAnswerInput = new PlayerAnswerInput(Collections.singletonList(question));
         when(input.getQuestions()).thenReturn(playerAnswerInput.getQuestions());
 
         PlayerHexadScoreEntity existingScore = new PlayerHexadScoreEntity();
@@ -147,7 +154,7 @@ public class PlayerHexadScoreServiceTest {
                 .thenReturn(user);
 
         // Act
-        PlayerHexadScore result = spyService.evaluate(UUID.randomUUID(), input);
+        PlayerHexadScore result = spyService.evaluate(UUID.randomUUID(), input, username);
 
         verify(spyService).calculateFromInput(input);
         verify(spyService, times(0)).calculateDefault();
@@ -168,6 +175,7 @@ public class PlayerHexadScoreServiceTest {
 
     @Test
     public void testEvaluateHexadScoreAlreadyEvaluated(){
+        String username = "Test name";
         // Arrange
         PlayerHexadScoreService spyService = spy(playerHexadScoreService);
         PlayerHexadScoreEntity existingScore = new PlayerHexadScoreEntity();
@@ -181,7 +189,7 @@ public class PlayerHexadScoreServiceTest {
 
         // Act & Assert
         assertThrows(IllegalStateException.class, () -> {
-            spyService.evaluate(UUID.randomUUID(), input);
+            spyService.evaluate(UUID.randomUUID(), input, username);
         });
 
         verify(spyService, times(0)).calculateDefault();
