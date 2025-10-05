@@ -19,7 +19,6 @@ input QuestionInput {
 }
 
 input PlayerAnswerInput {
-    defaultInput: Boolean!
     questions: [QuestionInput!]!
 }
 

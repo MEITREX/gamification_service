@@ -2,7 +2,9 @@ package de.unistuttgart.iste.meitrex.gamification_service.service;
 
 import java.util.*;
 
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerHexadScoreQuestionEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
+import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.IPlayerHexadScoreQuestionRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.IUserCreator;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,8 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
 
     private final IUserCreator userCreator;
 
+    private final IPlayerHexadScoreQuestionRepository playerHexadScoreQuestionRepository;
+
 
     /*Modified Review Required*/
 
@@ -32,18 +36,26 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
      * Returns Player Hexad Types (%) according to quiz answers
      * @param input the players quiz answer
      * @param userId
+     * @param username name of the user
      * @return the calculated player hexad score 
      */
-    public PlayerHexadScore evaluate(UUID userId, PlayerAnswerInput input) {
+    public PlayerHexadScore evaluate(UUID userId, PlayerAnswerInput input, String username) {
         final UserEntity user = userCreator.fetchOrCreate(userId);
         PlayerHexadScoreEntity playerHexadScoreEntity = user.getPlayerHexadScore();
         if(playerHexadScoreEntity != null && !playerHexadScoreEntity.isDefaultInput()) {
             throw new IllegalStateException("Player Hexad Score was already evaluated");
         }
         final PlayerHexadScore playerHexadScore = input.getQuestions().isEmpty() ? calculateDefault(): calculateFromInput(input);
-        playerHexadScore.setDefaultInput(input.getDefaultInput());
+        input.getQuestions().forEach(question -> {
+            PlayerHexadScoreQuestionEntity playerHexadScoreQuestionEntity = new PlayerHexadScoreQuestionEntity();
+            playerHexadScoreQuestionEntity.setQuestion(question.getText());
+            playerHexadScoreQuestionEntity.setAnswer(question.getSelectedAnswer().getText());
+            playerHexadScoreQuestionEntity.setUsername(username);
+            playerHexadScoreQuestionRepository.save(playerHexadScoreQuestionEntity);
+        });
         playerHexadScoreEntity = playerHexadScoreMapper.dtoToEntity(playerHexadScore.getScores(), userId);
-        playerHexadScoreEntity.setDefaultInput(input.getDefaultInput());
+        log.info("is default input: {}",playerHexadScoreEntity.isDefaultInput());
+        playerHexadScoreEntity.setUsername(username);
         user.setPlayerHexadScore(playerHexadScoreEntity);
         playerHexadScoreEntity.setUser(user);
         return playerHexadScore;
@@ -63,7 +75,6 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
             .setValue(defaultValue)                  
             .build())                           
         .collect(Collectors.toList());
-
         return new PlayerHexadScore(true, scores);
     }
 
@@ -110,7 +121,7 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
                     .build(); 
             }).collect(Collectors.toList());
         
-        return new PlayerHexadScore(input.getDefaultInput(), scores);
+        return new PlayerHexadScore(false, scores);
     }
 
      /**

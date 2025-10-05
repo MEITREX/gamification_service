@@ -16,9 +16,10 @@ public interface IPlayerHexadScoreService {
      * Returns Player Hexad Types (%) according to quiz answers
      * @param input the players quiz answer
      * @param userId
+     * @param username
      * @return the calculated player hexad score
      */
-    PlayerHexadScore evaluate(UUID userId, PlayerAnswerInput input);
+    PlayerHexadScore evaluate(UUID userId, PlayerAnswerInput input, String username);
 
     /**
      * Calculates Default Score (%) player hexad
