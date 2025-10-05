@@ -96,11 +96,7 @@ class DefaultRecommendationInitializer implements IRecommendationInitializer {
         assureHasUser(userEntity.getPlayerHexadScore());
         final UserRecommendationScoreEntity entity;
         if(this.userConfigurationProvider.isAdaptiveGamificationDisabled(userEntity.getId())) {
-            double[] hexadScores = neutralHexadScores;
-            if(!this.adaptivityConfiguration.isAdjustHexadScoreInCaseOfDisabledGamification()) {
-                hexadScores = mapToArray(userEntity.getPlayerHexadScore());
-            }
-            entity = initializeUserRecommendationScoreFromHexadScore(userEntity.getId(), hexadScores);
+            entity = this.adaptivityConfiguration.isAdjustHexadScoreInCaseOfDisabledGamification() ? initializeUserRecommendationScoreFromHexadScore(userEntity.getId(), neutralHexadScores) : initializeUserRecommendationScoreEmpty(userEntity.getId());
         }
         else {
             entity = userEntity.getPlayerHexadScore() == null ? initializeUserRecommendationScoreEmpty(userEntity.getId()) : initializeUserRecommendationScoreFromHexadScore(userEntity.getId(), mapToArray(userEntity.getPlayerHexadScore()));

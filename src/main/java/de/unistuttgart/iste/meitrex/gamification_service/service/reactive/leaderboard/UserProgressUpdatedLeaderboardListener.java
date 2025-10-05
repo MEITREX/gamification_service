@@ -118,18 +118,14 @@ public class UserProgressUpdatedLeaderboardListener extends AbstractInternalList
     @Override
     protected void doProcess(PersistentUserProgressUpdatedEvent internalEvent)
             throws TransientEventListenerException, NonTransientEventListenerException {
-        System.out.println("$ " + this.getClass().getName());
         final LocalDate today = this.timeService.toDate();
         final UserEntity userEntity = this.userCreator.fetchOrCreate(internalEvent.getUserId());
         final CourseEntity courseEntity = this.courseCreator.fetchOrCreate(internalEvent.getCourseId());
-
-
         final List<LeaderboardEntity> leaderboardEntityList = Arrays.stream(Period.values())
                 .map(period ->  this.leaderboardRepository.findByCourseAndPeriodOrderByStartDateDesc(courseEntity, period))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-
         if(leaderboardEntityList.size() < Period.values().length || checkIfLeaderboardIsOutdated(leaderboardEntityList, today)) {
             throw new TransientEventListenerException();
         }
@@ -156,7 +152,6 @@ public class UserProgressUpdatedLeaderboardListener extends AbstractInternalList
     }
 
     private void updateUserScoreEntity(LeaderboardEntity leaderboardEntity, UserEntity userEntity, CourseEntity courseEntity, PersistentUserProgressUpdatedEvent event) {
-        System.out.println("$ " + this.getClass().getName() + "updating score");
         Optional<Integer> curRankOptional = computeRank(leaderboardEntity.getScoreEntityList(), userEntity.getId());
         final UserScoreEntity userScoreEntity = this.findOrCreateMostRecentUserScoreEntity(leaderboardEntity, userEntity, courseEntity, leaderboardEntity.getPeriod());
         final double curScore = userScoreEntity.getScore();

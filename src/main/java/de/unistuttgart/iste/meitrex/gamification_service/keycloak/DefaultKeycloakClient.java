@@ -127,19 +127,4 @@ public class DefaultKeycloakClient implements IKeycloakClient {
                 .block();
     }
 
-
-    @GetMapping("test_read_keycloak")
-    public void testReadAttribute(String id, String attribute) {
-        this.getValues(UUID.fromString(id), attribute);
-    }
-
-    @GetMapping("test_save_keycloak")
-    public void testSaveAttribute(String id, String attribute, String value) {
-        this.setValues(UUID.fromString(id), attribute, List.of(value));
-    }
-
-    @GetMapping("test_remove_keycloak")
-    public void removeSaveAttribute(String id, String attribute) {
-        this.setValues(UUID.fromString(id), attribute, null);
-    }
 }
