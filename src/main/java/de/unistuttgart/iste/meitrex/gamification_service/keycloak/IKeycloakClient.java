@@ -4,8 +4,9 @@ import de.unistuttgart.iste.meitrex.gamification_service.model.PatternTheme;
 
 import java.util.*;
 
-public interface IKeycloakClient {
+interface IKeycloakClient {
 
     List<String> getValues(UUID userId, String attrName);
 
+    void setValues(UUID userId, String attrName, List<String> values);
 }

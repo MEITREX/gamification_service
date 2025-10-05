@@ -1,14 +1,13 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service.internal.recommendation;
 
 import de.unistuttgart.iste.meitrex.gamification_service.config.AdaptivityConfiguration;
+import de.unistuttgart.iste.meitrex.gamification_service.keycloak.IUserConfigurationProvider;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerHexadScoreEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.recommendation.UserRecommendationScoreEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.recommendation.RecommendationScoreRepository;
-import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.recommendation.UserPreviousRecommendationsRepository;
 import de.unistuttgart.iste.meitrex.generated.dto.GamificationCategory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -40,6 +39,8 @@ class DefaultRecommendationInitializer implements IRecommendationInitializer {
             GamificationCategory.INCENTIVE,     new float[]{0.030f, 0.024f, 0.056f, 0.351f, 0.103f, 0.003f}
     );
 
+    private static final double[] neutralHexadScores = {(double) 1 /6, (double) 1 /6, (double) 1 /6, (double) 1 /6, (double) 1 /6, (double) 1 /6};
+
     // Validation
 
     private static void assureHasUser(PlayerHexadScoreEntity playerHexadScore) {
@@ -70,26 +71,8 @@ class DefaultRecommendationInitializer implements IRecommendationInitializer {
         return (float) (0.5 * Math.pow(1 + score, 2));
     }
 
-
-    private final RecommendationScoreRepository recommendationScoreRepository;
-    private final AdaptivityConfiguration adaptivityConfiguration;
-
-    @Override
-    public UserRecommendationScoreEntity initializeRecommendationScoreForUser(final UserEntity userEntity) {
-        UserRecommendationScoreEntity entity = userEntity.getPlayerHexadScore() == null
-                ? initializeUserRecommendationScoreEmpty(userEntity.getId())
-                : initializeUserRecommendationScoreFromHexadScore(userEntity.getPlayerHexadScore());
-        return recommendationScoreRepository.save(entity);
-    }
-
-    private UserRecommendationScoreEntity initializeUserRecommendationScoreEmpty(UUID userId) {
-        return recommendationScoreRepository.save(new UserRecommendationScoreEntity(
-                userId, adaptivityConfiguration.getWidgetRecommendationDefaultFeedbackRequestIntervalDays()));
-    }
-
-    private UserRecommendationScoreEntity initializeUserRecommendationScoreFromHexadScore(PlayerHexadScoreEntity playerHexadScore) {
-        assureHasUser(playerHexadScore);
-        final double[] hexadScores = {
+    private static double[] mapToArray(PlayerHexadScoreEntity playerHexadScore) {
+        return new double[]{
                 playerHexadScore.getFreeSpirit(),
                 playerHexadScore.getPhilanthropist(),
                 playerHexadScore.getAchiever(),
@@ -97,10 +80,41 @@ class DefaultRecommendationInitializer implements IRecommendationInitializer {
                 playerHexadScore.getSocialiser(),
                 playerHexadScore.getDisruptor(),
         };
-        final UserEntity user = playerHexadScore.getUser();
-        final UserRecommendationScoreEntity recommendationScore =
-                new UserRecommendationScoreEntity(user.getId(),
-                        adaptivityConfiguration.getWidgetRecommendationDefaultFeedbackRequestIntervalDays());
+    }
+
+
+
+    private final RecommendationScoreRepository recommendationScoreRepository;
+
+    private final AdaptivityConfiguration adaptivityConfiguration;
+
+    private final IUserConfigurationProvider  userConfigurationProvider;
+
+
+    @Override
+    public UserRecommendationScoreEntity initializeRecommendationScoreForUser(final UserEntity userEntity) {
+        assureHasUser(userEntity.getPlayerHexadScore());
+        final UserRecommendationScoreEntity entity;
+        if(this.userConfigurationProvider.isAdaptiveGamificationDisabled(userEntity.getId())) {
+            double[] hexadScores = neutralHexadScores;
+            if(!this.adaptivityConfiguration.isAdjustHexadScoreInCaseOfDisabledGamification()) {
+                hexadScores = mapToArray(userEntity.getPlayerHexadScore());
+            }
+            entity = initializeUserRecommendationScoreFromHexadScore(userEntity.getId(), hexadScores);
+        }
+        else {
+            entity = userEntity.getPlayerHexadScore() == null ? initializeUserRecommendationScoreEmpty(userEntity.getId()) : initializeUserRecommendationScoreFromHexadScore(userEntity.getId(), mapToArray(userEntity.getPlayerHexadScore()));
+        }
+        return recommendationScoreRepository.save(entity);
+    }
+
+
+    private UserRecommendationScoreEntity initializeUserRecommendationScoreEmpty(UUID userId) {
+        return recommendationScoreRepository.save(new UserRecommendationScoreEntity(userId, adaptivityConfiguration.getWidgetRecommendationDefaultFeedbackRequestIntervalDays()));
+    }
+
+    private UserRecommendationScoreEntity initializeUserRecommendationScoreFromHexadScore(UUID userId, double[] hexadScores) {
+        final UserRecommendationScoreEntity recommendationScore = new UserRecommendationScoreEntity(userId, adaptivityConfiguration.getWidgetRecommendationDefaultFeedbackRequestIntervalDays());
         recommendationScore.setScores(
                 Arrays.stream(GamificationCategory.values()).collect(Collectors.toMap(
                         cat -> cat,
@@ -110,3 +124,5 @@ class DefaultRecommendationInitializer implements IRecommendationInitializer {
         return recommendationScoreRepository.save(recommendationScore);
     }
 }
+
+

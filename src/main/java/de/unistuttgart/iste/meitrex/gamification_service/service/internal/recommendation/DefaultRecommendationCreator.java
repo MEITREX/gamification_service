@@ -42,6 +42,8 @@ class DefaultRecommendationCreator implements IRecommendationCreator {
         final UserRecommendationScoreEntity userRecommendationScore = recommendationScoreRepository.findById(userId)
                 .orElseGet(() -> recommendationInitializer.initializeRecommendationScoreForUser(userEntity));
 
+
+
         final UserPreviousRecommendationsEntity userPreviousRecommendations =
                 getOrCreateUserPreviousRecommendations(userId, courseId, recommendationType);
 

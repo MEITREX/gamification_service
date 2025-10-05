@@ -11,7 +11,7 @@ public class KeycloakWebClientConfiguration {
 
     private String keycloakUrl;
 
-    public KeycloakWebClientConfiguration(@Value("${keycloak.url:http://keylcoak:8080}") String keycloakUrl) {
+    public KeycloakWebClientConfiguration(@Value("${keycloak.url:http://keycloak:8080}") String keycloakUrl) {
         this.keycloakUrl = Objects.requireNonNull(keycloakUrl);
     }
 

@@ -51,8 +51,8 @@ public class DefaultKeycloakClient implements IKeycloakClient {
 
     public DefaultKeycloakClient(
             @Value("${keycloak.realm:GITS}") String realm,
-            @Value("${keycloak.client-id:gamifcation-service}") String clientId,
-            @Value("${keycloak.client-secret:stZf0W7lyc1it6mYRTI21f0vEqStxTIe}") String clientSecret,
+            @Value("${keycloak.client-id:gamification-service}") String clientId,
+            @Value("${keycloak.client-secret:super-secret-value}") String clientSecret,
             @Autowired @Qualifier("keycloakServiceClient") WebClient webClient
     ) {
         this.realm = Objects.requireNonNull(realm);
@@ -66,7 +66,7 @@ public class DefaultKeycloakClient implements IKeycloakClient {
         return Collections.unmodifiableList(readMutableAttributeMap(userId).getOrDefault(attrName, List.of()));
     }
 
-    /*
+
     @Override
     public void setValues(UUID userId, String attrName, List<String> values) {
         if(Objects.isNull(values) || values.isEmpty()) {
@@ -102,7 +102,7 @@ public class DefaultKeycloakClient implements IKeycloakClient {
                 .toBodilessEntity()
                 .block();
     }
-    */
+
 
     private Map<String, List<String>> readMutableAttributeMap(UUID userId) {
         final String token = getAccessToken();
@@ -128,8 +128,18 @@ public class DefaultKeycloakClient implements IKeycloakClient {
     }
 
 
-    @GetMapping("test_keycloak")
-    public void testAttribute() {
-        this.getValues(UUID.fromString("0cdeb692-fb64-4c82-a178-e471fb555546"), "test");
+    @GetMapping("test_read_keycloak")
+    public void testReadAttribute(String id, String attribute) {
+        this.getValues(UUID.fromString(id), attribute);
+    }
+
+    @GetMapping("test_save_keycloak")
+    public void testSaveAttribute(String id, String attribute, String value) {
+        this.setValues(UUID.fromString(id), attribute, List.of(value));
+    }
+
+    @GetMapping("test_remove_keycloak")
+    public void removeSaveAttribute(String id, String attribute) {
+        this.setValues(UUID.fromString(id), attribute, null);
     }
 }
