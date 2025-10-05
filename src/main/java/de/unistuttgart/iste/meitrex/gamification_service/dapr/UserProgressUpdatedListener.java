@@ -49,28 +49,7 @@ class UserProgressUpdatedListener extends AbstractExternalListener<UserProgressU
         persistentEvent.setContentId(event.getContentId());
         persistentEvent.setCorrectness(event.getCorrectness());
         persistentEvent.setAssessmentAttempt(event.getAttempt());
-        System.out.println("in_attempt: " + event.getAttempt());
         persistentEvent.setChapterId(event.getChapterId());
         return persistentEvent;
-    }
-
-    @Transactional
-    @GetMapping(path = "/test")
-    public void test() {
-        CloudEvent<UserProgressUpdatedEvent>  cloudEvent = new CloudEvent<>();
-        cloudEvent.setData(new UserProgressUpdatedEvent(
-                System.currentTimeMillis(),
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                0,
-                true,
-                1.0,
-                0,
-                0,
-                new ArrayList<>(),
-                MediaType.VIDEO));
-        this.onUserProgressUpdated(cloudEvent, new HashMap<>());
     }
 }

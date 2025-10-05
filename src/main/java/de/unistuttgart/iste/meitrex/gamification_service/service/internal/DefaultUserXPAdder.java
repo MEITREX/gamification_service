@@ -32,6 +32,7 @@ public class DefaultUserXPAdder implements IUserXPAdder{
         causeXPMap.put(Cause.FLASHCARD_COMPLETED, 2);
         causeXPMap.put(Cause.VIDEO_WATCHED, 2);
         causeXPMap.put(Cause.DOCUMENT_OPENED, 2);
+        causeXPMap.put(Cause.SUBMISSION_COMPLETED, 30);
     }
 
     @Override
