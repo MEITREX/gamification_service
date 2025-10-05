@@ -31,6 +31,7 @@ public class CompleteSpecificContentGoalEntity extends GoalEntity {
             case ContentType.QUIZ -> "Complete the quiz '" + contentName + "'.";
             case ContentType.ASSIGNMENT -> "Complete the assignment '" + contentName + "'.";
             case ContentType.FLASHCARDS -> "Complete the flashcard set '" + contentName + "'.";
+            case ContentType.SUBMISSION ->  "Complete the submission '" + contentName + "'.";
             default -> "Complete the content '" + contentName + "'.";
         };
     }
