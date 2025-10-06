@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.controller;
 
+import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.gamification_service.service.IPlayerHexadScoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +10,7 @@ import de.unistuttgart.iste.meitrex.generated.dto.*;
 import java.util.UUID;
 
 import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.ContextValue;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
@@ -26,8 +28,9 @@ public class PlayerHexadScoreController {
     private final IPlayerHexadScoreService playerHexadScoreService;
 
     @MutationMapping
-    public PlayerHexadScore evaluatePlayerHexadScore(@Argument UUID userId, @Argument PlayerAnswerInput input) {
-        return playerHexadScoreService.evaluate(userId, input);
+    public PlayerHexadScore evaluatePlayerHexadScore(@Argument UUID userId, @Argument PlayerAnswerInput input,
+                                                     @ContextValue final LoggedInUser currentUser) {
+        return playerHexadScoreService.evaluate(userId, input, currentUser.getUserName());
     }
 
     @QueryMapping
