@@ -56,7 +56,12 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
             playerHexadScoreQuestionEntity.setUsername(username);
             playerHexadScoreQuestionRepository.save(playerHexadScoreQuestionEntity);
         });
-        playerHexadScoreEntity = playerHexadScoreMapper.dtoToEntity(playerHexadScore.getScores(), userId, playerHexadScore.getDefaultInput());
+        if (playerHexadScoreEntity == null) {
+            playerHexadScoreEntity = playerHexadScoreMapper.dtoToEntity(playerHexadScore.getScores(), userId, playerHexadScore.getDefaultInput());
+        } else {
+            playerHexadScoreEntity = playerHexadScoreMapper.dtoToEntity(playerHexadScoreEntity, playerHexadScore.getScores(), playerHexadScore.getDefaultInput());
+        }
+
         log.info("is default input: {}",playerHexadScoreEntity.isDefaultInput());
         playerHexadScoreEntity.setUsername(username);
         user.setPlayerHexadScore(playerHexadScoreEntity);

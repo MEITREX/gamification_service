@@ -18,6 +18,10 @@ public class PlayerHexadScoreMapper {
         
         PlayerHexadScoreEntity entity = new PlayerHexadScoreEntity();
         entity.setId(userId);
+        return dtoToEntity(entity, scores, defaultInput);
+    }
+
+    public PlayerHexadScoreEntity dtoToEntity(PlayerHexadScoreEntity entity, List<PlayerTypeScore> scores, boolean defaultInput) {
         for (PlayerTypeScore score : scores) {
             switch (score.getType()) {
                 case PHILANTHROPIST -> entity.setPhilanthropist(score.getValue());
