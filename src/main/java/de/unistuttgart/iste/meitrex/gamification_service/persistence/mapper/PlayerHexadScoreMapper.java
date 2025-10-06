@@ -32,6 +32,21 @@ public class PlayerHexadScoreMapper {
         return entity;
     }
 
+    public PlayerHexadScoreEntity dtoToEntity(PlayerHexadScoreEntity entity, List<PlayerTypeScore> scores, boolean defaultInput) {
+        for (PlayerTypeScore score : scores) {
+            switch (score.getType()) {
+                case PHILANTHROPIST -> entity.setPhilanthropist(score.getValue());
+                case SOCIALISER    -> entity.setSocialiser(score.getValue());
+                case FREE_SPIRIT   -> entity.setFreeSpirit(score.getValue());
+                case ACHIEVER      -> entity.setAchiever(score.getValue());
+                case PLAYER        -> entity.setPlayer(score.getValue());
+                case DISRUPTOR     -> entity.setDisruptor(score.getValue());
+            }
+        }
+        entity.setDefaultInput(defaultInput);
+        return entity;
+    }
+
      public PlayerHexadScore entityToDto(PlayerHexadScoreEntity entity) {
         List<PlayerTypeScore> scores = new ArrayList<>();
 
