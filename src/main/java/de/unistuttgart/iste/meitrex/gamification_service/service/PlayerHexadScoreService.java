@@ -2,6 +2,8 @@ package de.unistuttgart.iste.meitrex.gamification_service.service;
 
 import java.util.*;
 
+import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
+import de.unistuttgart.iste.meitrex.common.event.ServerSource;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerHexadScoreQuestionEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.IPlayerHexadScoreQuestionRepository;
@@ -29,6 +31,7 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
 
     private final IPlayerHexadScoreQuestionRepository playerHexadScoreQuestionRepository;
 
+    private final TopicPublisher topicPublisher;
 
     /*Modified Review Required*/
 
