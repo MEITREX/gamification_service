@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.Optional;
 
+import de.unistuttgart.iste.meitrex.common.dapr.MockTopicPublisher;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.IPlayerHexadScoreQuestionRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.IUserCreator;
@@ -32,6 +33,8 @@ public class PlayerHexadScoreServiceTest {
 
     private PlayerHexadScoreService playerHexadScoreService;
 
+    private MockTopicPublisher mockTopicPublisher;
+
     @Mock
     private IPlayerHexadScoreQuestionRepository  playerHexadScoreQuestionRepository;
 
@@ -42,7 +45,7 @@ public class PlayerHexadScoreServiceTest {
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        playerHexadScoreService = new PlayerHexadScoreService(playerHexadScoreMapper,  userCreator, playerHexadScoreQuestionRepository);
+        playerHexadScoreService = new PlayerHexadScoreService(playerHexadScoreMapper,  userCreator, playerHexadScoreQuestionRepository, mockTopicPublisher);
     }
 
     @Test
