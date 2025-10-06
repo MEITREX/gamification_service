@@ -36,4 +36,5 @@ public interface IPeriodCalculator {
      * @return the start date of the subsequent period as an instance of {@link LocalDate}.
      */
     LocalDate calcSucStartDate(LocalDate startDate, Period period);
+
 }

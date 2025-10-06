@@ -14,10 +14,14 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class PlayerHexadScoreMapper {
-    public PlayerHexadScoreEntity dtoToEntity(List<PlayerTypeScore> scores, UUID userId) {
+    public PlayerHexadScoreEntity dtoToEntity(List<PlayerTypeScore> scores, UUID userId, boolean defaultInput) {
         
         PlayerHexadScoreEntity entity = new PlayerHexadScoreEntity();
         entity.setId(userId);
+        return dtoToEntity(entity, scores, defaultInput);
+    }
+
+    public PlayerHexadScoreEntity dtoToEntity(PlayerHexadScoreEntity entity, List<PlayerTypeScore> scores, boolean defaultInput) {
         for (PlayerTypeScore score : scores) {
             switch (score.getType()) {
                 case PHILANTHROPIST -> entity.setPhilanthropist(score.getValue());
@@ -28,6 +32,7 @@ public class PlayerHexadScoreMapper {
                 case DISRUPTOR     -> entity.setDisruptor(score.getValue());
             }
         }
+        entity.setDefaultInput(defaultInput);
         return entity;
     }
 
@@ -41,6 +46,6 @@ public class PlayerHexadScoreMapper {
         scores.add(new PlayerTypeScore(PlayerType.PLAYER, entity.getPlayer()));
         scores.add(new PlayerTypeScore(PlayerType.DISRUPTOR, entity.getDisruptor()));
 
-        return new PlayerHexadScore(scores);
+        return new PlayerHexadScore(entity.isDefaultInput(), scores);
     }
 }
