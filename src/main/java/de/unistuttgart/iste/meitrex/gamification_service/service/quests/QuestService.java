@@ -54,6 +54,12 @@ public class QuestService implements IQuestService{
 
     private final int DAILY_QUEST_COUNT = 3; // Number of quests in a daily quest set
 
+    /**
+     * Gets the current or generates a new quest set for today in the given course for the given user.
+     * @param courseId the course id
+     * @param userId the user id
+     * @return the quest set
+     */
     public QuestSet getDailyQuestSetForUser(final UUID courseId, final UUID userId) {
         log.info("Fetching daily quest set for user {} in course {}", userId, courseId);
 
@@ -80,9 +86,10 @@ public class QuestService implements IQuestService{
                                                  @Nullable final QuestSetEntity previousQuestSet) {
         log.info("Generating new daily quest set for user {} in course {}", user, courseEntity.getId());
 
-        float rewardMultiplier = previousQuestSet == null
-                ? 1
-                : (previousQuestSet.getRewardMultiplier() + 0.5f);
+        // reward multiplier increases by 0.5 for each consecutive day the user has completed their daily quests
+        float rewardMultiplier = hasUserCompletedYesterdaysQuests(previousQuestSet, user)
+                ? (previousQuestSet.getRewardMultiplier() + 0.5f)
+                : 1;
 
         int rewardPoints = (int)(adaptivityConfiguration.getQuestBaseRewardPoints() * rewardMultiplier);
 
@@ -190,5 +197,33 @@ public class QuestService implements IQuestService{
         }).toList());
 
         return questSet;
+    }
+
+    /**
+     * Helper method which checks if the user has completed all quests in the previous quest set and that the
+     * previous quest set was for yesterday.
+     * @param previousQuestSet the previous quest set
+     * @param user the user
+     * @return true if the user has completed all quests in the previous quest set and if the previous quest set was for
+     *         yesterday, false otherwise
+     */
+    private boolean hasUserCompletedYesterdaysQuests(QuestSetEntity previousQuestSet, UserEntity user) {
+        if(previousQuestSet == null) {
+            return false;
+        }
+
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        if(!previousQuestSet.getForDay().isEqual(yesterday)) {
+            return false;
+        }
+
+        return previousQuestSet.getQuests().stream().allMatch(quest -> {
+            // check if the user has completed the goal for this quest
+            return user.getCourseData(quest.getCourse().getId()).stream()
+                    .flatMap(cd -> cd.getGoalProgressEntities().stream())
+                    .anyMatch(gp ->
+                            gp.getGoal().getId().equals(quest.getGoal().getId())
+                                    && gp.isCompleted());
+        });
     }
 }
