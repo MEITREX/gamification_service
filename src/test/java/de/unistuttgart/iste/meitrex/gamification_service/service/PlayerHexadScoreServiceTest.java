@@ -33,7 +33,8 @@ public class PlayerHexadScoreServiceTest {
 
     private PlayerHexadScoreService playerHexadScoreService;
 
-    private MockTopicPublisher mockTopicPublisher;
+    @Mock
+    private final MockTopicPublisher mockTopicPublisher = new MockTopicPublisher();
 
     @Mock
     private IPlayerHexadScoreQuestionRepository  playerHexadScoreQuestionRepository;
@@ -63,9 +64,10 @@ public class PlayerHexadScoreServiceTest {
         // Act
         PlayerHexadScore result = spyService.evaluate(UUID.randomUUID(), input, username);
 
-        verify(spyService).calculateDefault();
+        verify(spyService).calculateDefault(any());
         verify(spyService, times(0)).calculateFromInput(input);
 
+        verify(mockTopicPublisher).notificationEvent(any(), any(), any(), any(), any(), any());
 
         // Assert
         assertEquals(6, result.getScores().size(), "There should be 6 scores");
@@ -107,7 +109,7 @@ public class PlayerHexadScoreServiceTest {
         PlayerHexadScore result = spyService.evaluate(UUID.randomUUID(), input, username);
 
         verify(spyService).calculateFromInput(input);
-        verify(spyService, times(0)).calculateDefault();
+        verify(spyService, times(0)).calculateDefault(any());
 
         // Assert
         assertEquals(6, result.getScores().size(), "There should be 6 scores");
@@ -160,7 +162,7 @@ public class PlayerHexadScoreServiceTest {
         PlayerHexadScore result = spyService.evaluate(UUID.randomUUID(), input, username);
 
         verify(spyService).calculateFromInput(input);
-        verify(spyService, times(0)).calculateDefault();
+        verify(spyService, times(0)).calculateDefault(any());
 
         // Assert
         assertEquals(6, result.getScores().size(), "There should be 6 scores");
@@ -195,7 +197,7 @@ public class PlayerHexadScoreServiceTest {
             spyService.evaluate(UUID.randomUUID(), input, username);
         });
 
-        verify(spyService, times(0)).calculateDefault();
+        verify(spyService, times(0)).calculateDefault(any());
         verify(spyService, times(0)).calculateFromInput(input);
     }
 

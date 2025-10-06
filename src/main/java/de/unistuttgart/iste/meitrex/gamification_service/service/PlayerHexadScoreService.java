@@ -48,23 +48,7 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
         if(playerHexadScoreEntity != null && !playerHexadScoreEntity.isDefaultInput()) {
             throw new IllegalStateException("Player Hexad Score was already evaluated");
         }
-        final PlayerHexadScore playerHexadScore = input.getQuestions().isEmpty() ? calculateDefault(): calculateFromInput(input);
-        if(input.getQuestions().isEmpty() && !playerHexadScore.getDefaultInput()){
-            final String title = "Complete your player type survey";
-            final String message = "You skipped the questionnaire so we set a default type. Tap to resume.";
-            final String link = "/?resumeSurvey=1";
-
-            final ServerSource source = ServerSource.GAMIFICATION;
-
-            topicPublisher.notificationEvent(
-                    null,
-                    List.of(userId),
-                    ServerSource.GAMIFICATION,
-                    link,
-                    title,
-                    message
-            );
-        }
+        final PlayerHexadScore playerHexadScore = input.getQuestions().isEmpty() ? calculateDefault(userId): calculateFromInput(input);
         input.getQuestions().forEach(question -> {
             PlayerHexadScoreQuestionEntity playerHexadScoreQuestionEntity = new PlayerHexadScoreQuestionEntity();
             playerHexadScoreQuestionEntity.setQuestion(question.getText());
@@ -83,11 +67,11 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
     }
 
     /**
-     * Calculates Default Score (%) player hexad
+     * Calculates Default Score (%) player hexad and publishes notification
      * Default Hexad Score (%) = 100 / number of types
      * @return the calculated default player hexad score
      */
-    public PlayerHexadScore calculateDefault(){
+    public PlayerHexadScore calculateDefault(UUID userId){
         float defaultValue = 100f / PlayerType.values().length;
 
         List<PlayerTypeScore> scores = Arrays.stream(PlayerType.values())
@@ -96,6 +80,22 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
             .setValue(defaultValue)                  
             .build())                           
         .collect(Collectors.toList());
+
+        final String title = "Complete your player type survey";
+        final String message = "You skipped the questionnaire so we set a default type. Tap to resume.";
+        final String link = "/?resumeSurvey=1";
+
+        final ServerSource source = ServerSource.GAMIFICATION;
+
+        topicPublisher.notificationEvent(
+                null,
+                List.of(userId),
+                ServerSource.GAMIFICATION,
+                link,
+                title,
+                message
+        );
+
         return new PlayerHexadScore(true, scores);
     }
 
