@@ -46,6 +46,22 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
             throw new IllegalStateException("Player Hexad Score was already evaluated");
         }
         final PlayerHexadScore playerHexadScore = input.getQuestions().isEmpty() ? calculateDefault(): calculateFromInput(input);
+        if(input.getQuestions().isEmpty() && !playerHexadScore.getDefaultInput()){
+            final String title = "Complete your player type survey";
+            final String message = "You skipped the questionnaire so we set a default type. Tap to resume.";
+            final String link = "/?resumeSurvey=1";
+
+            final ServerSource source = ServerSource.GAMIFICATION;
+
+            topicPublisher.notificationEvent(
+                    null,
+                    List.of(userId),
+                    ServerSource.GAMIFICATION,
+                    link,
+                    title,
+                    message
+            );
+        }
         input.getQuestions().forEach(question -> {
             PlayerHexadScoreQuestionEntity playerHexadScoreQuestionEntity = new PlayerHexadScoreQuestionEntity();
             playerHexadScoreQuestionEntity.setQuestion(question.getText());
@@ -57,7 +73,9 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
         log.info("is default input: {}",playerHexadScoreEntity.isDefaultInput());
         playerHexadScoreEntity.setUsername(username);
         user.setPlayerHexadScore(playerHexadScoreEntity);
+
         playerHexadScoreEntity.setUser(user);
+
         return playerHexadScore;
     }
 
