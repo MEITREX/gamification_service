@@ -62,7 +62,7 @@ public class DefaultKeycloakClient implements IKeycloakClient {
     @Loggable(
             inLogLevel = Loggable.LogLevel.INFO,
             exitLogLevel = Loggable.LogLevel.DEBUG,
-            exceptionLogLevel = Loggable.LogLevel.DEBUG,
+            exceptionLogLevel = Loggable.LogLevel.WARN,
             logExecutionTime = false
     )
     @Retryable(maxRetries = 3, backoffMillis = 2000, retryOn = {

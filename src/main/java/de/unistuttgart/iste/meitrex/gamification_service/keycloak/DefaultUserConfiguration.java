@@ -40,7 +40,7 @@ class DefaultUserConfiguration implements IUserConfigurationProvider {
     @Loggable(
             inLogLevel = Loggable.LogLevel.INFO,
             exitLogLevel = Loggable.LogLevel.DEBUG,
-            exceptionLogLevel = Loggable.LogLevel.DEBUG,
+            exceptionLogLevel = Loggable.LogLevel.WARN,
             logExecutionTime = false
     )
     public boolean isAdaptiveGamificationDisabled(UUID userId) {
