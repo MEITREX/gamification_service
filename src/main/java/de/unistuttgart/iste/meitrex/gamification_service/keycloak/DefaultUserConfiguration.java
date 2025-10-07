@@ -38,7 +38,7 @@ class DefaultUserConfiguration implements IUserConfigurationProvider {
 
     @Override
     @Loggable(
-            inLogLevel = Loggable.LogLevel.INFO,
+            inLogLevel = Loggable.LogLevel.DEBUG,
             exitLogLevel = Loggable.LogLevel.DEBUG,
             exceptionLogLevel = Loggable.LogLevel.WARN,
             logExecutionTime = false

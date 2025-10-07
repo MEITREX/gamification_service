@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service.reactive.xp;
 
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import de.unistuttgart.iste.meitrex.gamification_service.events.internal.*;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentCourseCompletedEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentStageCompletedEvent;

@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper;
 
 
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import java.util.Objects;
 @Component
 @RequiredArgsConstructor
 public class UserMapper {
+
 
     public User toDTO(UserEntity userEntity, int maxDepth) {
         if(userEntity == null || maxDepth < 0) {

@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service.reactive.xp;
 
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.IUserCreator;
 import org.springframework.stereotype.*;
@@ -47,7 +48,7 @@ class UserProgressUpdatedXPListener extends AbstractInternalListener<PersistentU
     }
 
     @Override
-    protected void doProcess(PersistentUserProgressUpdatedEvent persistentEvent)
+    public void doProcess(PersistentUserProgressUpdatedEvent persistentEvent)
             throws TransientEventListenerException, NonTransientEventListenerException {
         final Optional<Integer> additionalXPOptional = this.mapToAdditionalXP(persistentEvent);
         if(additionalXPOptional.isPresent()) {

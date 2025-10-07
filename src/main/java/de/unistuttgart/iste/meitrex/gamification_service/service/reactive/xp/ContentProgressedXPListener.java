@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service.reactive.xp;
 
 import de.unistuttgart.iste.meitrex.common.event.ContentProgressedEvent;
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import de.unistuttgart.iste.meitrex.gamification_service.events.internal.*;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentContentProgressedEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPersistentContentProgressedRepository;

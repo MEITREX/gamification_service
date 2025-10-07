@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service.reactive.xp;
 
 import de.unistuttgart.iste.meitrex.common.event.ForumActivityEvent;
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import de.unistuttgart.iste.meitrex.gamification_service.events.internal.AbstractInternalListener;
 import de.unistuttgart.iste.meitrex.gamification_service.events.internal.InternalForumActivityEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.events.internal.NonTransientEventListenerException;

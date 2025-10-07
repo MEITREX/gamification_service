@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.events.publication;
 
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import de.unistuttgart.iste.meitrex.gamification_service.events.PersistentMediaRecordWorkedOnEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.events.internal.*;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.*;
@@ -109,6 +110,13 @@ class DefaultEventPublicationService implements IEventPublicationService {
     }
 
     @Override
+    @Loggable(
+            inLogLevel = Loggable.LogLevel.DEBUG,
+            exitLogLevel = Loggable.LogLevel.DEBUG,
+            exceptionLogLevel = Loggable.LogLevel.WARN,
+            logArgs = false,
+            logExecutionTime = false
+    )
     public void saveCommitAndPublishIfNew(PersistentEvent persistentEvent) {
         if(!this.handlerMap.containsKey(persistentEvent.getClass())) {
             throw new IllegalArgumentException(ERR_MSG_UNSUPPORTED_EVENT_TYPE);

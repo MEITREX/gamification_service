@@ -3,6 +3,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.service;
 import java.time.*;
 import java.util.*;
 
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import jakarta.transaction.*;
 
 import org.springframework.stereotype.*;
@@ -100,6 +101,12 @@ class DefaultLeaderboardService implements ILeaderboardService {
     // Interface implementation
 
     @Override
+    @Loggable(
+            inLogLevel = Loggable.LogLevel.INFO,
+            exitLogLevel = Loggable.LogLevel.DEBUG,
+            exceptionLogLevel = Loggable.LogLevel.WARN,
+            logExecutionTime = false
+    )
     public List<Leaderboard> find(UUID courseID, LocalDate date, Period period) {
         return this.leaderboardRepository.findByCourseIdAndDateAfterAndPeriod(courseID, date, period)
                 .stream()
@@ -112,12 +119,22 @@ class DefaultLeaderboardService implements ILeaderboardService {
 
     @Transactional
     @Scheduled(cron = "0 0 0 * * MON")
+    @Loggable(
+            inLogLevel = Loggable.LogLevel.INFO,
+            exitLogLevel = Loggable.LogLevel.INFO,
+            exceptionLogLevel = Loggable.LogLevel.WARN
+    )
     public void runWeeklyLeaderboardUpdate() {
         this.updateAllCourseLeaderboards(Period.WEEKLY);
     }
 
     @Transactional
     @Scheduled(cron = "0 0 0 1 * *")
+    @Loggable(
+            inLogLevel = Loggable.LogLevel.INFO,
+            exitLogLevel = Loggable.LogLevel.INFO,
+            exceptionLogLevel = Loggable.LogLevel.WARN
+    )
     public void runMonthlyLeaderboardUpdate() {
         this.updateAllCourseLeaderboards(Period.MONTHLY);
     }
@@ -134,6 +151,7 @@ class DefaultLeaderboardService implements ILeaderboardService {
 
     @Autowired
     private LeaderboardMapper mapper;
+
 
     public List<Leaderboard> findAll(Period period) {
         List<LeaderboardEntity> list = new ArrayList<>();

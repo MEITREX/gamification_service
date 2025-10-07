@@ -3,6 +3,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper;
 
 import java.util.*;
 
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.time.Period;
 public class LeaderboardMapper {
 
     private final UserScoreMapper userScoreMapper;
+
 
     public Leaderboard toDTO(LeaderboardEntity leaderboardEntity, int maxDepth) {
         if(leaderboardEntity == null || maxDepth < 0) {

@@ -3,6 +3,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.service;
 import java.util.*;
 
 import de.unistuttgart.iste.meitrex.course_service.client.CourseServiceClient;
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import de.unistuttgart.iste.meitrex.gamification_service.exception.ConflictException;
 import de.unistuttgart.iste.meitrex.gamification_service.exception.ResourceNotFoundException;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.items.UserInventoryEntity;
@@ -65,6 +66,13 @@ public class DefaultUserService implements IUserService, IUserCreator {
 
 
     @Override
+    @Loggable(
+            inLogLevel = Loggable.LogLevel.INFO,
+            exitLogLevel = Loggable.LogLevel.DEBUG,
+            exceptionLogLevel = Loggable.LogLevel.WARN,
+            logExecutionTime = false,
+            logResult = false
+    )
     public UserEntity fetchOrCreate(UUID userId) {
         final UserEntity user =  this.userRepository
                 .findById(userId)
@@ -73,6 +81,13 @@ public class DefaultUserService implements IUserService, IUserCreator {
     }
 
     @Override
+    @Loggable(
+            inLogLevel = Loggable.LogLevel.INFO,
+            exitLogLevel = Loggable.LogLevel.DEBUG,
+            exceptionLogLevel = Loggable.LogLevel.WARN,
+            logExecutionTime = false,
+            logResult = false
+    )
     public User fetchUser(UUID userID)
             throws ResourceNotFoundException {
         final UserEntity user = this.fetchOrThrow(userID);

@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.events.internal;
 
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPersistentEventRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPersistentEventStatusRepository;
@@ -43,6 +44,13 @@ public abstract class AbstractInternalListener<U extends PersistentEvent, V exte
         return UUID.nameUUIDFromBytes(getName().getBytes(StandardCharsets.UTF_8));
     }
 
+    @Loggable(
+            inLogLevel = Loggable.LogLevel.INFO,
+            exitLogLevel = Loggable.LogLevel.DEBUG,
+            exceptionLogLevel = Loggable.LogLevel.WARN,
+            logExecutionTime = false,
+            logExit = false
+    )
     public void process(V internalEvent) {
         assureIsValid(internalEvent);
         process(fetchPersistentEvent(internalEvent));

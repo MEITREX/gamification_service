@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service.internal;
 
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
 import org.springframework.stereotype.Component;
@@ -36,6 +37,12 @@ public class DefaultUserXPAdder implements IUserXPAdder{
     }
 
     @Override
+    @Loggable(
+            inLogLevel = Loggable.LogLevel.DEBUG,
+            exitLogLevel = Loggable.LogLevel.DEBUG,
+            exceptionLogLevel = Loggable.LogLevel.WARN,
+            logExecutionTime = false
+    )
     public void add(UserEntity entity, int value) {
         Objects.requireNonNull(entity);
         assureNonNull(value);
@@ -48,11 +55,23 @@ public class DefaultUserXPAdder implements IUserXPAdder{
     }
 
     @Override
+    @Loggable(
+            inLogLevel = Loggable.LogLevel.DEBUG,
+            exitLogLevel = Loggable.LogLevel.DEBUG,
+            exceptionLogLevel = Loggable.LogLevel.WARN,
+            logExecutionTime = false
+    )
     public void add(UserEntity entity, Cause cause) {
         this.add(entity, causeXPMap.get(Objects.requireNonNull(cause)));
     }
 
     @Override
+    @Loggable(
+            inLogLevel = Loggable.LogLevel.DEBUG,
+            exitLogLevel = Loggable.LogLevel.DEBUG,
+            exceptionLogLevel = Loggable.LogLevel.WARN,
+            logExecutionTime = false
+    )
     public void add(UserEntity entity, Cause cause, int multiple) {
         assureNonNull(multiple);
         this.add(entity, causeXPMap.get(Objects.requireNonNull(cause)) * multiple);
