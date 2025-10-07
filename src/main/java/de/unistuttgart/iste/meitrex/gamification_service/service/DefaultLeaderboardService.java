@@ -113,14 +113,12 @@ class DefaultLeaderboardService implements ILeaderboardService {
     @Transactional
     @Scheduled(cron = "0 0 0 * * MON")
     public void runWeeklyLeaderboardUpdate() {
-        System.out.println("weekly");
         this.updateAllCourseLeaderboards(Period.WEEKLY);
     }
 
     @Transactional
     @Scheduled(cron = "0 0 0 1 * *")
     public void runMonthlyLeaderboardUpdate() {
-        System.out.println("monthly");
         this.updateAllCourseLeaderboards(Period.MONTHLY);
     }
 
