@@ -3,18 +3,13 @@ package de.unistuttgart.iste.meitrex.gamification_service.service;
 import java.time.*;
 import java.util.*;
 
-import de.unistuttgart.iste.meitrex.gamification_service.service.functional.IScoringFunction;
 import jakarta.transaction.*;
 
 import org.springframework.stereotype.*;
 import org.springframework.scheduling.annotation.*;
 import org.springframework.beans.factory.annotation.*;
-import org.springframework.context.event.EventListener;
 
 import de.unistuttgart.iste.meitrex.generated.dto.*;
-import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.*;
-import de.unistuttgart.iste.meitrex.gamification_service.events.repository.*;
-import de.unistuttgart.iste.meitrex.gamification_service.exception.*;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.*;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper.*;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.*;
@@ -44,8 +39,6 @@ class DefaultLeaderboardService implements ILeaderboardService {
             throw new IllegalArgumentException(ERR_MSG_ILLEGAL_ATTEMPT_OF_FUTURE_LEADERBOARD_CREATION);
         }
     }
-
-
 
     private static boolean isDayInRange(LocalDate day, LocalDate beginDate, LocalDate endDate) {
         return !day.isBefore(beginDate)  && day.isBefore(endDate);
@@ -108,7 +101,6 @@ class DefaultLeaderboardService implements ILeaderboardService {
 
     @Override
     public List<Leaderboard> find(UUID courseID, LocalDate date, Period period) {
-
         return this.leaderboardRepository.findByCourseIdAndDateAfterAndPeriod(courseID, date, period)
                 .stream()
                 .map(leaderboard -> this.leaderboardMapper.toDTO(leaderboard, dtoRecursionDepth))
@@ -151,7 +143,7 @@ class DefaultLeaderboardService implements ILeaderboardService {
                 .findAll()
                 .forEach(courseEntity -> {
                     this.leaderboardRepository
-                            .findByCourseAndPeriodOrderByStartDateDesc(courseEntity, period)
+                            .findFirstByCourseAndPeriodOrderByStartDateDesc(courseEntity, period)
                             .stream()
                             .findFirst().ifPresent(list::add);
                 });
@@ -171,28 +163,20 @@ class DefaultLeaderboardService implements ILeaderboardService {
 
     private void updateCourseLeaderboard(CourseEntity courseEntity, LocalDate now, Period period){
         this.leaderboardRepository
-                .findByCourseAndPeriodOrderByStartDateDesc(courseEntity, period)
+                .findFirstByCourseAndPeriodOrderByStartDateDesc(courseEntity, period)
                 .stream()
                 .findFirst()
-                .ifPresent(leaderboard -> this.updateCourseLeaderboard(courseEntity, leaderboard, now, Period.WEEKLY));
+                .ifPresent(leaderboard -> this.updateCourseLeaderboard(courseEntity, leaderboard, now, period));
     }
 
     private void updateCourseLeaderboard(CourseEntity courseEntity, LeaderboardEntity leaderboardEntity,  LocalDate now, Period period) {
         assureUpdateCourseLeaderboardPreconditionsAreMet(courseEntity, leaderboardEntity, now, period);
-
-        System.out.println("Now: "+ now);
         final LocalDate curStartDate = leaderboardEntity.getStartDate();
-        System.out.println("CurStartDate: "+ curStartDate);
         final LocalDate nextStartDate = this.periodCalculator.calcSucStartDate(curStartDate, period);
-        System.out.println("NextStartDate: "+ nextStartDate);
-
         if(isDayInRange(now, curStartDate, nextStartDate)) {
             return;
         }
         LeaderboardEntity newLeaderboard = instantiateLeaderboard(courseEntity, nextStartDate, period);
-
-        System.out.println(newLeaderboard.getId() + " " + newLeaderboard.getTitle() + " " + newLeaderboard.getStartDate() + " " + newLeaderboard.getPeriod() + " " + newLeaderboard.getCourse().getId());
-
         newLeaderboard = this.leaderboardRepository.save(newLeaderboard);
         updateCourseLeaderboard(courseEntity, newLeaderboard, now, period);
     }

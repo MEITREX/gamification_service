@@ -25,6 +25,8 @@ class DefaultEventPublicationService implements IEventPublicationService {
 
     private static final String ERR_MSG_NO_SEQ_NO = "A persist event must feature a valid sequence no.";
 
+    private static final String ERR_MSG_DUPLICATE_RECEIVED = "Ignored message {} since the passed sequence no  {} has already been passed";
+
 
     private final TransactionalApplicationEventPublisher applicationEventPublisher;
 
@@ -54,6 +56,8 @@ class DefaultEventPublicationService implements IEventPublicationService {
 
     private final IPersistentMediaRecordWorkedOnRepository persistentMediaRecordWorkedOnRepository;
 
+    private final IPersistentSubmissionCompletedEventRepository persistentSubmissionCompletedEventRepository;
+
     private final Map<Class<? extends PersistentEvent>, Function<PersistentEvent, InternalEvent>> handlerMap = new HashMap<>();
 
 
@@ -71,7 +75,8 @@ class DefaultEventPublicationService implements IEventPublicationService {
             @Autowired IPersistentStageCompletedEventRepository stageCompletedEventRepository,
             @Autowired IPersistentCourseCompletedEventRepository courseCompletedEventRepository,
             @Autowired IPersistentUserCourseMembershipChangedEventRepository userCourseMembershipChangedEventRepository,
-            @Autowired IPersistentMediaRecordWorkedOnRepository persistentMediaRecordWorkedOnRepository
+            @Autowired IPersistentMediaRecordWorkedOnRepository persistentMediaRecordWorkedOnRepository,
+            @Autowired IPersistentSubmissionCompletedEventRepository persistentSubmissionCompletedEventRepository
     ) {
         this.applicationEventPublisher = Objects.requireNonNull(applicationEventPublisher);
         this.persistentEventRepository = Objects.requireNonNull(persistentEventRepository);
@@ -87,6 +92,7 @@ class DefaultEventPublicationService implements IEventPublicationService {
         this.courseCompletedEventRepository = Objects.requireNonNull(courseCompletedEventRepository);
         this.userCourseMembershipChangedEventRepository = Objects.requireNonNull(userCourseMembershipChangedEventRepository);
         this.persistentMediaRecordWorkedOnRepository = Objects.requireNonNull(persistentMediaRecordWorkedOnRepository);
+        this.persistentSubmissionCompletedEventRepository = Objects.requireNonNull(persistentSubmissionCompletedEventRepository);
         this.handlerMap.put(PersistentUserProgressUpdatedEvent.class, this::saveUserProgressUpdatedEvent);
         this.handlerMap.put(PersistentContentProgressedEvent.class, this::saveContentProgressedEvent);
         this.handlerMap.put(PersistentForumActivityEvent.class, this::saveForumActivityEvent);
@@ -99,38 +105,38 @@ class DefaultEventPublicationService implements IEventPublicationService {
         this.handlerMap.put(PersistentCourseCompletedEvent.class, this::saveCourseCompletedEvent);
         this.handlerMap.put(PersistentAskedTutorAQuestionEvent.class, this::saveAskedTutorAQuestionEvent);
         this.handlerMap.put(PersistentUserCourseMembershipChangedEvent.class, this::saveUserCourseMembershipChangedEvent);
+        this.handlerMap.put(PersistentSubmissionCompletedEvent.class, this::saveSubmissionCompletedEvent);
     }
 
     @Override
     public void saveCommitAndPublishIfNew(PersistentEvent persistentEvent) {
-
         if(!this.handlerMap.containsKey(persistentEvent.getClass())) {
             throw new IllegalArgumentException(ERR_MSG_UNSUPPORTED_EVENT_TYPE);
         }
-
-        //if(true || isNew(persistentEvent)) {
+        if(isNew(persistentEvent)) {
             final InternalEvent internalEvent = this.handlerMap.get(persistentEvent.getClass())
                     .apply(persistentEvent);
-
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
                     applicationEventPublisher.publishEvent(internalEvent);
                 }
             });
-        /*}
+        }
         else {
-            log.info("Ignored message {} since the passed sequence no  {} has already been passed.", persistentEvent, persistentEvent.getSequenceNo());
-        }*/
+            log.info(ERR_MSG_DUPLICATE_RECEIVED, persistentEvent, persistentEvent.getMsgSequenceNo());
+        }
     }
 
     private boolean isNew(PersistentEvent persistentEvent) {
-        final Long seqNo = persistentEvent.getMsgSequenceNo();
 
+        if(!(persistentEvent instanceof ISequenced)) {
+            return true;
+        }
+        final Long seqNo = persistentEvent.getMsgSequenceNo();
         if(Objects.isNull(seqNo)) {
             throw new IllegalArgumentException(ERR_MSG_NO_SEQ_NO);
         }
-
         return this.persistentEventRepository.
                 findByMsgSequenceNo(seqNo)
                 .isEmpty();
@@ -183,7 +189,6 @@ class DefaultEventPublicationService implements IEventPublicationService {
 
         return new InternalUserSkillLevelChangedEvent(DefaultEventPublicationService.this, uuid);
     }
-
 
     private InternalEvent saveMediaRecordInfoEvent(PersistentEvent persistentEvent) {
         PersistentMediaRecordInfoEvent persistentMediaRecordInfoEvent = (PersistentMediaRecordInfoEvent) persistentEvent;
@@ -255,5 +260,16 @@ class DefaultEventPublicationService implements IEventPublicationService {
                 .getUuid();
 
         return new InternalUserCourseMembershipChangedEvent(DefaultEventPublicationService.this, uuid);
+    }
+
+    private InternalEvent saveSubmissionCompletedEvent(PersistentEvent persistentEvent) {
+        PersistentSubmissionCompletedEvent persistentSubmissionCompletedEvent
+                = (PersistentSubmissionCompletedEvent) persistentEvent;
+
+        final UUID uuid = this.persistentSubmissionCompletedEventRepository
+                .save(persistentSubmissionCompletedEvent)
+                .getUuid();
+
+        return new InternalSubmissionCompletedEvent(DefaultEventPublicationService.this, uuid);
     }
 }

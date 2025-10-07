@@ -25,6 +25,14 @@ class ContentProgressedXPListener extends AbstractInternalListener<PersistentCon
         return 0;
     }
 
+    private static int countResponsesWithMinimumHalfResponse(PersistentContentProgressedEvent event) {
+        if(Objects.nonNull(event.getResponses())) {
+            return event.getResponses().stream().filter(persistentResponse
+                    -> persistentResponse.getResponse() >= 0.5).toList().size();
+        }
+        return 0;
+    }
+
     // Do not change to keep unique UUID even in case of refactoring.
     private static final String name = "ChapterCompletionXPListener";
 
@@ -72,6 +80,10 @@ class ContentProgressedXPListener extends AbstractInternalListener<PersistentCon
                 }
                 case ASSIGNMENT: {
                     userXPAdder.add(userEntity, IUserXPAdder.Cause.ASSIGNMENT_COMPLETED);
+                    break;
+                }
+                case SUBMISSION: {
+                    userXPAdder.add(userEntity,  IUserXPAdder.Cause.SUBMISSION_COMPLETED,  countResponsesWithMinimumHalfResponse(persistentEvent));
                     break;
                 }
             }
