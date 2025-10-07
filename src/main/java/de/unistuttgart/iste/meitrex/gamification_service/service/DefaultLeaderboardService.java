@@ -15,6 +15,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.mapper.*;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.*;
 import de.unistuttgart.iste.meitrex.gamification_service.time.*;
 import de.unistuttgart.iste.meitrex.gamification_service.time.Period;
+import de.unistuttgart.iste.meitrex.gamification_service.events.internal.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 

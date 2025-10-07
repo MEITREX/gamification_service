@@ -37,6 +37,7 @@ class UserProgressUpdatedListener extends AbstractExternalListener<UserProgressU
     @PostMapping(path = "/user-progress-updated")
     @Topic(name = "user-progress-updated", pubsubName = "meitrex")
     public void onUserProgressUpdated(@RequestBody CloudEvent<UserProgressUpdatedEvent> cloudEvent, @RequestHeader Map<String, String> headers) {
+        System.out.println("$ " + this.getClass().getName());
         super.handle(cloudEvent, UserProgressUpdatedListener::getContext, headers);
     }
 
