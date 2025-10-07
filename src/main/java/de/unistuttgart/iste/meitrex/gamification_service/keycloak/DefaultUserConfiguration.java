@@ -1,12 +1,10 @@
 package de.unistuttgart.iste.meitrex.gamification_service.keycloak;
 
-import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import java.util.*;
 
-@RestController
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
+import org.springframework.stereotype.*;
+
 @Component
 class DefaultUserConfiguration implements IUserConfigurationProvider {
 
@@ -39,6 +37,12 @@ class DefaultUserConfiguration implements IUserConfigurationProvider {
     }
 
     @Override
+    @Loggable(
+            inLogLevel = Loggable.LogLevel.INFO,
+            exitLogLevel = Loggable.LogLevel.DEBUG,
+            exceptionLogLevel = Loggable.LogLevel.DEBUG,
+            logExecutionTime = false
+    )
     public boolean isAdaptiveGamificationDisabled(UUID userId) {
         return !fetchAndInitIfEmpty(userId).contains(GROUP_ATTR_VALUE_ADAPTIVE_GAMIFICATION);
     }

@@ -3,19 +3,16 @@ package de.unistuttgart.iste.meitrex.gamification_service.keycloak;
 
 import java.util.*;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.resiliency.Retryable;
+import org.springframework.http.*;
 import org.springframework.stereotype.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.*;
+import org.springframework.web.reactive.function.client.*;
+import org.springframework.beans.factory.annotation.*;
+import com.fasterxml.jackson.databind.JsonNode;
 
-@RestController
+
 @Component
 public class DefaultKeycloakClient implements IKeycloakClient {
 
@@ -50,9 +47,9 @@ public class DefaultKeycloakClient implements IKeycloakClient {
 
 
     public DefaultKeycloakClient(
-            @Value("${keycloak.realm:GITS}") String realm,
-            @Value("${keycloak.client-id:gamification-service}") String clientId,
-            @Value("${keycloak.client-secret:super-secret-value}") String clientSecret,
+            @Value("${keycloak.realm}") String realm,
+            @Value("${keycloak.client-id}") String clientId,
+            @Value("${keycloak.client-secret}") String clientSecret,
             @Autowired @Qualifier("keycloakServiceClient") WebClient webClient
     ) {
         this.realm = Objects.requireNonNull(realm);
@@ -62,12 +59,34 @@ public class DefaultKeycloakClient implements IKeycloakClient {
     }
 
     @Override
+    @Loggable(
+            inLogLevel = Loggable.LogLevel.INFO,
+            exitLogLevel = Loggable.LogLevel.DEBUG,
+            exceptionLogLevel = Loggable.LogLevel.DEBUG,
+            logExecutionTime = false
+    )
+    @Retryable(maxRetries = 3, backoffMillis = 2000, retryOn = {
+            WebClientRequestException.class,
+            io.netty.handler.timeout.ReadTimeoutException.class,
+            io.netty.handler.timeout.WriteTimeoutException.class
+    })
     public List<String> getValues(UUID userId, String attrName) {
         return Collections.unmodifiableList(readMutableAttributeMap(userId).getOrDefault(attrName, List.of()));
     }
 
 
     @Override
+    @Loggable(
+            inLogLevel = Loggable.LogLevel.INFO,
+            exitLogLevel = Loggable.LogLevel.DEBUG,
+            exceptionLogLevel = Loggable.LogLevel.DEBUG,
+            logExecutionTime = false
+    )
+    @Retryable(maxRetries = 3, backoffMillis = 2000, retryOn = {
+            WebClientRequestException.class,
+            io.netty.handler.timeout.ReadTimeoutException.class,
+            io.netty.handler.timeout.WriteTimeoutException.class
+    })
     public void setValues(UUID userId, String attrName, List<String> values) {
         if(Objects.isNull(values) || values.isEmpty()) {
             removeValues(userId, attrName);
@@ -107,7 +126,7 @@ public class DefaultKeycloakClient implements IKeycloakClient {
     private Map<String, List<String>> readMutableAttributeMap(UUID userId) {
         final String token = getAccessToken();
         final JsonNode node = webClient.get()
-                .uri("/admin/realms/" + this.realm+ "/users/" + userId)
+                .uri("/admin/realms/" + this.realm + "/users/" + userId)
                 .headers(headers -> headers.setBearerAuth(token)) // <-- Correct way
                 .retrieve()
                 .bodyToMono(JsonNode.class)
