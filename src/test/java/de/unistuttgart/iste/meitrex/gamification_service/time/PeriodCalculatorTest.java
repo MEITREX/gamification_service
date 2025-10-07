@@ -6,7 +6,7 @@ import java.time.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class PeriodCalculatorTest {
+class  PeriodCalculatorTest {
 
     //14th of September 2025/CEST
     private static final long TODAY = 1757884694995L;

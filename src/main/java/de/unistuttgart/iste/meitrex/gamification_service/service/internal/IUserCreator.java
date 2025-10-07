@@ -4,6 +4,11 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.User
 
 import java.util.UUID;
 
+/**
+ * A contract for fetching a user by its {@see UUID}. If no such exists, it is created and initialized. The
+ * concrete initialization method must be treated as an implementation detail.
+ *
+ */
 public interface IUserCreator {
 
     /**

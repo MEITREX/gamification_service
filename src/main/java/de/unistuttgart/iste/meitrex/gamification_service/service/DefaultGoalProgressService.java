@@ -23,7 +23,7 @@ import java.util.*;
 @Component
 @Slf4j
 @Transactional
-class DefaultGoalProgressService implements IGoalProgressService {
+public class DefaultGoalProgressService implements IGoalProgressService {
 
     private static LoginStreakGoalProgressEvent getLoginStreakGoalProgressEvent(UUID userId, UUID courseId) {
         return LoginStreakGoalProgressEvent

@@ -176,5 +176,6 @@ class DefaultLeaderboardService implements ILeaderboardService {
         LeaderboardEntity newLeaderboard = instantiateLeaderboard(courseEntity, nextStartDate, period);
         newLeaderboard = this.leaderboardRepository.save(newLeaderboard);
         updateCourseLeaderboard(courseEntity, newLeaderboard, now, period);
+
     }
 }
