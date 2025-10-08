@@ -18,6 +18,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.IUserRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.test_util.CourseMembershipUtil;
 import de.unistuttgart.iste.meitrex.gamification_service.test_util.CourseUtil;
+import de.unistuttgart.iste.meitrex.gamification_service.test_util.MockKeycloakClientConfig;
 import de.unistuttgart.iste.meitrex.generated.dto.Achievement;
 import de.unistuttgart.iste.meitrex.generated.dto.UserItem;
 import jakarta.transaction.Transactional;
@@ -36,7 +37,7 @@ import static de.unistuttgart.iste.meitrex.common.testutil.TestUsers.userWithMem
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 
-@ContextConfiguration(classes = {MockTestPublisherConfiguration.class})
+@ContextConfiguration(classes = {MockTestPublisherConfiguration.class, MockKeycloakClientConfig.class})
 @GraphQlApiTest
 @Import(CourseUtil.class)
 @Transactional

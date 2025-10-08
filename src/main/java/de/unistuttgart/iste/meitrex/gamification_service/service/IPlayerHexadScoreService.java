@@ -26,7 +26,7 @@ public interface IPlayerHexadScoreService {
      * Default Hexad Score (%) = 100 / number of types
      * @return the calculated default player hexad score
      */
-    PlayerHexadScore calculateDefault(UUID userId);
+    PlayerHexadScore calculateDefault(UUID userId, boolean notification);
 
     /**
      * Calculates the Normalized Score (%) player hexad

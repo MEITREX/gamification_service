@@ -48,7 +48,7 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
         if(playerHexadScoreEntity != null && !playerHexadScoreEntity.isDefaultInput()) {
             throw new IllegalStateException("Player Hexad Score was already evaluated");
         }
-        final PlayerHexadScore playerHexadScore = input.getQuestions().isEmpty() ? calculateDefault(userId): calculateFromInput(input);
+        final PlayerHexadScore playerHexadScore = input.getQuestions().isEmpty() ? calculateDefault(userId, !Boolean.TRUE.equals(input.getNoNotification())): calculateFromInput(input);
         input.getQuestions().forEach(question -> {
             PlayerHexadScoreQuestionEntity playerHexadScoreQuestionEntity = new PlayerHexadScoreQuestionEntity();
             playerHexadScoreQuestionEntity.setQuestion(question.getText());
@@ -76,7 +76,7 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
      * Default Hexad Score (%) = 100 / number of types
      * @return the calculated default player hexad score
      */
-    public PlayerHexadScore calculateDefault(UUID userId){
+    public PlayerHexadScore calculateDefault(UUID userId, boolean notification) {
         float defaultValue = 100f / PlayerType.values().length;
 
         List<PlayerTypeScore> scores = Arrays.stream(PlayerType.values())
@@ -91,15 +91,16 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
         final String link = "/?resumeSurvey=1";
 
         final ServerSource source = ServerSource.GAMIFICATION;
-
-        topicPublisher.notificationEvent(
-                null,
-                List.of(userId),
-                ServerSource.GAMIFICATION,
-                link,
-                title,
-                message
-        );
+        if (notification) {
+            topicPublisher.notificationEvent(
+                    null,
+                    List.of(userId),
+                    ServerSource.GAMIFICATION,
+                    link,
+                    title,
+                    message
+            );
+        }
 
         return new PlayerHexadScore(true, scores);
     }
