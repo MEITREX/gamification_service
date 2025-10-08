@@ -56,6 +56,7 @@ public class InternalSubmissionCompletedEventListener extends AbstractInternalLi
 
     @Override
     protected void doProcess(PersistentSubmissionCompletedEvent persistentEvent) throws TransientEventListenerException, NonTransientEventListenerException {
+        log.info("Process Submission Completed Event");
         UUID userId = persistentEvent.getUserId();
         itemService.submissionReward(userId);
         final UserEntity userEntity = this.userCreator.fetchOrCreate(persistentEvent.getUserId());
