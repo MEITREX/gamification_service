@@ -7,6 +7,6 @@ import de.unistuttgart.iste.meitrex.gamification_service.exception.*;
 
 public interface IUserService {
 
-    User fetchUser(UUID userID)
+    UserXP fetchUser(UUID userID)
         throws ResourceNotFoundException;
 }

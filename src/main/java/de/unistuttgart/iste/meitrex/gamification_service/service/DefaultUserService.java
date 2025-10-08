@@ -12,8 +12,8 @@ import de.unistuttgart.iste.meitrex.gamification_service.service.functional.IXPL
 import de.unistuttgart.iste.meitrex.gamification_service.service.functional.IXPLevelMapping;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.IUserCreator;
 import de.unistuttgart.iste.meitrex.generated.dto.Leaderboard;
-import de.unistuttgart.iste.meitrex.generated.dto.User;
 import de.unistuttgart.iste.meitrex.generated.dto.UserInfo;
+import de.unistuttgart.iste.meitrex.generated.dto.UserXP;
 import de.unistuttgart.iste.meitrex.user_service.client.UserServiceClient;
 import de.unistuttgart.iste.meitrex.user_service.exception.UserServiceConnectionException;
 import jakarta.persistence.*;
@@ -73,7 +73,7 @@ public class DefaultUserService implements IUserService, IUserCreator {
     }
 
     @Override
-    public User fetchUser(UUID userID)
+    public UserXP fetchUser(UUID userID)
             throws ResourceNotFoundException {
         final UserEntity user = this.fetchOrThrow(userID);
         this.augmentExceedingXP(user);

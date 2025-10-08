@@ -9,7 +9,7 @@ type Query {
 
     inventoriesForUsers(userIds: [UUID!]!): [Inventory!]!
 
-    getUser(userID: ID!): [User!]
+    getUserXP(userID: ID!): [UserXP!]
 
     getWeeklyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
     getMonthlyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]

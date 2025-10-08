@@ -32,10 +32,7 @@ type PlayerHexadScore {
     scores: [PlayerTypeScore!]!
 }
 
-type User {
-  id: UUID!
-  name: String
-  email: String
+type UserXP {
   xpValue: Int!
   requiredXP: Float!
   exceedingXP: Float!

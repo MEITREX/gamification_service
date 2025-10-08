@@ -15,5 +15,5 @@ type Leaderboard {
 type UserScore {
     id: ID!
     score: Float
-    user: User
+    user: UserXP
 }
