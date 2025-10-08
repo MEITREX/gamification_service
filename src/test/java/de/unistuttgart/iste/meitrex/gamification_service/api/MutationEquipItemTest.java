@@ -16,6 +16,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.service.DefaultItemServ
 import de.unistuttgart.iste.meitrex.gamification_service.test_config.MockContentServiceClientConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.test_config.MockCourseServiceClientConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.test_util.ItemUtil;
+import de.unistuttgart.iste.meitrex.gamification_service.test_util.MockKeycloakClientConfig;
 import de.unistuttgart.iste.meitrex.generated.dto.Chapter;
 import de.unistuttgart.iste.meitrex.generated.dto.Inventory;
 import de.unistuttgart.iste.meitrex.generated.dto.Item;
@@ -36,7 +37,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
-@ContextConfiguration(classes = {MockTestPublisherConfiguration.class, MockContentServiceClientConfiguration.class, MockCourseServiceClientConfiguration.class})
+@ContextConfiguration(classes = {MockTestPublisherConfiguration.class, MockContentServiceClientConfiguration.class, MockCourseServiceClientConfiguration.class, MockKeycloakClientConfig.class})
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")
