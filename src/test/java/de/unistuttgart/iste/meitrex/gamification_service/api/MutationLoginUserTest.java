@@ -8,6 +8,7 @@ import de.unistuttgart.iste.meitrex.content_service.client.ContentServiceClient;
 import de.unistuttgart.iste.meitrex.course_service.client.CourseServiceClient;
 import de.unistuttgart.iste.meitrex.gamification_service.test_config.MockContentServiceClientConfiguration;
 import de.unistuttgart.iste.meitrex.gamification_service.test_config.MockCourseServiceClientConfiguration;
+import de.unistuttgart.iste.meitrex.gamification_service.test_util.MockKeycloakClientConfig;
 import de.unistuttgart.iste.meitrex.generated.dto.Chapter;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
-@ContextConfiguration(classes = {MockTestPublisherConfiguration.class, MockContentServiceClientConfiguration.class, MockCourseServiceClientConfiguration.class})
+@ContextConfiguration(classes = {MockTestPublisherConfiguration.class, MockContentServiceClientConfiguration.class, MockCourseServiceClientConfiguration.class, MockKeycloakClientConfig.class})
 @GraphQlApiTest
 @Transactional
 @ActiveProfiles("test")

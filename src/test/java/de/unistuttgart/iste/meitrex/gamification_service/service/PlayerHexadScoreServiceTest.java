@@ -64,7 +64,7 @@ public class PlayerHexadScoreServiceTest {
         // Act
         PlayerHexadScore result = spyService.evaluate(UUID.randomUUID(), input, username);
 
-        verify(spyService).calculateDefault(any());
+        verify(spyService).calculateDefault(any(), eq(true));
         verify(spyService, times(0)).calculateFromInput(input);
 
         verify(mockTopicPublisher).notificationEvent(any(), any(), any(), any(), any(), any());
@@ -100,7 +100,7 @@ public class PlayerHexadScoreServiceTest {
                 Arrays.asList(answer1, answer2)
         );
 
-        PlayerAnswerInput playerAnswerInput = new PlayerAnswerInput(Collections.singletonList(question));
+        PlayerAnswerInput playerAnswerInput = new PlayerAnswerInput(false, Collections.singletonList(question));
         when(input.getQuestions()).thenReturn(playerAnswerInput.getQuestions());
         when(userCreator.fetchOrCreate(any(UUID.class)))
                 .thenReturn(new UserEntity());
@@ -109,7 +109,7 @@ public class PlayerHexadScoreServiceTest {
         PlayerHexadScore result = spyService.evaluate(UUID.randomUUID(), input, username);
 
         verify(spyService).calculateFromInput(input);
-        verify(spyService, times(0)).calculateDefault(any());
+        verify(spyService, times(0)).calculateDefault(any(), eq(true));
 
         // Assert
         assertEquals(6, result.getScores().size(), "There should be 6 scores");
@@ -148,7 +148,7 @@ public class PlayerHexadScoreServiceTest {
                 Arrays.asList(answer1, answer2)
         );
 
-        PlayerAnswerInput playerAnswerInput = new PlayerAnswerInput(Collections.singletonList(question));
+        PlayerAnswerInput playerAnswerInput = new PlayerAnswerInput(false, Collections.singletonList(question));
         when(input.getQuestions()).thenReturn(playerAnswerInput.getQuestions());
 
         PlayerHexadScoreEntity existingScore = new PlayerHexadScoreEntity();
@@ -162,7 +162,7 @@ public class PlayerHexadScoreServiceTest {
         PlayerHexadScore result = spyService.evaluate(UUID.randomUUID(), input, username);
 
         verify(spyService).calculateFromInput(input);
-        verify(spyService, times(0)).calculateDefault(any());
+        verify(spyService, times(0)).calculateDefault(any(), eq(true));
 
         // Assert
         assertEquals(6, result.getScores().size(), "There should be 6 scores");
@@ -197,7 +197,7 @@ public class PlayerHexadScoreServiceTest {
             spyService.evaluate(UUID.randomUUID(), input, username);
         });
 
-        verify(spyService, times(0)).calculateDefault(any());
+        verify(spyService, times(0)).calculateDefault(any(),eq(true));
         verify(spyService, times(0)).calculateFromInput(input);
     }
 
