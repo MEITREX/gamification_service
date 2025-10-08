@@ -18,7 +18,7 @@ import java.util.UUID;
 @Component
 public class InternalSubmissionCompletedEventListener extends AbstractInternalListener<PersistentSubmissionCompletedEvent, InternalSubmissionCompletedEvent> {
 
-    private IItemService itemService;
+    private final IItemService itemService;
 
     private static final String name = "InternalSubmissionCompletedEventListener";
 
