@@ -9,6 +9,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPers
 import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPersistentEventStatusRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.service.IItemService;
 import de.unistuttgart.iste.meitrex.gamification_service.time.ITimeService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 import java.util.UUID;
 
 @Component
+@Slf4j
 public class InternalSubmissionCompletedEventListener extends AbstractInternalListener<PersistentSubmissionCompletedEvent, InternalSubmissionCompletedEvent> {
 
     private final IItemService itemService;
@@ -37,6 +39,11 @@ public class InternalSubmissionCompletedEventListener extends AbstractInternalLi
 
     @Override
     @EventListener
+    public void process(InternalSubmissionCompletedEvent internalEvent) {
+        super.process(internalEvent);
+    }
+
+    @Override
     protected void doProcess(PersistentSubmissionCompletedEvent persistentEvent) throws TransientEventListenerException, NonTransientEventListenerException {
         UUID userId = persistentEvent.getUserId();
         itemService.submissionReward(userId);
