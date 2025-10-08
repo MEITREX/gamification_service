@@ -1,5 +1,11 @@
 package de.unistuttgart.iste.meitrex.gamification_service.events.internal;
 
+/**
+ * Exception indicating a recoverable error during the processing of an internal event. Throwing this exception
+ * signals hat the event processing has permanently and should be retried by the surrounding infrastructure.
+ *
+ * @see AbstractInternalListener
+ */
 public class TransientEventListenerException extends InternalEventListenerException {
 
     public TransientEventListenerException() {

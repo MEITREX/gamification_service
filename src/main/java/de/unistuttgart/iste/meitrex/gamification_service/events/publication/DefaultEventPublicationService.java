@@ -18,6 +18,27 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 
+/**
+ * Default implementation of {@link IEventPublicationService} that persists incoming persistent events,
+ * ensures that duplicate events are not processed, and publishes corresponding internal events
+ * after a successful transaction commit.
+ *
+ * This service uses a type-to-handler map to delegate the persistence and conversion logic
+ * for different event types. The {@link org.springframework.transaction.support.TransactionSynchronizationManager}
+ * is used to ensure that publication happens only after the surrounding database transaction commits successfully.
+ *
+ * Duplicate detection is applied only to events that implement the {@link de.unistuttgart.iste.meitrex.gamification_service.events.persistent.ISequenced}
+ * interface. For these events, the message sequence number is checked against the database to prevent reprocessing
+ * of duplicates. All other events are always treated as new and published unconditionally.
+ *
+ * To support additional event types, implement a corresponding persistence and conversion method (e.g. {@code saveMyEventType}),
+ * and register it in the {@code handlerMap} inside the constructor, mapping the new persistent event class
+ * to the handler function. This allows the service to process and publish the new event type without modifying
+ * the core publishing logic.
+ *
+ * @author Philipp Kunz
+ */
+
 @Slf4j
 @Component
 class DefaultEventPublicationService implements IEventPublicationService {
