@@ -48,8 +48,8 @@ public class DefaultKeycloakClient implements IKeycloakClient {
 
     public DefaultKeycloakClient(
             @Value("${keycloak.realm}") String realm,
-            @Value("${keycloak.client-id}") String clientId,
-            @Value("${keycloak.client-secret}") String clientSecret,
+            @Value("${keycloak.clientId}") String clientId,
+            @Value("${keycloak.clientSecret}") String clientSecret,
             @Autowired @Qualifier("keycloakServiceClient") WebClient webClient
     ) {
         this.realm = Objects.requireNonNull(realm);
