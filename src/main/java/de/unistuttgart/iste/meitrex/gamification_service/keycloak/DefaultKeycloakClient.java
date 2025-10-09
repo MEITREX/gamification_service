@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 
 @Component
+@Slf4j
 public class DefaultKeycloakClient implements IKeycloakClient {
 
     private static Map<String, List<String>> extractAttributeMap(JsonNode node) {
@@ -128,10 +129,13 @@ public class DefaultKeycloakClient implements IKeycloakClient {
             throw new IllegalStateException("User not found or invalid json for id=" + userId);
         }
 
+        log.info("Node before: {}", userNode);
 
         ObjectNode fullUser = (ObjectNode) userNode;
         JsonNode attributesNode = objectMapper.valueToTree(valueMap);
         fullUser.set("attributes", attributesNode);
+
+        log.info("Node after: {}", fullUser);
 
         webClient.put()
                 .uri("/admin/realms/" + realm + "/users/{id}", userId)
