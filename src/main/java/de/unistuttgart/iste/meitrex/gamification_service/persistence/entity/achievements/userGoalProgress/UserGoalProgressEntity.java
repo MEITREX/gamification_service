@@ -47,6 +47,13 @@ public class UserGoalProgressEntity implements IWithId<UUID> {
         startedAt = OffsetDateTime.now();
     }
 
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+        if (completed) {
+            endedAt = OffsetDateTime.now();
+        }
+    }
+
     public boolean updateProgress(GoalProgressEvent progressEvent) {
         return goal.updateProgress(progressEvent, this);
     }
