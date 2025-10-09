@@ -8,6 +8,7 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.Play
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.IPlayerHexadScoreQuestionRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.IUserCreator;
+import io.dapr.client.DaprClient;
 import org.springframework.stereotype.Service;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerHexadScoreEntity;
@@ -90,7 +91,6 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
         final String message = "You skipped the questionnaire so we set a default type. Tap to resume.";
         final String link = "/?resumeSurvey=1";
 
-        final ServerSource source = ServerSource.GAMIFICATION;
         if (notification) {
             topicPublisher.notificationEvent(
                     null,
