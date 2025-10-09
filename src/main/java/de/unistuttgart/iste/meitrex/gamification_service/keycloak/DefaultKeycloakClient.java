@@ -3,8 +3,11 @@ package de.unistuttgart.iste.meitrex.gamification_service.keycloak;
 
 import java.util.*;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import de.unistuttgart.iste.meitrex.gamification_service.aspects.resiliency.Retryable;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.*;
 import org.springframework.web.reactive.function.*;
@@ -45,17 +48,21 @@ public class DefaultKeycloakClient implements IKeycloakClient {
 
     private final WebClient webClient;
 
+    private final ObjectMapper objectMapper;
+
 
     public DefaultKeycloakClient(
             @Value("${keycloak.realm}") String realm,
             @Value("${keycloak.clientId}") String clientId,
             @Value("${keycloak.clientSecret}") String clientSecret,
-            @Autowired @Qualifier("keycloakServiceClient") WebClient webClient
+            @Autowired @Qualifier("keycloakServiceClient") WebClient webClient,
+            @Autowired ObjectMapper objectMapper
     ) {
         this.realm = Objects.requireNonNull(realm);
         this.clientId = Objects.requireNonNull(clientId);
         this.clientSecret = Objects.requireNonNull(clientSecret);
         this.webClient = Objects.requireNonNull(webClient);
+        this.objectMapper = Objects.requireNonNull(objectMapper);
     }
 
     @Override
@@ -110,13 +117,27 @@ public class DefaultKeycloakClient implements IKeycloakClient {
 
     private void saveAttributeMap(UUID userId, Map<String, List<String>> valueMap) {
         final String token = getAccessToken();
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("attributes", valueMap);
+        JsonNode userNode = webClient.get()
+                .uri("/admin/realms/" + this.realm + "/users/" + userId)
+                .headers(headers -> headers.setBearerAuth(token))
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+
+        if (userNode == null || !userNode.isObject()) {
+            throw new IllegalStateException("User not found or invalid json for id=" + userId);
+        }
+
+
+        ObjectNode fullUser = (ObjectNode) userNode;
+        JsonNode attributesNode = objectMapper.valueToTree(valueMap);
+        fullUser.set("attributes", attributesNode);
+
         webClient.put()
                 .uri("/admin/realms/" + realm + "/users/{id}", userId)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(payload)
+                .bodyValue(fullUser)
                 .retrieve()
                 .toBodilessEntity()
                 .block();
