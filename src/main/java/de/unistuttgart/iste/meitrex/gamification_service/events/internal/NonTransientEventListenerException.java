@@ -1,5 +1,11 @@
 package de.unistuttgart.iste.meitrex.gamification_service.events.internal;
 
+/**
+ * Exception indicating a non-recoverable error during the processing of an internal event. Throwing this exception
+ * signals hat the event processing has failed permanently and should not be retried by the surrounding infrastructure.
+ *
+ * @see AbstractInternalListener
+ */
 public class NonTransientEventListenerException extends InternalEventListenerException {
 
     public NonTransientEventListenerException() {

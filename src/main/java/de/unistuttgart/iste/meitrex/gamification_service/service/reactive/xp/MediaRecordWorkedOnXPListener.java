@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service.reactive.xp;
 
 import de.unistuttgart.iste.meitrex.common.event.MediaType;
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import de.unistuttgart.iste.meitrex.gamification_service.events.PersistentMediaRecordWorkedOnEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.events.internal.*;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentMediaRecordInfoEvent;

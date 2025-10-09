@@ -3,6 +3,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.service;
 import java.util.*;
 
 import de.unistuttgart.iste.meitrex.course_service.client.CourseServiceClient;
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.achievements.ICourseAchievementMapper;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.ICourseCreator;
 import de.unistuttgart.iste.meitrex.gamification_service.time.IPeriodCalculator;
@@ -67,6 +68,12 @@ class DefaultCourseService implements ICourseCreator {
     }
 
     @Override
+    @Loggable(
+            inLogLevel = Loggable.LogLevel.INFO,
+            exitLogLevel = Loggable.LogLevel.DEBUG,
+            exceptionLogLevel = Loggable.LogLevel.WARN,
+            logExecutionTime = false
+    )
     public CourseEntity fetchOrCreate(UUID courseId) {
         return this.courseRepository
                 .findById(courseId)

@@ -2,6 +2,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.service.functional;
 
 import java.util.*;
 
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import org.springframework.stereotype.*;
 
 import org.springframework.beans.factory.annotation.*;
@@ -84,6 +85,12 @@ public class DefaultXPImplementation implements IXPLevelMapping, IXPLevelDistanc
     }
 
     @Override
+    @Loggable(
+            inLogLevel = Loggable.LogLevel.DEBUG,
+            exitLogLevel = Loggable.LogLevel.DEBUG,
+            exceptionLogLevel = Loggable.LogLevel.WARN,
+            logExecutionTime = false
+    )
     public int calcLevel(double xpValue) {
         assureNonNegative(xpValue, ERR_MSG_XP_VALUE_MUST_BE_NON_NEGATIVE);
         for(Map.Entry<Integer, Double> entry : this.levelXPThresholdMappingList) {
@@ -95,6 +102,12 @@ public class DefaultXPImplementation implements IXPLevelMapping, IXPLevelDistanc
     }
 
     @Override
+    @Loggable(
+            inLogLevel = Loggable.LogLevel.TRACE,
+            exitLogLevel = Loggable.LogLevel.TRACE,
+            exceptionLogLevel = Loggable.LogLevel.WARN,
+            logExecutionTime = false
+    )
     public double calcDistance(double curXP, int targetLevel) {
         assureIsSupportedLevel(this.maxLevel, targetLevel, ERR_MSG_UNSUPPORTED_LEVEL);
         return this.levelXPThresholdMapping.get(targetLevel) - curXP;

@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service.functional;
 
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import org.springframework.stereotype.*;
 import org.springframework.beans.factory.annotation.*;
 
@@ -45,6 +46,12 @@ public class DefaultScoringFunction implements IScoringFunction {
     }
 
     @Override
+    @Loggable(
+            inLogLevel = Loggable.LogLevel.DEBUG,
+            exitLogLevel = Loggable.LogLevel.DEBUG,
+            exceptionLogLevel = Loggable.LogLevel.WARN,
+            logExecutionTime = false
+    )
     public double score(double correctness, int attempt) {
         return Math.round(this.multiplicativeWeight*correctness*(Math.pow(2.0, this.decayRate*attempt)));
     }
