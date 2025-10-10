@@ -19,4 +19,5 @@ public class AdaptivityConfiguration {
     private int widgetRecommendationDefaultFeedbackRequestIntervalDays;
     private int widgetRecommendationMinFeedbackRequestIntervalDays;
     private int widgetRecommendationMaxFeedbackRequestIntervalDays;
+    private boolean adjustHexadScoreInCaseOfDisabledGamification;
 }

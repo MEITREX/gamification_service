@@ -10,6 +10,9 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.User
  */
 public interface IUserXPAdder {
 
+    /**
+     * Represents the type of event for which a user can potentially be awarded additional XP.
+     */
     enum Cause {
         NEW_FORUM_POST, ANSWER_ACCEPTED, ACHIEVEMENT_COMPLETED, STAGE_COMPLETED, CHAPTER_COMPLETED, COURSE_COMPLETED, ASSIGNMENT_COMPLETED, QUIZ_COMPLETED, FLASHCARD_COMPLETED, VIDEO_WATCHED, DOCUMENT_OPENED, SUBMISSION_COMPLETED
     }

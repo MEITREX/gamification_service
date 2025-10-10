@@ -19,6 +19,7 @@ input QuestionInput {
 }
 
 input PlayerAnswerInput {
+    noNotification: Boolean
     questions: [QuestionInput!]!
 }
 
@@ -34,6 +35,7 @@ type PlayerHexadScore {
 
 type User {
   id: UUID!
+  refUserID: UUID
   name: String
   email: String
   xpValue: Int!

@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service.reactive.xp;
 
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.IUserCreator;
 import org.springframework.stereotype.*;
@@ -15,7 +16,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-@Component
+//@Component
 class UserProgressUpdatedXPListener extends AbstractInternalListener<PersistentUserProgressUpdatedEvent,  InternalUserProgressUpdatedEvent> {
 
     private static final String ERR_MSG_NEW_XP_VALUE_CANT_BE_LESS = "The overall xp value must be non-negative.";
@@ -47,7 +48,7 @@ class UserProgressUpdatedXPListener extends AbstractInternalListener<PersistentU
     }
 
     @Override
-    protected void doProcess(PersistentUserProgressUpdatedEvent persistentEvent)
+    public void doProcess(PersistentUserProgressUpdatedEvent persistentEvent)
             throws TransientEventListenerException, NonTransientEventListenerException {
         final Optional<Integer> additionalXPOptional = this.mapToAdditionalXP(persistentEvent);
         if(additionalXPOptional.isPresent()) {

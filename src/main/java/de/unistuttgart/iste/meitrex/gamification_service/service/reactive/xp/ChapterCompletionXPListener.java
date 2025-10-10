@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service.reactive.xp;
 
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import de.unistuttgart.iste.meitrex.gamification_service.events.internal.*;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentChapterCompletedEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentCourseCompletedEvent;
@@ -17,7 +18,7 @@ import org.springframework.stereotype.Component;
 import java.util.Objects;
 
 @Component
-class ChapterCompletionXPListener extends AbstractInternalListener<PersistentChapterCompletedEvent, InternalChapterCompletedEvent> {
+public class ChapterCompletionXPListener extends AbstractInternalListener<PersistentChapterCompletedEvent, InternalChapterCompletedEvent> {
 
     // Do not change to keep unique UUID even in case of refactoring.
     private static final String name = "ChapterCompletionXPListener";
@@ -50,9 +51,8 @@ class ChapterCompletionXPListener extends AbstractInternalListener<PersistentCha
     }
 
     @Override
-    protected void doProcess(PersistentChapterCompletedEvent persistentEvent)
+    public void doProcess(PersistentChapterCompletedEvent persistentEvent)
             throws TransientEventListenerException, NonTransientEventListenerException {
-        System.out.println(persistentEvent.getClass().getName());
         final UserEntity userEntity = this.userCreator.fetchOrCreate(persistentEvent.getUserId());
         this.userXPAdder.add(userEntity, IUserXPAdder.Cause.CHAPTER_COMPLETED);
     }

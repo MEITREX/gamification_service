@@ -3,6 +3,7 @@ package de.unistuttgart.iste.meitrex.gamification_service.time;
 import java.time.*;
 import java.util.*;
 
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import org.springframework.stereotype.*;
 import org.springframework.beans.factory.annotation.*;
 
@@ -64,6 +65,12 @@ public class DefaultPeriodCalculator implements IPeriodCalculator {
     }
 
     @Override
+    @Loggable(
+            inLogLevel = Loggable.LogLevel.DEBUG,
+            exitLogLevel = Loggable.LogLevel.DEBUG,
+            exceptionLogLevel = Loggable.LogLevel.WARN,
+            logExecutionTime = false
+    )
     public LocalDate calcStartDate(long timestamp, Period period) {
         assureIsNonNull(period);
         assureIsNonNegative(timestamp);
@@ -75,6 +82,12 @@ public class DefaultPeriodCalculator implements IPeriodCalculator {
     }
 
     @Override
+    @Loggable(
+            inLogLevel = Loggable.LogLevel.DEBUG,
+            exitLogLevel = Loggable.LogLevel.DEBUG,
+            exceptionLogLevel = Loggable.LogLevel.WARN,
+            logExecutionTime = false
+    )
     public LocalDate calcSucStartDate(LocalDate startDate, Period period) {
         assureIsValidBeginDate(startDate, period);
         LocalDate endDate = switch (period) {

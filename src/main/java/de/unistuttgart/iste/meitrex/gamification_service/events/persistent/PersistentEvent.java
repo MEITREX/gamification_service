@@ -9,6 +9,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Base class for all persistently stored events within the gamification service. A PersistentEvent represents an
+ * externally received event that is stored permanently in the database. Each event has a unique UUID as its primary key,
+ * an optional message sequence number, and a timestamp indicating the time it was received. Each PersistentEvent can
+ * have multiple associated processing statuses, which are managed in the embedded PersistentEventStatus class. Such a
+ * status represents the processing state of an event for a specific listener. This allows the progress and outcome of
+ * event processing to be tracked per listener, including the current attempt count, the maximum number of allowed retries,
+ * and the timestamp of the last processing attempt. The class is declared abstract because concrete event types are
+ * defined through subclasses. These subclasses may contain additional domain-specific information required for further
+ * processing.
+ *
+ * @author Philipp Kunz
+ */
 @Getter
 @Setter
 @SuperBuilder

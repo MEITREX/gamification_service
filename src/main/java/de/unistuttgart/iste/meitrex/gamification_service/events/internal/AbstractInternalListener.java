@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.meitrex.gamification_service.events.internal;
 
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPersistentEventRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPersistentEventStatusRepository;
@@ -10,6 +11,24 @@ import org.springframework.context.event.EventListener;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+/**
+ * Abstract base class for internal event listeners in the gamification service. This listener implements generic
+ * functionality for processing {@link PersistentEvent} and their corresponding {@link InternalEvent}s It handles:
+ * (1) fetching the associated persistent event from the repository, (2) tracking and updating processing status
+ * for retries and failures, (3) delegating the actual business logic to subclasses via {@link #doProcess(PersistentEvent)},
+ * (4) retry logic with configurable max attempt count. Any concrete listener is expected to be executed within a
+ * transactional context (e.g., managed by Spring), otherwise, event status updates will not be persisted.
+ *
+ * To implement a custom listener for a specific type of event, create a subclass overriding the following methods:
+ * (1) {@link #getName()} - must return a unique and stable name.
+ * (2) {@link #doProcess(U persistentEvent))} - contains the actual processing logic. In case of an unrecoverable error,
+ * an implementation should throw a {@link NonTransientEventListenerException}. Otherwise, {@link TransientEventListenerException}
+ * should be thrown. In the latter case, the base class logic takes care of updating the event status and retrying.
+ *
+ * @param <U> the type of the persistent event associated with the internal event.
+ * @param <V> the type of the internal event to be processed.
+ * @author Philiipp Kunz
+ */
 public abstract class AbstractInternalListener<U extends PersistentEvent, V extends InternalEvent> {
 
 
@@ -43,6 +62,13 @@ public abstract class AbstractInternalListener<U extends PersistentEvent, V exte
         return UUID.nameUUIDFromBytes(getName().getBytes(StandardCharsets.UTF_8));
     }
 
+    @Loggable(
+            inLogLevel = Loggable.LogLevel.INFO,
+            exitLogLevel = Loggable.LogLevel.DEBUG,
+            exceptionLogLevel = Loggable.LogLevel.WARN,
+            logExecutionTime = false,
+            logExit = false
+    )
     public void process(V internalEvent) {
         assureIsValid(internalEvent);
         process(fetchPersistentEvent(internalEvent));

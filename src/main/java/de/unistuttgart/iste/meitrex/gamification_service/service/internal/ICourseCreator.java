@@ -4,6 +4,12 @@ import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.Cour
 
 import java.util.UUID;
 
+/**
+ * A contract for retrieving locally stored data on a course. Retrieved data is meant for further internal processing
+ * by business logic.
+ *
+ * @author Philipp Kunz
+ */
 public interface ICourseCreator {
 
     /**

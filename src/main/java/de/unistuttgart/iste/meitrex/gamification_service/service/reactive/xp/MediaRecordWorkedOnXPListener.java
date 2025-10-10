@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service.reactive.xp;
 
 import de.unistuttgart.iste.meitrex.common.event.MediaType;
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import de.unistuttgart.iste.meitrex.gamification_service.events.PersistentMediaRecordWorkedOnEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.events.internal.*;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentMediaRecordInfoEvent;
@@ -20,7 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Component
-class MediaRecordWorkedOnXPListener extends AbstractInternalListener<PersistentMediaRecordWorkedOnEvent, InternalMediaWorkedOnEvent> {
+public class MediaRecordWorkedOnXPListener extends AbstractInternalListener<PersistentMediaRecordWorkedOnEvent, InternalMediaWorkedOnEvent> {
 
     // Do not change to keep unique UUID even in case of refactoring.
     private static final String name = "MediaRecordWorkedOnXPListener ";
@@ -57,7 +58,7 @@ class MediaRecordWorkedOnXPListener extends AbstractInternalListener<PersistentM
     }
 
     @Override
-    protected void doProcess(PersistentMediaRecordWorkedOnEvent persistentEvent)
+    public void doProcess(PersistentMediaRecordWorkedOnEvent persistentEvent)
             throws TransientEventListenerException, NonTransientEventListenerException {
         final UserEntity userEntity = this.userCreator.fetchOrCreate(persistentEvent.getUserId());
         final PersistentMediaRecordInfoEvent mediaRecordInfoEvent = findMediaRecordInfo(persistentEvent);
@@ -83,8 +84,6 @@ class MediaRecordWorkedOnXPListener extends AbstractInternalListener<PersistentM
         }
         final Optional<PersistentMediaRecordInfoEvent> mediaRecordInfoEvent
                 = this.mediaRecordInfoRepository.findByMediaRecordId(mediaRecordID);
-        System.out.println(mediaRecordID);
-        System.out.println(mediaRecordInfoEvent);
         if(mediaRecordInfoEvent.isEmpty()) {
             throw new TransientEventListenerException();
         }

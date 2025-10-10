@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.meitrex.gamification_service.service.reactive.xp;
 
 import de.unistuttgart.iste.meitrex.common.event.ContentProgressedEvent;
+import de.unistuttgart.iste.meitrex.gamification_service.aspects.logging.Loggable;
 import de.unistuttgart.iste.meitrex.gamification_service.events.internal.*;
 import de.unistuttgart.iste.meitrex.gamification_service.events.persistent.PersistentContentProgressedEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.events.repository.IPersistentContentProgressedRepository;
@@ -16,13 +17,15 @@ import org.springframework.stereotype.Component;
 import java.util.Objects;
 
 @Component
-class ContentProgressedXPListener extends AbstractInternalListener<PersistentContentProgressedEvent, InternalContentProgressedEvent> {
+public class ContentProgressedXPListener extends AbstractInternalListener<PersistentContentProgressedEvent, InternalContentProgressedEvent> {
 
     private static int countResponses(PersistentContentProgressedEvent event) {
-        if(Objects.nonNull(event.getResponses())) {
+        if((!event.isSuccess()) || Objects.isNull(event.getResponses())) {
+            return 0;
+        }
+        else {
             return event.getResponses().size();
         }
-        return 0;
     }
 
     private static int countResponsesWithMinimumHalfResponse(PersistentContentProgressedEvent event) {
@@ -64,7 +67,7 @@ class ContentProgressedXPListener extends AbstractInternalListener<PersistentCon
     }
 
     @Override
-    protected void doProcess(PersistentContentProgressedEvent persistentEvent)
+    public void doProcess(PersistentContentProgressedEvent persistentEvent)
             throws TransientEventListenerException, NonTransientEventListenerException {
         final UserEntity userEntity = this.userCreator.fetchOrCreate(persistentEvent.getUserId());
         final ContentProgressedEvent.ContentType contentType = persistentEvent.getContentType();

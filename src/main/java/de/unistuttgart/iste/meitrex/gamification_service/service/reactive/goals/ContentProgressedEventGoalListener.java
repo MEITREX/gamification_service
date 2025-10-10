@@ -120,4 +120,5 @@ class ContentProgressedEventGoalListener extends AbstractInternalListener<Persis
                 .build();
     }
 
+
 }
