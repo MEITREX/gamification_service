@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.graphql.client.GraphQlClient;
 import org.springframework.graphql.client.HttpGraphQlClient;
+import org.springframework.util.unit.DataSize;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
@@ -18,7 +20,14 @@ public class ContentServiceConfiguration {
 
     @Bean
     public ContentServiceClient contentServiceClient() {
-        final WebClient webClient = WebClient.builder().baseUrl(contentServiceUrl).build();
+        final int bufferSize = (int)DataSize.ofMegabytes(4).toBytes();
+        final ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
+                .codecs(c -> c.defaultCodecs().maxInMemorySize(bufferSize))
+                .build();
+        final WebClient webClient = WebClient.builder()
+                .exchangeStrategies(exchangeStrategies)
+                .baseUrl(contentServiceUrl)
+                .build();
         log.info("{};{}", webClient, contentServiceUrl);
 
         final GraphQlClient graphQlClient = HttpGraphQlClient.builder(webClient).build();
