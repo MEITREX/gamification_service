@@ -3,12 +3,13 @@ package de.unistuttgart.iste.meitrex.gamification_service.service;
 import java.util.*;
 
 import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
+import de.unistuttgart.iste.meitrex.common.event.HexadPlayerType;
 import de.unistuttgart.iste.meitrex.common.event.ServerSource;
+import de.unistuttgart.iste.meitrex.common.event.UserHexadPlayerTypeSetEvent;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerHexadScoreQuestionEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.UserEntity;
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.repository.IPlayerHexadScoreQuestionRepository;
 import de.unistuttgart.iste.meitrex.gamification_service.service.internal.IUserCreator;
-import io.dapr.client.DaprClient;
 import org.springframework.stereotype.Service;
 
 import de.unistuttgart.iste.meitrex.gamification_service.persistence.entity.PlayerHexadScoreEntity;
@@ -68,6 +69,8 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
         user.setPlayerHexadScore(playerHexadScoreEntity);
 
         playerHexadScoreEntity.setUser(user);
+
+        sendUserHexadPlayerTypeSetEvent(userId, playerHexadScore);
 
         return playerHexadScore;
     }
@@ -171,6 +174,52 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
     public Boolean hasHexadScore(UUID userId) {
         UserEntity user = userCreator.fetchOrCreate(userId);
         return user.getPlayerHexadScore() != null;
+    }
+
+    /**
+     * Publishes an event with the userId, PlayerHexadScore of the user and his primary player type
+     * @param userId the ID of the user
+     * @param playerHexadScore the updated player hexad score
+     */
+    private void sendUserHexadPlayerTypeSetEvent(UUID userId, PlayerHexadScore playerHexadScore) {
+        HexadPlayerType primaryPlayerType = null;
+        Map<HexadPlayerType, Double> scoresMap = new HashMap<>();
+        
+        double maxScore = Double.NEGATIVE_INFINITY;
+        
+        for (PlayerTypeScore score : playerHexadScore.getScores()) {
+            HexadPlayerType hexadType = mapPlayerTypeToHexadPlayerType(score.getType());
+            scoresMap.put(hexadType, score.getValue());
+            
+            if (score.getValue() > maxScore) {
+                maxScore = score.getValue();
+                primaryPlayerType = hexadType;
+            }
+        }
+
+        UserHexadPlayerTypeSetEvent event = UserHexadPlayerTypeSetEvent.builder()
+                .userId(userId)
+                .primaryPlayerType(primaryPlayerType)
+                .playerTypePercentages(scoresMap)
+                .build();
+
+        topicPublisher.notifyUserHexadPlayerTypeSet(event);
+    }
+
+    /**
+     * Maps the GraphQL PlayerType enum to the common HexadPlayerType enum
+     * @param playerType the GraphQL player type
+     * @return the corresponding HexadPlayerType
+     */
+    private HexadPlayerType mapPlayerTypeToHexadPlayerType(PlayerType playerType) {
+        return switch (playerType) {
+            case ACHIEVER -> HexadPlayerType.ACHIEVER;
+            case PLAYER -> HexadPlayerType.PLAYER;
+            case SOCIALISER -> HexadPlayerType.SOCIALISER;
+            case FREE_SPIRIT -> HexadPlayerType.FREE_SPIRIT;
+            case PHILANTHROPIST -> HexadPlayerType.PHILANTHROPIST;
+            case DISRUPTOR -> HexadPlayerType.DISRUPTOR;
+        };
     }
 
 
