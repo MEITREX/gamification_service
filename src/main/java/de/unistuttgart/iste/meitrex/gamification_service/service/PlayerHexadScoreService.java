@@ -181,7 +181,7 @@ public class PlayerHexadScoreService implements IPlayerHexadScoreService {
      * @param userId the ID of the user
      * @param playerHexadScore the updated player hexad score
      */
-    private void sendUserHexadPlayerTypeSetEvent(UUID userId, PlayerHexadScore playerHexadScore) {
+    public void sendUserHexadPlayerTypeSetEvent(UUID userId, PlayerHexadScore playerHexadScore) {
         HexadPlayerType primaryPlayerType = null;
         Map<HexadPlayerType, Double> scoresMap = new HashMap<>();
         
