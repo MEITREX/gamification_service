@@ -220,4 +220,87 @@ public class PlayerHexadScoreServiceTest {
                 .thenReturn(user);
         assertTrue(spyService.hasHexadScore(UUID.randomUUID()));
     }
+
+    @Test
+    public void testSendUserHexadPlayerTypeSetEvent_CorrectlyMapsAndPublishes() {
+        UUID userId = UUID.randomUUID();
+        List<PlayerTypeScore> scores = Arrays.asList(
+                new PlayerTypeScore(PlayerType.ACHIEVER, 0.85),
+                new PlayerTypeScore(PlayerType.PLAYER, 0.70),
+                new PlayerTypeScore(PlayerType.SOCIALISER, 0.65),
+                new PlayerTypeScore(PlayerType.FREE_SPIRIT, 0.60),
+                new PlayerTypeScore(PlayerType.PHILANTHROPIST, 0.55),
+                new PlayerTypeScore(PlayerType.DISRUPTOR, 0.50)
+        );
+        PlayerHexadScore playerHexadScore = new PlayerHexadScore(false, scores);
+
+        playerHexadScoreService.sendUserHexadPlayerTypeSetEvent(userId, playerHexadScore);
+
+        verify(mockTopicPublisher, times(1)).notifyUserHexadPlayerTypeSet(any());
+    }
+
+    @Test
+    public void testSendUserHexadPlayerTypeSetEvent_IdentifiesPhilanthropistAsPrimary() {
+        UUID userId = UUID.randomUUID();
+        List<PlayerTypeScore> scores = Arrays.asList(
+                new PlayerTypeScore(PlayerType.ACHIEVER, 0.60),
+                new PlayerTypeScore(PlayerType.PLAYER, 0.55),
+                new PlayerTypeScore(PlayerType.SOCIALISER, 0.50),
+                new PlayerTypeScore(PlayerType.FREE_SPIRIT, 0.45),
+                new PlayerTypeScore(PlayerType.PHILANTHROPIST, 0.90),  // Highest
+                new PlayerTypeScore(PlayerType.DISRUPTOR, 0.40)
+        );
+        PlayerHexadScore playerHexadScore = new PlayerHexadScore(false, scores);
+
+        playerHexadScoreService.sendUserHexadPlayerTypeSetEvent(userId, playerHexadScore);
+
+        ArgumentCaptor<de.unistuttgart.iste.meitrex.common.event.UserHexadPlayerTypeSetEvent> eventCaptor = 
+                ArgumentCaptor.forClass(de.unistuttgart.iste.meitrex.common.event.UserHexadPlayerTypeSetEvent.class);
+        verify(mockTopicPublisher, times(1)).notifyUserHexadPlayerTypeSet(eventCaptor.capture());
+        
+        de.unistuttgart.iste.meitrex.common.event.UserHexadPlayerTypeSetEvent capturedEvent = eventCaptor.getValue();
+        assertEquals(userId, capturedEvent.getUserId());
+        assertEquals(de.unistuttgart.iste.meitrex.common.event.HexadPlayerType.PHILANTHROPIST, capturedEvent.getPrimaryPlayerType());
+        assertEquals(0.90, capturedEvent.getPlayerTypePercentages().get(de.unistuttgart.iste.meitrex.common.event.HexadPlayerType.PHILANTHROPIST));
+    }
+
+    @Test
+    public void testSendUserHexadPlayerTypeSetEvent_IdentifiesDisruptorAsPrimary() {
+        UUID userId = UUID.randomUUID();
+        List<PlayerTypeScore> scores = Arrays.asList(
+                new PlayerTypeScore(PlayerType.ACHIEVER, 0.45),
+                new PlayerTypeScore(PlayerType.PLAYER, 0.50),
+                new PlayerTypeScore(PlayerType.SOCIALISER, 0.55),
+                new PlayerTypeScore(PlayerType.FREE_SPIRIT, 0.40),
+                new PlayerTypeScore(PlayerType.PHILANTHROPIST, 0.60),
+                new PlayerTypeScore(PlayerType.DISRUPTOR, 0.95)  // Highest
+        );
+        PlayerHexadScore playerHexadScore = new PlayerHexadScore(false, scores);
+
+        playerHexadScoreService.sendUserHexadPlayerTypeSetEvent(userId, playerHexadScore);
+
+        ArgumentCaptor<de.unistuttgart.iste.meitrex.common.event.UserHexadPlayerTypeSetEvent> eventCaptor = 
+                ArgumentCaptor.forClass(de.unistuttgart.iste.meitrex.common.event.UserHexadPlayerTypeSetEvent.class);
+        verify(mockTopicPublisher, times(1)).notifyUserHexadPlayerTypeSet(eventCaptor.capture());
+        
+        de.unistuttgart.iste.meitrex.common.event.UserHexadPlayerTypeSetEvent capturedEvent = eventCaptor.getValue();
+        assertEquals(userId, capturedEvent.getUserId());
+        assertEquals(de.unistuttgart.iste.meitrex.common.event.HexadPlayerType.DISRUPTOR, capturedEvent.getPrimaryPlayerType());
+        assertEquals(0.95, capturedEvent.getPlayerTypePercentages().get(de.unistuttgart.iste.meitrex.common.event.HexadPlayerType.DISRUPTOR));
+    }
+
+    @Test
+    public void testEvaluate_PublishesEventAfterCalculation() {
+        String username = "Test user";
+        UUID userId = UUID.randomUUID();
+        PlayerHexadScoreService spyService = spy(playerHexadScoreService);
+        
+        when(input.getQuestions()).thenReturn(Collections.emptyList());
+        when(userCreator.fetchOrCreate(userId)).thenReturn(new UserEntity());
+
+        spyService.evaluate(userId, input, username);
+
+        verify(spyService, times(1)).sendUserHexadPlayerTypeSetEvent(eq(userId), any());
+        verify(mockTopicPublisher, times(1)).notifyUserHexadPlayerTypeSet(any());
+    }
 }
