@@ -51,4 +51,11 @@ public interface IPlayerHexadScoreService {
      * @return true if a hexad score exists otherwise false
      */
     Boolean hasHexadScore(UUID userId);
+
+    /**
+     * Publishes an UserHexadPlayerTypeSetEvent
+     * @param userId the ID of the user
+     * @param playerHexadScore the player hexad score of the user
+     */
+    void sendUserHexadPlayerTypeSetEvent(UUID userId, PlayerHexadScore playerHexadScore);
 }
