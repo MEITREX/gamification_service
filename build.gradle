@@ -120,7 +120,7 @@ repositories {
 dependencies {
 
     implementation 'de.unistuttgart.iste.meitrex:meitrex-common:1.4.12'
-    implementation 'de.unistuttgart.iste.meitrex:content_service:1.6.0'
+    implementation 'de.unistuttgart.iste.meitrex:content_service:1.6.1'
     implementation 'de.unistuttgart.iste.meitrex:course_service:1.1.0rc2'
     implementation 'de.unistuttgart.iste.meitrex:user_service:1.0.0rc1'
 
